@@ -120,3 +120,46 @@ class BuildTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MainFlowTest(unittest.TestCase):
+    def test_main_offline(self):
+        tmp = tempfile.TemporaryDirectory()
+        cwd = os.getcwd()
+        os.chdir(tmp.name)
+        try:
+            build.STATE = pathlib.Path("state")
+            build.OUT = pathlib.Path("docs/v1")
+            build.REGION_DIR = build.OUT / "r"
+            build.REPORT = pathlib.Path("reports/last_run.md")
+            build.USAGE_PATH = build.STATE / "usage.json"
+            build.MAX_DISCOVERY_PER_RUN = 50
+            for k in build.used:
+                build.used[k] = 0
+            build.report.clear()
+            os.environ.update({"DATA_GO_KR_KEY": "g", "DATA_GO_REST_KEY": "r", "DATA_GO_MODEL_BUSAN_KEY": "m",
+                               "KAKAO_REST_KEY": "k"})
+            gen = [fake_item(i, f"국밥집{i}", "한식") for i in range(30)]
+
+            def fake_get(url, params=None, headers=None, **kw):
+                if "kakao" in url:
+                    return 200, {"documents": []}
+                code = params.get("cond[OPN_ATMY_GRP_CD::EQ]")
+                if code in ("3330000", "3000000") and "general" in url:
+                    size = int(params["numOfRows"]); p = int(params["pageNo"])
+                    return page(gen[(p - 1) * size: p * size], len(gen))
+                return page([], 0)
+
+            with mock.patch.object(build, "get_json", side_effect=fake_get):
+                build.main()
+            man = json.loads(pathlib.Path("docs/v1/manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual([r["c"] for r in man["regions"]], ["3000000", "3330000"])
+            self.assertIn("부산광역시 해운대구", man["regions"][1]["n"])
+            usage = json.loads(pathlib.Path("state/usage.json").read_text())
+            self.assertGreater(usage["general"], 16)
+            regions = json.loads(pathlib.Path("state/regions.json").read_text())
+            self.assertEqual(regions["_meta"]["cursor"], 3000000 + 50 * 5000)
+            self.assertIn("3000000", regions)
+        finally:
+            os.chdir(cwd)
+            tmp.cleanup()

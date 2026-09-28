@@ -44,6 +44,9 @@ DISCOVERY_DAYS = 90
 BUSAN = range(3250000, 3410000)
 
 used = {k: 0 for k in BUDGET}
+USAGE_PATH = pathlib.Path("state") / "usage.json"
+MAX_DISCOVERY_PER_RUN = int(os.environ.get("MAX_DISCOVERY_PER_RUN", "300"))
+BUSAN_SEED = [str(c) for c in range(3250000, 3410000, 10000)]
 report: list[str] = []
 started = time.monotonic()
 
@@ -147,18 +150,25 @@ def discover_regions(regions: dict, key: str) -> None:
     last = regions.get("_meta", {}).get("discovered", "")
     if last and (NOW - dt.datetime.strptime(last, "%Y%m%d").replace(tzinfo=KST)).days < DISCOVERY_DAYS:
         return
-    note("지역 코드 확인을 시작합니다 (90일마다 한 번).")
+    note("지역 코드 확인 (나눠서 진행)")
     found = 0
     errors = 0
+    checked = 0
     candidates = list(range(3000000, 7000000, 5000))
     for code in candidates:
-        if used["general"] >= BUDGET["general"] - 50 or time_left() < 1800:
+        cursor0 = regions.get("_meta", {}).get("cursor", 0)
+        if code >= cursor0 and checked >= MAX_DISCOVERY_PER_RUN:
+            note(f"  · 지역 확인 {code}부터 다음 실행에서 이어 합니다.")
+            regions.setdefault("_meta", {})["cursor"] = code
+            return
+        if used["general"] >= BUDGET["general"] - 50 or time_left() < 600:
             note("  · 지역 확인을 다음 실행에서 이어 합니다.")
             regions.setdefault("_meta", {})["cursor"] = code
             return
         cursor = regions.get("_meta", {}).get("cursor", 0)
         if code < cursor:
             continue
+        checked += 1
         try:
             total, item = probe_total("general", sources.GENERAL, key,
                                       {"cond[OPN_ATMY_GRP_CD::EQ]": str(code), "cond[SALS_STTS_CD::EQ]": "01"})
@@ -166,7 +176,7 @@ def discover_regions(regions: dict, key: str) -> None:
             errors += 1
             if errors <= 3:
                 note(f"  · 코드 {code} 확인 실패: {e} {e.body[:150]}")
-            if errors >= 8 and found == 0:
+            if errors >= 8 and found == 0 and checked <= 10:
                 note("⚠️ 공공데이터 호출이 계속 실패해 지역 확인을 멈춥니다 (키·활용신청 확인 필요).")
                 return
             continue
@@ -325,6 +335,8 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
                         {"cond[OPN_ATMY_GRP_CD::EQ]": code, "cond[SALS_STTS_CD::EQ]": "01"}, sources.PAGE_SIZE)
     if general is None:
         return False
+    if general and not info.get("name"):
+        info["name"] = region_name(general[0].get("ROAD_NM_ADDR") or general[0].get("LOTNO_ADDR") or "")
     rest = []
     if keys["rest"]:
         rest = fetch_all("rest", sources.REST, keys["rest"],
@@ -397,6 +409,24 @@ def write_manifest(regions: dict) -> None:
                                  "regions": items, "minApp": 1})
 
 
+def load_usage() -> None:
+    u = load(USAGE_PATH, {})
+    if u.get("date") == TODAY:
+        for k in used:
+            used[k] = int(u.get(k, 0))
+
+
+def save_usage() -> None:
+    save(USAGE_PATH, {"date": TODAY, **used})
+
+
+def is_stale(info: dict) -> bool:
+    if info.get("empty") and (NOW - dt.datetime.strptime(info["empty"], "%Y%m%d").replace(tzinfo=KST)).days < 30:
+        return False
+    last = info.get("last", "00000000")
+    return last == "00000000" or (NOW - dt.datetime.strptime(last, "%Y%m%d").replace(tzinfo=KST)).days >= REFRESH_DAYS
+
+
 def main() -> None:
     keys = {
         "general": secret("DATA_GO_KR_KEY"),
@@ -404,73 +434,87 @@ def main() -> None:
         "model": secret("DATA_GO_MODEL_BUSAN_KEY", required=False),
         "kakao": secret("KAKAO_REST_KEY", required=False),
     }
+    load_usage()
     note(f"# 데이터 갱신 보고서 ({NOW.strftime('%Y-%m-%d %H:%M KST')})\n")
+    note(f"- 오늘 이미 쓴 호출: {used}")
     regions = load(STATE / "regions.json", {})
-    try:
-        discover_regions(regions, keys["general"])
-    finally:
-        save(STATE / "regions.json", regions)
-
-    codes = [c for c in regions if not c.startswith("_")]
-
-    def priority(c: str):
-        info = regions[c]
-        stale = info.get("last", "00000000")
-        return (0 if int(c) in BUSAN and stale == "00000000" else 1, stale, 0 if int(c) in BUSAN else 1, c)
-
+    for c in BUSAN_SEED:
+        regions.setdefault(c, {"last": "00000000"})
     done = 0
-    for code in sorted(codes, key=priority):
-        info = regions[code]
-        last = info.get("last", "00000000")
-        if last != "00000000" and (NOW - dt.datetime.strptime(last, "%Y%m%d").replace(tzinfo=KST)).days < REFRESH_DAYS:
-            continue
-        if time_left() < 900 or used["general"] >= BUDGET["general"] - 5:
-            break
-        try:
-            if build_region(code, info, keys):
-                done += 1
-        except HttpError as e:
-            note(f"  · {code} 실패: {e} {e.body[:120]}")
-            if "SERVICE_KEY" in e.body or e.status in (401, 403):
-                note("⚠️ 공공데이터 키 또는 활용신청 문제로 중단합니다.")
-                break
-        finally:
-            save(STATE / "regions.json", regions)
 
-    # 오늘 새로 받은 지역이 없어도 남은 카카오 한도로 부산부터 매칭을 이어 간다.
-    if keys["kakao"] and used["kakao"] < BUDGET["kakao"] and time_left() > 1200:
-        for code in sorted(codes, key=lambda c: (0 if int(c) in BUSAN else 1, c)):
-            path = REGION_DIR / f"{code}.json"
-            if not path.exists() or used["kakao"] >= BUDGET["kakao"] or time_left() < 900:
-                continue
-            kpath = STATE / "kakao" / f"{code}.json"
-            kstate = load(kpath, {})
-            data = load(path, {})
-            pending = [r for r in data.get("r", []) if r[0] not in kstate]
-            if not pending:
-                continue
-            recs = [{"id": r[0], "name": r[1], "lat": r[4] / 1e6, "lng": r[5] / 1e6, "addr": r[6]} for r in pending]
-            n = kakao_match(recs, kstate, keys["kakao"])
-            save(kpath, kstate)
-            if n:
-                ids = {k: v[0] for k, v in kstate.items() if v and v[0]}
-                for r in data["r"]:
-                    if r[0] in ids:
-                        r[10] = ids[r[0]]
-                save(path, data, compact_lines=True)
-                blob = path.read_bytes()
-                regions[code].update({"sha": hashlib.sha256(blob).hexdigest(), "size": len(blob)})
-                note(f"  · {code} 카카오 추가 매칭 {n}곳")
+    def checkpoint() -> None:
         save(STATE / "regions.json", regions)
+        save_usage()
+        write_manifest(regions)
+        REPORT.parent.mkdir(parents=True, exist_ok=True)
+        REPORT.write_text("\n".join(report) + "\n", encoding="utf-8")
 
-    write_manifest(regions)
-    total_regions = len(codes)
-    fresh = sum(1 for c in codes if regions[c].get("count"))
-    note(f"\n## 요약\n- 오늘 갱신한 지역: {done}\n- 데이터가 있는 지역: {fresh}/{total_regions}")
-    note(f"- 호출 수: 일반 {used['general']}/{BUDGET['general']}, 휴게 {used['rest']}/{BUDGET['rest']}, "
-         f"모범 {used['model']}/{BUDGET['model']}, 카카오 {used['kakao']}/{BUDGET['kakao']}")
-    REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text("\n".join(report) + "\n", encoding="utf-8")
+    def run_regions(codes: list) -> bool:
+        """False를 돌려주면 중단(키 문제·한도·시간)."""
+        nonlocal done
+        for code in codes:
+            info = regions[code]
+            if not is_stale(info):
+                continue
+            if time_left() < 420 or used["general"] >= BUDGET["general"] - 5:
+                return False
+            try:
+                if build_region(code, info, keys):
+                    done += 1
+                elif not info.get("count") and used["general"] < BUDGET["general"] - 5:
+                    info["empty"] = TODAY
+            except HttpError as e:
+                note(f"  · {code} 실패: {e} {e.body[:160]}")
+                if "SERVICE_KEY" in e.body or "SERVICE KEY" in e.body or e.status in (401, 403):
+                    note("⚠️ 공공데이터 키 또는 활용신청 문제로 중단합니다.")
+                    return False
+            finally:
+                checkpoint()
+        return True
+
+    try:
+        busan = sorted([c for c in regions if not c.startswith("_") and int(c) in BUSAN],
+                       key=lambda c: regions[c].get("last", "0"))
+        ok = run_regions(busan)
+        if ok:
+            discover_regions(regions, keys["general"])
+            checkpoint()
+            others = sorted([c for c in regions if not c.startswith("_") and int(c) not in BUSAN],
+                            key=lambda c: (regions[c].get("last", "0"), c))
+            run_regions(others)
+
+        # 남은 카카오 한도로 부산부터 매칭을 이어 간다.
+        if keys["kakao"] and used["kakao"] < BUDGET["kakao"] and time_left() > 600:
+            for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
+                path = REGION_DIR / f"{code}.json"
+                if not path.exists() or used["kakao"] >= BUDGET["kakao"] or time_left() < 420:
+                    continue
+                kpath = STATE / "kakao" / f"{code}.json"
+                kstate = load(kpath, {})
+                data = load(path, {})
+                pending = [r for r in data.get("r", []) if r[0] not in kstate]
+                if not pending:
+                    continue
+                recs = [{"id": r[0], "name": r[1], "lat": r[4] / 1e6, "lng": r[5] / 1e6, "addr": r[6]} for r in pending]
+                n = kakao_match(recs, kstate, keys["kakao"])
+                save(kpath, kstate)
+                if n:
+                    ids = {k: v[0] for k, v in kstate.items() if v and v[0]}
+                    for r in data["r"]:
+                        if r[0] in ids:
+                            r[10] = ids[r[0]]
+                    save(path, data, compact_lines=True)
+                    blob = path.read_bytes()
+                    regions[code].update({"sha": hashlib.sha256(blob).hexdigest(), "size": len(blob)})
+                    note(f"  · {code} 카카오 추가 매칭 {n}곳")
+                checkpoint()
+    finally:
+        codes = [c for c in regions if not c.startswith("_")]
+        fresh = sum(1 for c in codes if regions[c].get("count"))
+        note(f"\n## 요약\n- 이번 실행에서 갱신한 지역: {done}\n- 데이터가 있는 지역: {fresh}/{len(codes)}")
+        note(f"- 오늘 호출 수: 일반 {used['general']}/{BUDGET['general']}, 휴게 {used['rest']}/{BUDGET['rest']}, "
+             f"모범 {used['model']}/{BUDGET['model']}, 카카오 {used['kakao']}/{BUDGET['kakao']}")
+        checkpoint()
 
 
 if __name__ == "__main__":

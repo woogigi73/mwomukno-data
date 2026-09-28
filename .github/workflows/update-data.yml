@@ -2,7 +2,7 @@ name: 음식점 데이터 갱신
 
 on:
   schedule:
-    - cron: "23 18 * * *"   # 매일 03:23 (한국 시간). 지역을 나눠 처리해 전국이 약 1주일 주기로 갱신됨
+    - cron: "23 * * * *"   # 매시 23분. 하루 호출 한도 안에서 조금씩 나눠 처리해 전국이 약 1주일 주기로 갱신됨
   workflow_dispatch:
   push:
     branches: [main]
@@ -26,7 +26,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-24.04
-    timeout-minutes: 340
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -40,7 +40,7 @@ jobs:
           DATA_GO_REST_KEY: ${{ secrets.DATA_GO_REST_KEY }}
           DATA_GO_MODEL_BUSAN_KEY: ${{ secrets.DATA_GO_MODEL_BUSAN_KEY }}
           KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
-          TIME_LIMIT_S: "18000"
+          TIME_LIMIT_S: "2700"
 
       - name: 결과 저장
         if: always()
