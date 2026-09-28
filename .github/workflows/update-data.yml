@@ -18,6 +18,7 @@ on:
 permissions:
   contents: write   # 갱신한 데이터 커밋
   pages: write      # 배포 요청
+  actions: write    # 남은 작업이 있으면 다음 실행 예약
 
 concurrency:
   group: data-repo-writer
@@ -75,3 +76,17 @@ jobs:
           fi
           curl -s -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
             "$api/builds" -o /dev/null -w "배포 요청 결과 %{http_code}\n" || true
+
+      - name: 남은 작업 이어서 실행
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$(cat reports/continue.txt 2>/dev/null)" = "yes" ]; then
+            curl -s -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPO/actions/workflows/update-data.yml/dispatches" \
+              -d '{"ref":"main"}' -o /dev/null -w "다음 실행 요청 %{http_code}\n"
+          else
+            echo "오늘 할 일 끝 (다음 정기 실행에서 이어 감)"
+          fi

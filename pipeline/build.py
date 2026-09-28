@@ -432,6 +432,18 @@ def is_stale(info: dict) -> bool:
     return last == "00000000" or (NOW - dt.datetime.strptime(last, "%Y%m%d").replace(tzinfo=KST)).days >= REFRESH_DAYS
 
 
+def kakao_left(regions: dict) -> bool:
+    """카카오 매칭이 아직 안 된 식당이 남아 있는가(부산 우선 확인)."""
+    for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
+        path = REGION_DIR / f"{code}.json"
+        if not path.exists():
+            continue
+        kstate = load(STATE / "kakao" / f"{code}.json", {})
+        if any(r[0] not in kstate for r in load(path, {}).get("r", [])):
+            return True
+    return False
+
+
 def main() -> None:
     keys = {
         "general": secret("DATA_GO_KR_KEY"),
@@ -446,6 +458,8 @@ def main() -> None:
     for c in BUSAN_SEED:
         regions.setdefault(c, {"last": "00000000"})["busan"] = True
     done = 0
+    kakao_new = 0
+    cursor_start = regions.get("_meta", {}).get("cursor", 0)
 
     def checkpoint() -> None:
         save(STATE / "regions.json", regions)
@@ -502,6 +516,7 @@ def main() -> None:
                     continue
                 recs = [{"id": r[0], "name": r[1], "lat": r[4] / 1e6, "lng": r[5] / 1e6, "addr": r[6]} for r in pending]
                 n = kakao_match(recs, kstate, keys["kakao"])
+                kakao_new += len(recs)
                 save(kpath, kstate)
                 if n:
                     ids = {k: v[0] for k, v in kstate.items() if v and v[0]}
@@ -520,6 +535,13 @@ def main() -> None:
         note(f"- 오늘 호출 수: 일반 {used['general']}/{BUDGET['general']}, 휴게 {used['rest']}/{BUDGET['rest']}, "
              f"모범 {used['model']}/{BUDGET['model']}, 카카오 {used['kakao']}/{BUDGET['kakao']}")
         checkpoint()
+        # 남은 일이 있고 오늘 한도가 남았으면 다음 실행을 바로 이어 붙인다.
+        pending_regions = any(is_stale(regions[c]) for c in codes) or regions.get("_meta", {}).get("cursor", 0) != 0
+        pending_kakao = keys["kakao"] and used["kakao"] < BUDGET["kakao"] - 100
+        progressed = done > 0 or kakao_new > 0 or regions.get("_meta", {}).get("cursor", 0) != cursor_start
+        more = progressed and (pending_regions and used["general"] < BUDGET["general"] - 50) or (pending_kakao and kakao_left(regions))
+        pathlib.Path("reports").mkdir(exist_ok=True)
+        (pathlib.Path("reports") / "continue.txt").write_text("yes\n" if more else "no\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
