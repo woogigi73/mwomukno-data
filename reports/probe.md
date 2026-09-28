@@ -1,9 +1,9 @@
-# 연결 점검 결과 (2026-09-28 22:13 KST)
+# 연결 점검 결과 (2026-09-29 00:14 KST)
 
 ## 키 형태 (값은 기록하지 않음)
 - DATA_GO_KR_KEY: 64자, 16진수
 - DATA_GO_REST_KEY: 64자, 16진수
-- DATA_GO_MODEL_BUSAN_KEY: 64자, 16진수
+- DATA_GO_MODEL_KEY: 64자, 16진수
 - KAKAO_REST_KEY: 32자, 16진수
 - 공공데이터 키 3개가 같은 값인가: 예
 
@@ -67,26 +67,8 @@
   - 필드 목록: BIZPLC_SURRND_SE_NM, BLDG_PSN_SE_NM, BPLC_NM, BZSTAT_SE_NM, CLSBIZ_YMD, CRD_INFO_X, CRD_INFO_Y, DAT_UPDT_PNT, DAT_UPDT_SE, DTL_SALS_STTS_CD, DTL_SALS_STTS_NM, FCLT_TOTAL_SCL, FCTRY_OFJB_EMP_CNT, FCTRY_PRODWK_EMP_CNT, FCTRY_SLSPOS_EMP_CNT, FML_PRCTR_CNT, GRD_SE_NM, GRNAMT, HDOFC_EMP_CNT, HPG, LAST_MDFCN_PNT, LCPMT_YMD, LCTN_AREA, LCTN_ZIP, LOTNO_ADDR, MLT_UTZTN_BSNSSP_YN, ML_PRCTR_CNT, MNG_NO, MRNT_AMOUNT, OPN_ATMY_GRP_CD, ROAD_NM_ADDR, ROAD_NM_ZIP, SALS_STTS_CD, SALS_STTS_NM, SNTTN_BZSTAT_NM, TELNO, TRDTN_BSNSSP_DSGN_NO, TRDTN_BSNSSP_PRINC_FD, WTRSPPL_FCLT_SE_NM
 
 ## 모범음식점
-- **행안부 모범음식점 해운대 상태=01**: 실패 HTTP 403 — HTTP 403 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "returnAuthMsg": "등록되지 않은 서비스키",
-      "returnReasonCode": "30"
-    }
-  }
-}
-
-- **행안부 모범음식점 해운대 상태=None**: 실패 HTTP 403 — HTTP 403 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
-      "returnAuthMsg": "등록되지 않은 서비스키",
-      "returnReasonCode": "30"
-    }
-  }
-}
-
+- **행안부 모범음식점 해운대 상태=01**: HTTP 200, 결과코드 0 (정상), totalCount=75, 받은 건수=1
+  - 필드 목록: APLY_YMD, BSNSSP_NM, CLSBIZ_YMD, DAT_UPDT_PNT, DAT_UPDT_SE, DSGN_RTRCN_RSN, DSGN_RTRCN_YMD, DSGN_YMD, FD_OF_TYPE, IMPS_RSN, IMPS_YMD, LAST_MDFCN_PNT, LCPMT_NO, LCTN_ADDR, MNG_NO, OPN_ATMY_GRP_CD, PRINC_FD_KND, RE_DSGN_YMD, ROAD_NM_ADDR, SALS_STTS_CD, SALS_STTS_NM, TELNO
 - **부산시 모범음식점 후보 6260000/BusanGoodRestaurantService/getGoodRestaurantInfo**: 실패 HTTP 400 — HTTP 400 {
   "OpenAPI_ServiceResponse": {
     "cmmMsgHeader": {
