@@ -422,8 +422,8 @@
   "model": 31,
   "model_ok": "20260929",
   "name": "부산광역시 동구",
-  "sha": "bfb5f4b84c74a50356759eec0d4e97ded1320768fe09a6276ad9e8a99dd8918f",
-  "size": 265254
+  "sha": "a468593cedbe3777f5fcbab4c6eba00498ccd0de5b9d6592fecd119b61d24954",
+  "size": 271714
  },
  "3280000": {
   "bbox": [
@@ -439,8 +439,8 @@
   "model": 5,
   "model_ok": "20260929",
   "name": "부산광역시 영도구",
-  "sha": "965e0cab560b406dfbedfeadbcac3654ae1fc3813cd9dc8cc2041128869211b4",
-  "size": 245690
+  "sha": "5c607844c99eb80e9e856fd01bee5d554cff8327b270162d4876eb0f8ce8c7e5",
+  "size": 253529
  },
  "3290000": {
   "bbox": [
@@ -456,8 +456,8 @@
   "model": 65,
   "model_ok": "20260929",
   "name": "부산광역시 부산진구",
-  "sha": "e8fe62de2c0d3bac34d08c60fdfc83da20cf9f24d5df71eb417bcd4f12979ef5",
-  "size": 1125390
+  "sha": "b5c13305f7258b5530aa7682dd9a3c47305f630fa6c8d10b3ad3a18563b9e724",
+  "size": 1136039
  },
  "3300000": {
   "bbox": [
