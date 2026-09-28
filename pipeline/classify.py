@@ -55,7 +55,7 @@ def classify(uptae: str, name: str, source: str) -> tuple[str | None, str]:
     n = clean_text(name, 60).lower()
     if any(u.startswith(x) for x in EXCLUDE_UPTAE):
         return None, ""
-    label = LABEL.get(u, u if 0 < len(u) <= 6 else ("음식점" if source == "general" else "간식"))
+    label = LABEL.get(u, u if 0 < len(u) <= 6 and u != "기타" else ("음식점" if source == "general" else "간식"))
     if u in CAFE_UPTAE or (source == "rest" and any(w in n for w in CAFE_WORDS)):
         return "c", label if label not in ("간식", "기타") else "카페"
     if source == "rest":
