@@ -1,0 +1,72 @@
+name: 음식점 데이터 갱신
+
+on:
+  schedule:
+    - cron: "23 18 * * *"   # 매일 03:23 (한국 시간). 지역을 나눠 처리해 전국이 약 1주일 주기로 갱신됨
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/build.py"
+      - "pipeline/classify.py"
+      - "pipeline/geo.py"
+      - "pipeline/safehttp.py"
+      - ".github/workflows/update-data.yml"
+      - "docs/index.html"
+      - "docs/privacy.html"
+
+permissions:
+  contents: write   # 갱신한 데이터 커밋
+  pages: write      # 배포 요청
+
+concurrency:
+  group: data-repo-writer
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: 코드 점검 (실패하면 배포하지 않음)
+        run: python3 -m unittest -v
+
+      - name: 데이터 갱신
+        run: python3 -m pipeline.build
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          DATA_GO_REST_KEY: ${{ secrets.DATA_GO_REST_KEY }}
+          DATA_GO_MODEL_BUSAN_KEY: ${{ secrets.DATA_GO_MODEL_BUSAN_KEY }}
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+          TIME_LIMIT_S: "18000"
+
+      - name: 결과 저장
+        if: always()
+        run: |
+          git config user.name "mwomukno-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state docs reports 2>/dev/null || true
+          if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
+          git commit -q -m "데이터 갱신 $(TZ=Asia/Seoul date +%Y-%m-%d)"
+          for i in 1 2 3; do
+            git pull -q --rebase origin main && git push -q && break
+            sleep 5
+          done
+
+      - name: 사이트 배포 요청
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          api="https://api.github.com/repos/$REPO/pages"
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $GH_TOKEN" "$api")
+          if [ "$code" = "404" ]; then
+            echo "Pages가 꺼져 있어 켜기를 시도합니다."
+            curl -s -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$api" \
+              -d '{"source":{"branch":"main","path":"/docs"}}' -o /dev/null -w "생성 요청 결과 %{http_code}\n" || true
+          fi
+          curl -s -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "$api/builds" -o /dev/null -w "배포 요청 결과 %{http_code}\n" || true

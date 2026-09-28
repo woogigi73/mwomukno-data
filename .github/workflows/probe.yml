@@ -1,0 +1,45 @@
+name: 연결 점검
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/probe.py"
+      - "pipeline/sources.py"
+      - ".github/workflows/probe.yml"
+
+# 기본은 읽기 전용. 결과 보고서 커밋에만 쓰기 권한을 쓴다.
+permissions:
+  contents: write
+
+concurrency:
+  group: data-repo-writer
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true
+      - name: 점검 실행
+        run: python3 -m pipeline.probe
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          DATA_GO_REST_KEY: ${{ secrets.DATA_GO_REST_KEY }}
+          DATA_GO_MODEL_BUSAN_KEY: ${{ secrets.DATA_GO_MODEL_BUSAN_KEY }}
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+      - name: 보고서 저장
+        if: always()
+        run: |
+          [ -f reports/probe.md ] || exit 0
+          git config user.name "mwomukno-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/probe.md
+          git diff --cached --quiet && exit 0
+          git commit -m "연결 점검 보고서"
+          git pull --rebase origin main
+          git push

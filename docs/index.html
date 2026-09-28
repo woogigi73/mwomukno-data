@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="뭐 먹노? 도보 거리 안의 실제 식당을 룰렛, 사다리, 해적 룰렛, 경마로 골라 주는 앱">
+<title>뭐 먹노?</title>
+<style>
+:root{--bg:#E8ECF0;--card:#fff;--ink:#18202C;--muted:#5A6676;--line:#CBD3DC;--accent:#FFC21A;--accent-ink:#1E1600}
+@media (prefers-color-scheme:dark){:root{--bg:#10141A;--card:#1A2029;--ink:#E9EEF4;--muted:#98A4B4;--line:#2C3542;color-scheme:dark}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:40px 16px 64px;display:grid;gap:24px}
+h1{font-size:44px;line-height:1.1;margin:0;letter-spacing:-1px}
+h1 b{background:var(--accent);color:var(--accent-ink);padding:0 8px;border-radius:10px}
+.lead{font-size:18px;color:var(--muted);margin:0;max-width:34em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h2{font-size:16px;margin:0 0 4px}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.status{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted)}
+.status b{color:var(--ink)}
+footer{font-size:14px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
+a{color:inherit;text-underline-offset:3px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>뭐 먹<b>노?</b></h1>
+  </header>
+  <p class="lead">점심, 저녁, 1·2·3차까지. 지금 있는 곳에서 걸어갈 수 있는 실제 식당을 모아 게임으로 정해 드려요.</p>
+  <section class="grid" aria-label="특징">
+    <div class="card"><h2>도보 반경</h2><p>5·10·15·20분 거리 안의 영업 중인 식당만 후보로 모아요.</p></div>
+    <div class="card"><h2>게임으로 결정</h2><p>룰렛, 사다리, 해적 룰렛, 경마, 식당 월드컵, 흔들어 뽑기.</p></div>
+    <div class="card"><h2>이번 주 먹은 곳 빼기</h2><p>일주일 안에 간 곳은 자동으로 빠져요. 신규 오픈, 모범음식점(부산)도 표시해요.</p></div>
+    <div class="card"><h2>개인정보 수집 없음</h2><p>로그인 없이 쓰고, 위치는 휴대폰 안에서만 계산해요.</p></div>
+  </section>
+  <p class="status" id="status">데이터 상태를 불러오는 중…</p>
+  <footer>
+    <a href="privacy.html">개인정보처리방침</a>
+    <span>데이터: 행정안전부 지방행정 인허가 공공데이터, 카카오맵</span>
+  </footer>
+</main>
+<script>
+(function(){
+  var el=document.getElementById('status');
+  fetch('v1/manifest.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(m){
+    var n=0,c=0;(m.regions||[]).forEach(function(x){n++;c+=x.cnt||0});
+    el.textContent='';
+    var b=document.createElement('b');b.textContent=c.toLocaleString('ko-KR')+'곳';
+    el.append('현재 ',String(n),'개 시·군·구, ',b,'의 식당 데이터 · 마지막 갱신 ',String(m.generated||'').slice(0,10));
+  }).catch(function(){el.textContent='데이터를 준비하고 있어요. 매일 새벽 자동으로 갱신됩니다.'});
+})();
+</script>
+</body>
+</html>
