@@ -359,13 +359,7 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
         v = kstate.get(r["id"])
         if r["lat"] is None and v and len(v) >= 4:
             r["lat"], r["lng"] = v[2], v[3]
-    kmatched = 0
-    if keys["kakao"] and BUDGET["kakao"] > used["kakao"]:
-        kmatched = kakao_match(records, kstate, keys["kakao"])
-        for r in records:
-            if r.pop("pos_from_kakao", None):
-                kstate[r["id"]] = kstate[r["id"]][:2] + [r["lat"], r["lng"]]
-        save(kstate_path, kstate)
+    kmatched = 0  # 새 카카오 매칭은 모든 지역 데이터를 먼저 만든 뒤 따로 진행한다.
 
     rows = []
     for r in records:

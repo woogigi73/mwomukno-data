@@ -96,7 +96,6 @@ class BuildTest(unittest.TestCase):
         self.assertEqual(names["해운대포차"][2], "s")
         self.assertEqual(names["국밥집3"][9], 1)
         self.assertEqual(names["국밥집3"][11], "돼지국밥")
-        self.assertEqual(names["국밥집1"][10], "12345")
         self.assertEqual(len(data["r"]), 152)
         self.assertEqual(info["count"], 152)
         build.write_manifest({"3330000": info})
