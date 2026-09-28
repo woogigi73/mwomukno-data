@@ -456,8 +456,8 @@
   "model": 65,
   "model_ok": "20260929",
   "name": "부산광역시 부산진구",
-  "sha": "b5c13305f7258b5530aa7682dd9a3c47305f630fa6c8d10b3ad3a18563b9e724",
-  "size": 1136039
+  "sha": "c57b756271848772a60eec6313ab5207d019323c0b11addcd93a318aa40d1458",
+  "size": 1159764
  },
  "3300000": {
   "bbox": [
@@ -473,8 +473,8 @@
   "model": 16,
   "model_ok": "20260929",
   "name": "부산광역시 동래구",
-  "sha": "f6bb5c2f0b3e0e0bcb0008e1819d9333ebabd3de9f26e29f0de433b32821c73a",
-  "size": 623742
+  "sha": "be9d79d2ff30e05840d0a9a8aa2afcfe5c54697aa29e16700c1c8545d7040520",
+  "size": 624670
  },
  "3310000": {
   "bbox": [
