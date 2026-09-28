@@ -46,6 +46,9 @@ BUSAN = range(3250000, 3410000)
 used = {k: 0 for k in BUDGET}
 USAGE_PATH = pathlib.Path("state") / "usage.json"
 MAX_DISCOVERY_PER_RUN = int(os.environ.get("MAX_DISCOVERY_PER_RUN", "300"))
+MODEL_OK: set = set()
+MODEL_STATE = {"fail": ""}
+HAS_MODEL_KEY = bool(os.environ.get("DATA_GO_MODEL_KEY", "").strip())
 BUSAN_SEED = [str(c) for c in range(3250000, 3410000, 10000)]
 report: list[str] = []
 started = time.monotonic()
@@ -230,7 +233,9 @@ def load_model_busan(code: str, key: str) -> list:
                                                         "cond[SALS_STTS_CD::EQ]": "01"}, sources.PAGE_SIZE)
     except HttpError as e:
         note(f"  · 모범음식점 {code} 실패: {e}")
+        MODEL_STATE["fail"] = TODAY
         return []
+    MODEL_OK.add(code)
     out = []
     for it in items or []:
         if clean_text(it.get("DSGN_RTRCN_YMD"), 10):
@@ -386,6 +391,8 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
             "r": rows}
     save(path, data, compact_lines=True)
     blob = path.read_bytes()
+    if code in MODEL_OK:
+        info["model_ok"] = TODAY
     info.update({"last": TODAY, "count": len(rows), "bbox": [min(lats), min(lngs), max(lats), max(lngs)],
                  "sha": hashlib.sha256(blob).hexdigest(), "size": len(blob), "model": mcount})
     note(f"  · {code} {info.get('name','')}: {len(rows)}곳 (모범 {mcount}, 카카오 매칭 +{kmatched})")
@@ -408,16 +415,20 @@ def load_usage() -> None:
     if u.get("date") == TODAY:
         for k in used:
             used[k] = int(u.get(k, 0))
+        MODEL_STATE["fail"] = u.get("model_fail", "")
 
 
 def save_usage() -> None:
-    save(USAGE_PATH, {"date": TODAY, **used})
+    save(USAGE_PATH, {"date": TODAY, "model_fail": MODEL_STATE["fail"], **used})
 
 
 def is_stale(info: dict) -> bool:
     if info.get("empty") and (NOW - dt.datetime.strptime(info["empty"], "%Y%m%d").replace(tzinfo=KST)).days < 30:
         return False
     last = info.get("last", "00000000")
+    if (HAS_MODEL_KEY and MODEL_STATE["fail"] != TODAY and info.get("count") and not info.get("model_ok")
+            and info.get("busan")):
+        return True  # 모범음식점 표시를 아직 못 붙인 부산 지역은 다시 만든다
     return last == "00000000" or (NOW - dt.datetime.strptime(last, "%Y%m%d").replace(tzinfo=KST)).days >= REFRESH_DAYS
 
 
@@ -425,7 +436,7 @@ def main() -> None:
     keys = {
         "general": secret("DATA_GO_KR_KEY"),
         "rest": secret("DATA_GO_REST_KEY", required=False),
-        "model": secret("DATA_GO_MODEL_BUSAN_KEY", required=False),
+        "model": secret("DATA_GO_MODEL_KEY", required=False),
         "kakao": secret("KAKAO_REST_KEY", required=False),
     }
     load_usage()
@@ -433,7 +444,7 @@ def main() -> None:
     note(f"- 오늘 이미 쓴 호출: {used}")
     regions = load(STATE / "regions.json", {})
     for c in BUSAN_SEED:
-        regions.setdefault(c, {"last": "00000000"})
+        regions.setdefault(c, {"last": "00000000"})["busan"] = True
     done = 0
 
     def checkpoint() -> None:

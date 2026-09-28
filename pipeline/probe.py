@@ -50,7 +50,7 @@ def main() -> None:
     today = dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).strftime("%Y-%m-%d %H:%M KST")
     w(f"# 연결 점검 결과 ({today})\n")
     keys = {n: secret(n, required=False) for n in
-            ("DATA_GO_KR_KEY", "DATA_GO_REST_KEY", "DATA_GO_MODEL_BUSAN_KEY", "KAKAO_REST_KEY")}
+            ("DATA_GO_KR_KEY", "DATA_GO_REST_KEY", "DATA_GO_MODEL_KEY", "KAKAO_REST_KEY")}
     w("## 키 형태 (값은 기록하지 않음)")
     for n, v in keys.items():
         w(key_shape(n, v))
@@ -94,7 +94,7 @@ def main() -> None:
         w(f"  - 필드 목록: {', '.join(sorted(r['items'][0].keys()))}")
 
     w("\n## 모범음식점")
-    mk = keys["DATA_GO_MODEL_BUSAN_KEY"] or gk
+    mk = keys["DATA_GO_MODEL_KEY"] or gk
     for st in ("01", None):
         p = {**base, "serviceKey": mk, "cond[OPN_ATMY_GRP_CD::EQ]": "3330000"}
         if st:

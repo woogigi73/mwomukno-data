@@ -136,7 +136,7 @@ class MainFlowTest(unittest.TestCase):
             for k in build.used:
                 build.used[k] = 0
             build.report.clear()
-            os.environ.update({"DATA_GO_KR_KEY": "g", "DATA_GO_REST_KEY": "r", "DATA_GO_MODEL_BUSAN_KEY": "m",
+            os.environ.update({"DATA_GO_KR_KEY": "g", "DATA_GO_REST_KEY": "r", "DATA_GO_MODEL_KEY": "m",
                                "KAKAO_REST_KEY": "k"})
             gen = [fake_item(i, f"국밥집{i}", "한식") for i in range(30)]
 

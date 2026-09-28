@@ -40,7 +40,7 @@ jobs:
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           DATA_GO_REST_KEY: ${{ secrets.DATA_GO_REST_KEY }}
-          DATA_GO_MODEL_BUSAN_KEY: ${{ secrets.DATA_GO_MODEL_BUSAN_KEY }}
+          DATA_GO_MODEL_KEY: ${{ secrets.DATA_GO_MODEL_KEY }}
           KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
           TIME_LIMIT_S: "2700"
 
