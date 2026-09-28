@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: data-repo-writer
+  group: probe
   cancel-in-progress: false
 
 jobs:
@@ -41,5 +41,4 @@ jobs:
           git add reports/probe.md
           git diff --cached --quiet && exit 0
           git commit -m "연결 점검 보고서"
-          git pull --rebase origin main
-          git push
+          for i in 1 2 3 4 5; do git pull -q --rebase origin main && git push -q && break; sleep 7; done
