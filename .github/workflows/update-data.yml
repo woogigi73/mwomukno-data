@@ -29,6 +29,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main   # 대기 중에 저장된 최신 데이터에서 이어 가기
 
       - name: 코드 점검 (실패하면 배포하지 않음)
         run: python3 -m unittest -v
@@ -50,10 +52,13 @@ jobs:
           git add state docs reports 2>/dev/null || true
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -q -m "데이터 갱신 $(TZ=Asia/Seoul date +%Y-%m-%d)"
-          for i in 1 2 3; do
-            git pull -q --rebase origin main && git push -q && break
-            sleep 5
+          for i in 1 2 3 4 5; do
+            if git pull -q --rebase -X theirs origin main && git push -q; then echo "저장 완료"; exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep 7
           done
+          echo "::error::결과를 저장하지 못했습니다"
+          exit 1
 
       - name: 사이트 배포 요청
         if: always()
