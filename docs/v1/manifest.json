@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-30T05:05:38+09:00",
+ "generated": "2026-09-30T05:41:04+09:00",
  "minApp": 1,
  "regions": [
   {
@@ -54,8 +54,8 @@
    "c": "3030000",
    "cnt": 4399,
    "n": "서울특별시 성동구",
-   "sha": "a04b5bc3ff205c0af109c1a0efd7653b35ffbdf6eb5c3de47cf7ed3d5bd7c579",
-   "size": 830870,
+   "sha": "2c1236f4bfd28be6b6ef4329f92a1cba0a92e1f824bab3e3e8bac85b8fc6ac52",
+   "size": 835950,
    "u": "20260929"
   },
   {
@@ -68,8 +68,8 @@
    "c": "3040000",
    "cnt": 4781,
    "n": "서울특별시 광진구",
-   "sha": "b0407e7af39394f227c6f47eeec216fa02614cf89e2b1d161cfac5b0b4dba9b6",
-   "size": 842511,
+   "sha": "93123f1cadb6b5d0f746e23029a98a0dfddb308631fc675edb50462abc5a43ba",
+   "size": 857082,
    "u": "20260929"
   },
   {
