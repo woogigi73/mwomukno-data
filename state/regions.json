@@ -524,8 +524,8 @@
   "model": 25,
   "model_ok": "20260929",
   "name": "부산광역시 해운대구",
-  "sha": "562a5b82e6258ae85462e3835d523793a1023c0e77d9adeb522a6515657843a5",
-  "size": 931907
+  "sha": "5f9483ccbe5e605f2f5a44e994df3a53a4bdb63b953bdf149b8737669dfc4402",
+  "size": 945274
  },
  "3340000": {
   "bbox": [
@@ -541,8 +541,8 @@
   "model": 6,
   "model_ok": "20260929",
   "name": "부산광역시 사하구",
-  "sha": "fec2fbe46398fd82024749e08fea59a7fc556463d7d5121efeca912e63a0ae60",
-  "size": 585008
+  "sha": "c42328895580e4493abd9e1ef6d8f5d1afcf7386774aba53ae67309e2f06c051",
+  "size": 596198
  },
  "3350000": {
   "bbox": [
