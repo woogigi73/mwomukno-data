@@ -592,8 +592,8 @@
   "model": 22,
   "model_ok": "20260929",
   "name": "부산광역시 연제구",
-  "sha": "a51538c79ab11aec9abd4d7be64ced4b0ba3b1caeab913220e891dec57fe9433",
-  "size": 487303
+  "sha": "368d7ca32fb72ab2fde7feffb610a12a692849a18ed1dcbb4300c004a2e1419a",
+  "size": 500160
  },
  "3380000": {
   "bbox": [
@@ -609,8 +609,8 @@
   "model": 14,
   "model_ok": "20260929",
   "name": "부산광역시 수영구",
-  "sha": "93bbb97be9c921cdbd82f132c93be138ff66e5de597bf8ad5fe8de158548bfe4",
-  "size": 589150
+  "sha": "00f5d9bf0196519c8f5b723a71459f401dc0e325628eede9c0dc36845c81ca40",
+  "size": 597077
  },
  "3390000": {
   "bbox": [
