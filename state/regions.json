@@ -558,8 +558,8 @@
   "model": 61,
   "model_ok": "20260929",
   "name": "부산광역시 금정구",
-  "sha": "1b6fd8d8827a47a72a7928b99639469878835c68598a777a3b04d5468c3c74d0",
-  "size": 560842
+  "sha": "63a5a9c8b52d1f19129f5e90b5eeeaacf868e8fe112d72ce51bf86a9f3e3965a",
+  "size": 568297
  },
  "3360000": {
   "bbox": [
@@ -575,8 +575,8 @@
   "model": 1,
   "model_ok": "20260929",
   "name": "부산광역시 강서구",
-  "sha": "3d6fa53d0a3c076b9cb84943f9a9be47086c49eecad6d490c6640f0f9d2e955c",
-  "size": 452911
+  "sha": "e6033ebae3000773821198be0b007bc518b9542464f7dd3b3290c38b1dfbc0ed",
+  "size": 466630
  },
  "3370000": {
   "bbox": [
@@ -592,8 +592,8 @@
   "model": 22,
   "model_ok": "20260929",
   "name": "부산광역시 연제구",
-  "sha": "0c35aad7b3cad9913bfdeda4e45a6905b288aee32b74b6989b222924f1b73291",
-  "size": 484651
+  "sha": "a51538c79ab11aec9abd4d7be64ced4b0ba3b1caeab913220e891dec57fe9433",
+  "size": 487303
  },
  "3380000": {
   "bbox": [
