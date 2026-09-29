@@ -507,8 +507,8 @@
   "model": 0,
   "model_ok": "20260929",
   "name": "부산광역시 북구",
-  "sha": "e48f6b112da44ee7d91609ef57c95ce3e764461b466f4626323361c7cdca789a",
-  "size": 478565
+  "sha": "d3d3ad2fbf99b958fbf4cfca7e43918041cb734b002d2ead85f5f983484e9102",
+  "size": 485251
  },
  "3330000": {
   "bbox": [
@@ -524,8 +524,8 @@
   "model": 25,
   "model_ok": "20260929",
   "name": "부산광역시 해운대구",
-  "sha": "83c2073db8b0db1ae8440a62970ce43ee61a4eff7fb4dbdbd58b1a4ac5d87237",
-  "size": 919747
+  "sha": "562a5b82e6258ae85462e3835d523793a1023c0e77d9adeb522a6515657843a5",
+  "size": 931907
  },
  "3340000": {
   "bbox": [
