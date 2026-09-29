@@ -541,8 +541,8 @@
   "model": 6,
   "model_ok": "20260929",
   "name": "부산광역시 사하구",
-  "sha": "c42328895580e4493abd9e1ef6d8f5d1afcf7386774aba53ae67309e2f06c051",
-  "size": 596198
+  "sha": "a87df7d16a128f68ffd2d6b3d04c506539dcadde7c71ea817e6592a457cf0605",
+  "size": 602769
  },
  "3350000": {
   "bbox": [
@@ -558,8 +558,8 @@
   "model": 61,
   "model_ok": "20260929",
   "name": "부산광역시 금정구",
-  "sha": "aedc93c0dfb28493a0c31b58a69471ef6d0dfef5dde1645800fc9d919150f689",
-  "size": 551004
+  "sha": "1b6fd8d8827a47a72a7928b99639469878835c68598a777a3b04d5468c3c74d0",
+  "size": 560842
  },
  "3360000": {
   "bbox": [
