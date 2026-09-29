@@ -11,8 +11,8 @@
   "last": "20260928",
   "model": 0,
   "name": "서울특별시 종로구",
-  "sha": "a39115125b0a280bd45e32b655b6b09ff03aaee8c92e80754f22a93f30d0e90d",
-  "size": 1277326
+  "sha": "0ddeeea17fcfc4e0e18d238ca15837bbe1cb14e3f66bae54962068e3d3993976",
+  "size": 1296868
  },
  "3010000": {
   "bbox": [
@@ -643,8 +643,8 @@
   "model": 16,
   "model_ok": "20260929",
   "name": "부산광역시 기장군",
-  "sha": "a411bd06d048adc31df8f7a4c08a03a616364c7a567bae7b079a64e9294fd712",
-  "size": 515109
+  "sha": "294b5827510231ecd2e90a69a4ab524a6faa235556b75ceba0ee47ddc9590cd4",
+  "size": 519223
  },
  "3410000": {
   "bbox": [
