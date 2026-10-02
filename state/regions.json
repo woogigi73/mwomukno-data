@@ -808,8 +808,8 @@
   "last": "20260929",
   "model": 0,
   "name": "인천광역시 부평구",
-  "sha": "054295938e15899051ecf9e51fb6d7be3a02fa75542d31600dfb951249cbaeb9",
-  "size": 974036
+  "sha": "8b02530e76859980b610dbd50e52ccd596e43ce268f3c4afd8273a8230fc5dec",
+  "size": 977772
  },
  "3550000": {
   "bbox": [
@@ -823,8 +823,8 @@
   "last": "20260929",
   "model": 0,
   "name": "인천광역시 계양구",
-  "sha": "f24ad322afedc5b322299d44539f5369da8bd5990aafe8ad0a2bedeedb8ec6e3",
-  "size": 524304
+  "sha": "313a885079460cca63b214040693bb2bb658f1b3639c3cdd47f4a7a502fd5edd",
+  "size": 540799
  },
  "3565000": {
   "bbox": [
@@ -838,8 +838,8 @@
   "last": "20260929",
   "model": 0,
   "name": "인천광역시 검단구",
-  "sha": "4d8f6dcd5d4da53b3b99c0539a39c33c26c6fe0be91f026bcaaa2aec967bb876",
-  "size": 14740
+  "sha": "3722dd24c8ea62cd1d74358dc96472cd9a845e63b309e9865620e3a2f58d8ddc",
+  "size": 14999
  },
  "3570000": {
   "bbox": [
@@ -853,8 +853,8 @@
   "last": "20260929",
   "model": 0,
   "name": "인천광역시 강화군",
-  "sha": "d961b9d65516bc6cf56496ee22e2ec22e3b46ede174cec2c41ef7cc507ab3cc1",
-  "size": 299060
+  "sha": "a1c99feff5b616744d8fc1081eaee1e9989b63481c4931e008a2f3ccc8847824",
+  "size": 303770
  },
  "3580000": {
   "bbox": [
