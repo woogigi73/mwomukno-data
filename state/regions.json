@@ -853,8 +853,8 @@
   "last": "20260929",
   "model": 0,
   "name": "인천광역시 강화군",
-  "sha": "a1c99feff5b616744d8fc1081eaee1e9989b63481c4931e008a2f3ccc8847824",
-  "size": 303770
+  "sha": "69fc015b49dc2dfbacae1e5b60fd9ba3853b434975b1784570c6ba17764ee9d5",
+  "size": 308348
  },
  "3580000": {
   "bbox": [
@@ -868,8 +868,8 @@
   "last": "20260929",
   "model": 0,
   "name": "인천광역시 옹진군",
-  "sha": "c4c97b8ab9367e096b58d1bcb9f0d351d04bbf3cf2227384e3ff2a7a38ebe4b9",
-  "size": 101192
+  "sha": "4dc557e1588b1ff9e91ae44fb90f775d17801c68b5f372ca10ad9247bd550bc3",
+  "size": 103043
  },
  "3640000": {
   "bbox": [
@@ -883,8 +883,8 @@
   "last": "20260929",
   "model": 0,
   "name": "대전광역시 동구",
-  "sha": "87b400632732c2133e6deef51eb618a5cdce29128d7e4f9c36e5a0d0d114c964",
-  "size": 521488
+  "sha": "419da37140d27df38c0f870188bcf4a81d0ad3293ecf0c00f95087b450a74a34",
+  "size": 531508
  },
  "3650000": {
   "bbox": [
