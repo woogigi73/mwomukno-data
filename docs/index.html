@@ -2,57 +2,91 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
-<meta name="description" content="뭐 먹노? 도보 거리 안의 실제 식당을 룰렛, 사다리, 해적 룰렛, 경마로 골라 주는 앱">
+<meta name="description" content="걸어갈 수 있는 진짜 식당을 룰렛·사다리·해적 룰렛·경마로 골라 주는 친구·동료용 식당 고르기">
+<meta name="theme-color" content="#FFC21A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="뭐 먹노?">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css?v=2">
 <title>뭐 먹노?</title>
-<style>
-:root{--bg:#E8ECF0;--card:#fff;--ink:#18202C;--muted:#5A6676;--line:#CBD3DC;--accent:#FFC21A;--accent-ink:#1E1600}
-@media (prefers-color-scheme:dark){:root{--bg:#10141A;--card:#1A2029;--ink:#E9EEF4;--muted:#98A4B4;--line:#2C3542;color-scheme:dark}}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
-main{max-width:760px;margin:0 auto;padding:40px 16px 64px;display:grid;gap:24px}
-h1{font-size:44px;line-height:1.1;margin:0;letter-spacing:-1px}
-h1 b{background:var(--accent);color:var(--accent-ink);padding:0 8px;border-radius:10px}
-.lead{font-size:18px;color:var(--muted);margin:0;max-width:34em}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-.card h2{font-size:16px;margin:0 0 4px}
-.card p{margin:0;color:var(--muted);font-size:14px}
-.status{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted)}
-.status b{color:var(--ink)}
-footer{font-size:14px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
-a{color:inherit;text-underline-offset:3px}
-</style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>뭐 먹<b>노?</b></h1>
+<div class="app" id="app">
+  <header class="top">
+    <h1 class="brand">뭐 먹<b>노?</b></h1>
+    <button class="area" id="areaBtn" aria-label="지역 고르기">지역 선택</button>
+    <button class="smallbtn" id="searchBtn">검색</button>
+    <button class="smallbtn" id="setBtn" aria-label="설정">⋯</button>
   </header>
-  <p class="lead">점심, 저녁, 1·2·3차까지. 지금 있는 곳에서 걸어갈 수 있는 실제 식당을 모아 게임으로 정해 드려요.</p>
-  <section class="grid" aria-label="특징">
-    <div class="card"><h2>도보 반경</h2><p>5·10·15·20분 거리 안의 영업 중인 식당만 후보로 모아요.</p></div>
-    <div class="card"><h2>게임으로 결정</h2><p>룰렛, 사다리, 해적 룰렛, 경마, 식당 월드컵, 흔들어 뽑기.</p></div>
-    <div class="card"><h2>이번 주 먹은 곳 빼기</h2><p>일주일 안에 간 곳은 자동으로 빠져요. 신규 오픈, 모범음식점(부산)도 표시해요.</p></div>
-    <div class="card"><h2>개인정보 수집 없음</h2><p>로그인 없이 쓰고, 위치는 휴대폰 안에서만 계산해요.</p></div>
+
+  <section class="mapwrap" id="mapwrap">
+    <canvas id="map" role="img" aria-label="도보 반경 지도"></canvas>
+    <div class="maptop" id="journey"></div>
+    <button class="locbtn" id="locBtn" aria-label="내 위치로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+    </button>
+    <div class="status" id="status" hidden></div>
+    <div class="mapbot">
+      <div class="radius" id="radius" role="group" aria-label="도보 반경"></div>
+      <div class="count" id="count">후보 0곳</div>
+    </div>
   </section>
-  <p class="status" id="status">데이터 상태를 불러오는 중…</p>
-  <footer>
-    <a href="privacy.html">개인정보처리방침</a>
-    <span>데이터: 행정안전부 지방행정 인허가 공공데이터, 카카오맵</span>
-  </footer>
-</main>
-<script>
-(function(){
-  var el=document.getElementById('status');
-  fetch('v1/manifest.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(m){
-    var n=0,c=0;(m.regions||[]).forEach(function(x){n++;c+=x.cnt||0});
-    el.textContent='';
-    var b=document.createElement('b');b.textContent=c.toLocaleString('ko-KR')+'곳';
-    el.append('현재 ',String(n),'개 시·군·구, ',b,'의 식당 데이터 · 마지막 갱신 ',String(m.generated||'').slice(0,10));
-  }).catch(function(){el.textContent='데이터를 준비하고 있어요. 매일 새벽 자동으로 갱신됩니다.'});
-})();
-</script>
+
+  <section class="panel" id="panel">
+    <div class="row">
+      <div class="seg" role="group" aria-label="식사 시간"><button id="mLunch">점심</button><button id="mDinner">저녁</button></div>
+      <button class="tog meal" id="tMeal"><i></i>밥</button>
+      <button class="tog drink" id="tDrink"><i></i>술</button>
+      <button class="tog cafe" id="tCafe"><i></i>카페</button>
+    </div>
+    <div class="row">
+      <div class="seg" role="group" aria-label="차수" id="rounds"></div>
+      <button class="check" id="tExcl"><span class="box">✓</span>이번 주 간 곳 빼기</button>
+    </div>
+    <div class="cats" id="cats" role="group" aria-label="종류"></div>
+    <div class="next" id="next" hidden></div>
+    <div class="games" id="games"></div>
+  </section>
+</div>
+
+<div class="overlay" id="game" hidden>
+  <div class="ov-head">
+    <div><div class="eyebrow" id="gHead"></div><h2 id="gTitle"></h2></div>
+    <span class="sp"></span>
+    <button class="btn sm" id="gClose">닫기</button>
+  </div>
+  <div class="ov-body">
+    <div class="stage" id="stage"></div>
+    <div class="result" id="result" hidden></div>
+  </div>
+</div>
+
+<div id="sheetRoot"></div>
+<div id="bannerRoot"></div>
+
+<div class="onb" id="onb" hidden>
+  <div class="onb-in">
+    <h1>뭐 먹<b>노?</b></h1>
+    <p>걸어갈 수 있는 진짜 식당 중에서<br>게임으로 정해 드려요</p>
+    <ul>
+      <li>도보 5·10·15·20분 안의 영업 중인 식당</li>
+      <li>룰렛·사다리·해적 룰렛·경마·월드컵·폭탄 돌리기</li>
+      <li>1차 → 2차 → 3차, 이번 주 간 곳은 자동 제외</li>
+      <li>위치는 이 폰 안에서만 쓰고 어디에도 보내지 않아요</li>
+    </ul>
+    <button class="btn primary big" id="onbLoc">내 위치로 시작하기</button>
+    <button class="btn" id="onbPick">지역 직접 고르기</button>
+  </div>
+</div>
+
+<noscript><p>자바스크립트를 켜야 쓸 수 있어요.</p></noscript>
+<script src="app.js?v=2" defer></script>
 </body>
 </html>

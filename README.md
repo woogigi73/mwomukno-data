@@ -6,7 +6,7 @@
   하루 호출 한도 안에서 나눠 처리해 전국이 약 1주일 주기로 갱신됩니다(부산 우선).
 - 부산 지역은 모범음식점 표시, 전 지역은 카카오맵 장소 연결(ID만 저장)을 붙입니다.
 - 결과 요약: `reports/last_run.md`, 연결 점검: `reports/probe.md`
-- 사이트: https://woogigi73.github.io/mwomukno-data/ (개인정보처리방침: `privacy.html`)
+- **뭐 먹노? 웹 앱**: https://woogigi73.github.io/mwomukno-data/ (친구·동료용, 홈 화면에 추가해서 사용. 개인정보처리방침: `privacy.html`)
 
 ## 보안
 - 키는 저장소 비밀 설정(Secrets)에만 있고 코드·로그·파일에 남지 않습니다(로그 마스킹 포함).

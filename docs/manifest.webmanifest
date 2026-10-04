@@ -1,0 +1,17 @@
+{
+  "name": "뭐 먹노?",
+  "short_name": "뭐 먹노?",
+  "description": "걸어갈 수 있는 진짜 식당을 게임으로 골라 주는 식당 고르기",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#E8ECF0",
+  "theme_color": "#FFC21A",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
