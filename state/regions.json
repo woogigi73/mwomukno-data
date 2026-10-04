@@ -36,13 +36,13 @@
    37555050,
    127012885
   ],
-  "count": 5600,
+  "count": 5632,
   "estimate": 5115,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
   "name": "서울특별시 용산구",
-  "sha": "b5613d19a16a704a47791f565d11067d13ce4697023ba0de226824eb614ad9db",
-  "size": 1054633
+  "sha": "ca485a6f728a495b02de89e736869001bf9b0cc20b6019e7acd0cd7588922c9a",
+  "size": 1061506
  },
  "3030000": {
   "bbox": [
@@ -51,13 +51,13 @@
    37571643,
    127072093
   ],
-  "count": 4399,
+  "count": 4408,
   "estimate": 3935,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
   "name": "서울특별시 성동구",
-  "sha": "2c1236f4bfd28be6b6ef4329f92a1cba0a92e1f824bab3e3e8bac85b8fc6ac52",
-  "size": 835950
+  "sha": "11f173888685202f3d17094b77a6ea7d5ca567bc1dc93c0ab73813f2a130d3fc",
+  "size": 837855
  },
  "3040000": {
   "bbox": [
@@ -66,13 +66,13 @@
    37571643,
    127111293
   ],
-  "count": 4781,
+  "count": 4736,
   "estimate": 4271,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
   "name": "서울특별시 광진구",
-  "sha": "3a78376ae1b72d7c4721b5f9b1e525508687e10f1d744ff08190045369215d03",
-  "size": 872492
+  "sha": "8c79fd4082e09db6bef2343d32e84ffdd8282829bdb9b15edcdd1578dca6db52",
+  "size": 864647
  },
  "3050000": {
   "bbox": [
@@ -81,13 +81,13 @@
    37605042,
    127076652
   ],
-  "count": 4350,
+  "count": 4347,
   "estimate": 3896,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
   "name": "서울특별시 동대문구",
-  "sha": "45579107e46fa5da4e2237839227bcc43ade567df7984893db98f247950b6176",
-  "size": 811628
+  "sha": "83c1de04673e4bf14f317a9c3303e34846eecf8b9f26731730b267c2409c9f17",
+  "size": 811057
  },
  "3060000": {
   "bbox": [
@@ -96,13 +96,13 @@
    37620015,
    127114609
   ],
-  "count": 3804,
+  "count": 3806,
   "estimate": 3450,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
   "name": "서울특별시 중랑구",
-  "sha": "29b4ef005e34d1b74232d8565d33a74a342e55c63259bac9a3c7e599a31559ce",
-  "size": 695791
+  "sha": "873301aeeb566927da53649c19a044c29f0340bc60a1e5f2dc047856945b7efd",
+  "size": 696056
  },
  "3070000": {
   "bbox": [
@@ -111,13 +111,13 @@
    37652404,
    127068581
   ],
-  "count": 4336,
+  "count": 4335,
   "estimate": 3731,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
   "name": "서울특별시 성북구",
-  "sha": "c808db2f6caee44134a0b688093549683125c9f248b1a431c9e88dfe50d10520",
-  "size": 805025
+  "sha": "37ba6499c4f4277f3c9eb003b31728628151d173b1cee1910ca2e7071b8b6e28",
+  "size": 804921
  },
  "3080000": {
   "bbox": [
@@ -126,13 +126,13 @@
    37674523,
    127046916
   ],
-  "count": 3480,
+  "count": 3466,
   "estimate": 3220,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
   "name": "서울특별시 강북구",
-  "sha": "040c9162cbd89db2254df9e1d77d6454ddd955754a89367b788fac1301097ee6",
-  "size": 625393
+  "sha": "1b3dad2b6653bfe4506f6e4f85327b3e942f53bdcefdaf926656b6c329ad66a8",
+  "size": 623062
  },
  "3090000": {
   "bbox": [
@@ -382,14 +382,14 @@
    129042106
   ],
   "busan": true,
-  "count": 2340,
+  "count": 2342,
   "estimate": 2157,
-  "last": "20260929",
+  "last": "20261005",
   "model": 17,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 중구",
-  "sha": "930f9ca6b8ce4e64300ec23f9ee9d037a8a589c5a7dd9a12aed9d416d0c8bcf8",
-  "size": 426574
+  "sha": "c2fbbcb0a17be7d5c8c4259c0f9b156f30f847881a8501500935f7f91fead838",
+  "size": 426951
  },
  "3260000": {
   "bbox": [
@@ -399,14 +399,14 @@
    129026351
   ],
   "busan": true,
-  "count": 1289,
+  "count": 1287,
   "estimate": 1125,
-  "last": "20260929",
+  "last": "20261005",
   "model": 9,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 서구",
-  "sha": "098e6e273415299c60fff94264f2ca3fb95f852346b1dd150a672958d60bc35a",
-  "size": 242582
+  "sha": "1f398be295d4d553dd97721130f42ad961da345f4f914fda01c0158b35201df0",
+  "size": 242178
  },
  "3270000": {
   "bbox": [
@@ -416,14 +416,14 @@
    129065361
   ],
   "busan": true,
-  "count": 1508,
+  "count": 1504,
   "estimate": 1337,
-  "last": "20260929",
+  "last": "20261005",
   "model": 31,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 동구",
-  "sha": "a468593cedbe3777f5fcbab4c6eba00498ccd0de5b9d6592fecd119b61d24954",
-  "size": 271714
+  "sha": "03e08afc37955abe65e4605de02acc1766f5b55f5e9ca4727cfa8a137edbc43b",
+  "size": 271000
  },
  "3280000": {
   "bbox": [
@@ -433,14 +433,14 @@
    129090372
   ],
   "busan": true,
-  "count": 1389,
+  "count": 1385,
   "estimate": 1225,
-  "last": "20260929",
+  "last": "20261005",
   "model": 5,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 영도구",
-  "sha": "5c607844c99eb80e9e856fd01bee5d554cff8327b270162d4876eb0f8ce8c7e5",
-  "size": 253529
+  "sha": "ea46a7bcc0c6be39e41096b31b2cd413d113b1d533dd1cade0251d45ab198ad7",
+  "size": 252804
  },
  "3290000": {
   "bbox": [
@@ -450,14 +450,14 @@
    129079204
   ],
   "busan": true,
-  "count": 6167,
+  "count": 6172,
   "estimate": 5556,
-  "last": "20260929",
+  "last": "20261005",
   "model": 65,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 부산진구",
-  "sha": "c57b756271848772a60eec6313ab5207d019323c0b11addcd93a318aa40d1458",
-  "size": 1159764
+  "sha": "d6552601bd3e0d54f540907aed6cbed185737eefefae2bfa3137856b0d51f206",
+  "size": 1160450
  },
  "3300000": {
   "bbox": [
@@ -467,14 +467,14 @@
    129113889
   ],
   "busan": true,
-  "count": 3499,
+  "count": 3507,
   "estimate": 3087,
-  "last": "20260929",
+  "last": "20261005",
   "model": 16,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 동래구",
-  "sha": "fb78a6ca920ca77b71717d536b72d131342b9ae9e8743a59f19f2c6813edbee8",
-  "size": 644003
+  "sha": "37e9fbf2ac4ed013fc2d77a159494ddd87f474a993e627dded0b946466ffb780",
+  "size": 645753
  },
  "3310000": {
   "bbox": [
@@ -484,14 +484,14 @@
    129123031
   ],
   "busan": true,
-  "count": 2998,
+  "count": 2993,
   "estimate": 2687,
-  "last": "20260929",
+  "last": "20261005",
   "model": 6,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 남구",
-  "sha": "12ab0c8ba85daf8c70e8a8b9bfa81b5402c08c39d770b66e53e827674db85728",
-  "size": 550731
+  "sha": "ae7ed2ac84acfea276fdd0e52f7fab1cf8f12914fa3ec162f24826dbe935d800",
+  "size": 549841
  },
  "3320000": {
   "bbox": [
@@ -501,31 +501,31 @@
    129049922
   ],
   "busan": true,
-  "count": 2636,
+  "count": 2635,
   "estimate": 2373,
-  "last": "20260929",
+  "last": "20261005",
   "model": 0,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 북구",
-  "sha": "d3d3ad2fbf99b958fbf4cfca7e43918041cb734b002d2ead85f5f983484e9102",
-  "size": 485251
+  "sha": "bf445fcd840f996afaec7d03161a65c2159f17b5e8de6ded98db14c52ac12466",
+  "size": 484939
  },
  "3330000": {
   "bbox": [
    35152852,
    129112137,
-   35235313,
+   35237896,
    129206585
   ],
   "busan": true,
-  "count": 4818,
+  "count": 4838,
   "estimate": 4320,
-  "last": "20260929",
+  "last": "20261005",
   "model": 25,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 해운대구",
-  "sha": "5f9483ccbe5e605f2f5a44e994df3a53a4bdb63b953bdf149b8737669dfc4402",
-  "size": 945274
+  "sha": "68dfe709656cc292051a7e1a035c6ba0222b15419794ee36298ac812798512b1",
+  "size": 948331
  },
  "3340000": {
   "bbox": [
@@ -535,14 +535,14 @@
    129011615
   ],
   "busan": true,
-  "count": 3316,
+  "count": 3311,
   "estimate": 3058,
-  "last": "20260929",
+  "last": "20261005",
   "model": 6,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 사하구",
-  "sha": "a87df7d16a128f68ffd2d6b3d04c506539dcadde7c71ea817e6592a457cf0605",
-  "size": 602769
+  "sha": "0a42155ec6b0c256fd49a3276a99e9e242b4a4bb5600da8afa48cca4ee317428",
+  "size": 601786
  },
  "3350000": {
   "bbox": [
@@ -552,14 +552,14 @@
    129127878
   ],
   "busan": true,
-  "count": 3187,
+  "count": 3179,
   "estimate": 2831,
-  "last": "20260929",
+  "last": "20261005",
   "model": 61,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 금정구",
-  "sha": "63a5a9c8b52d1f19129f5e90b5eeeaacf868e8fe112d72ce51bf86a9f3e3965a",
-  "size": 568297
+  "sha": "4b884b14e0eb45b90eac078f898889d5b620ac75c3dcdd0b47a3940ea7030966",
+  "size": 566988
  },
  "3360000": {
   "bbox": [
@@ -569,14 +569,14 @@
    128991368
   ],
   "busan": true,
-  "count": 2382,
+  "count": 2380,
   "estimate": 2039,
-  "last": "20260929",
+  "last": "20261005",
   "model": 1,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 강서구",
-  "sha": "e6033ebae3000773821198be0b007bc518b9542464f7dd3b3290c38b1dfbc0ed",
-  "size": 466630
+  "sha": "0ca9b088cab094cf74beb794949b4baa3fc35c3a648885ced72225288af040f0",
+  "size": 466238
  },
  "3370000": {
   "bbox": [
@@ -586,14 +586,14 @@
    129113848
   ],
   "busan": true,
-  "count": 2682,
+  "count": 2662,
   "estimate": 2406,
-  "last": "20260929",
+  "last": "20261005",
   "model": 22,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 연제구",
-  "sha": "368d7ca32fb72ab2fde7feffb610a12a692849a18ed1dcbb4300c004a2e1419a",
-  "size": 500160
+  "sha": "2c127d6c976d32150c866298bd67a197f67811005670ed5b71d1147af8e76ef2",
+  "size": 496459
  },
  "3380000": {
   "bbox": [
@@ -603,14 +603,14 @@
    129134458
   ],
   "busan": true,
-  "count": 3259,
+  "count": 3257,
   "estimate": 2864,
-  "last": "20260929",
+  "last": "20261005",
   "model": 14,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 수영구",
-  "sha": "276c3267f25957337fed9f193cdc118ac191671473771732e6fa955a681505a3",
-  "size": 609192
+  "sha": "6aba5562c6e91995d78c6fd845ef11ca6fb95aebc480bdc95ab242a1ab813b5c",
+  "size": 608859
  },
  "3390000": {
   "bbox": [
@@ -620,14 +620,14 @@
    129016334
   ],
   "busan": true,
-  "count": 2716,
+  "count": 2729,
   "estimate": 2441,
-  "last": "20260929",
+  "last": "20261005",
   "model": 45,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 사상구",
-  "sha": "701a59d1975813796425f0e2d8d471c9721dca99b477b201b513016feea9a15f",
-  "size": 493107
+  "sha": "6dd9aa704d34ba4512132f09398297b560789117109bd4ebeb52e8d68dc689e2",
+  "size": 495250
  },
  "3400000": {
   "bbox": [
@@ -637,14 +637,14 @@
    129290358
   ],
   "busan": true,
-  "count": 2838,
+  "count": 2835,
   "estimate": 2591,
-  "last": "20260929",
+  "last": "20261005",
   "model": 16,
-  "model_ok": "20260929",
+  "model_ok": "20261005",
   "name": "부산광역시 기장군",
-  "sha": "294b5827510231ecd2e90a69a4ab524a6faa235556b75ceba0ee47ddc9590cd4",
-  "size": 519223
+  "sha": "9b2a55e6e63d6da600c92d618fed9dcf7060ebb55d887cea5c3e4343e8ce1042",
+  "size": 518738
  },
  "3410000": {
   "bbox": [
