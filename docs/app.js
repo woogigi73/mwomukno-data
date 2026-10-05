@@ -576,52 +576,95 @@
   function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; }
   $('#gClose').onclick = closeGame;
 
+  const FX = window.MMFX || { sfx: new Proxy({}, { get: () => () => {} }), cannons() {}, burst() {}, sparkle() {}, smoke() {}, dust() {}, shake() {}, flash() {}, stamp() {}, countdown() {}, popText() {} };
+  const sfx = FX.sfx;
+  const rectOf = (el) => el.getBoundingClientRect();
+
   function roulette(c) {
     const n = c.length, seg = Math.PI * 2 / n;
-    const size = Math.floor(Math.max(200, Math.min(stage.clientWidth - 8, stage.clientHeight - 90, 420)));
-    stage.innerHTML = '<div class="wheel"><canvas id="wc"></canvas><div class="ptr"></div></div><button class="btn primary big" id="spin">돌리기</button>';
-    const cv = $('#wc'), dpr = Math.min(2, devicePixelRatio || 1);
+    const size = Math.floor(Math.max(220, Math.min(stage.clientWidth - 8, stage.clientHeight - 96, 440)));
+    stage.innerHTML = '<div class="wheel" id="wheel"><canvas id="wc"></canvas><div class="ptr" id="ptr"></div></div><button class="btn primary big" id="spin">돌리기</button>';
+    const cv = $('#wc'), ptr = $('#ptr'), dpr = Math.min(2, devicePixelRatio || 1);
     cv.width = cv.height = size * dpr; cv.style.width = cv.style.height = size + 'px';
     const g = cv.getContext('2d'); g.scale(dpr, dpr);
-    const ink = css('--ink'), surf = css('--surface'), font = css('--font');
-    let rot = -Math.PI / 2 - seg / 2, spinning = false, spins = 0;
-    function draw() {
-      const r = size / 2 - 2, cc = size / 2;
+    const ink = css('--ink'), font = css('--font');
+    let rot = -Math.PI / 2 - seg / 2, spinning = false, highlight = -1, glow = 0;
+    const R = size / 2, rim = Math.max(14, size * 0.055), rIn = R - rim;
+    function draw(t) {
+      const cc = R;
       g.clearRect(0, 0, size, size);
+      // 금색 테두리
+      const rg = g.createRadialGradient(cc, cc, rIn, cc, cc, R);
+      rg.addColorStop(0, '#8a5a00'); rg.addColorStop(0.5, '#ffd54a'); rg.addColorStop(1, '#a86f00');
+      g.beginPath(); g.arc(cc, cc, R - 1, 0, Math.PI * 2); g.fillStyle = rg; g.fill();
+      // 칸
       for (let i = 0; i < n; i++) {
-        g.beginPath(); g.moveTo(cc, cc); g.arc(cc, cc, r, rot + i * seg, rot + (i + 1) * seg); g.closePath();
-        g.fillStyle = COLORS[i % COLORS.length]; g.fill(); g.strokeStyle = surf; g.lineWidth = 2; g.stroke();
+        g.beginPath(); g.moveTo(cc, cc); g.arc(cc, cc, rIn, rot + i * seg, rot + (i + 1) * seg); g.closePath();
+        g.fillStyle = COLORS[i % COLORS.length]; g.fill();
+        if (highlight >= 0 && i !== highlight) { g.fillStyle = 'rgba(0,0,0,.55)'; g.fill(); }
+        if (i === highlight) { g.fillStyle = 'rgba(255,255,255,' + (0.18 + 0.22 * glow) + ')'; g.fill(); }
+        g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 2; g.stroke();
         const mid = rot + (i + 0.5) * seg;
         const norm = ((mid % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
         const flip = norm > Math.PI / 2 && norm < Math.PI * 1.5;
         g.save(); g.translate(cc, cc); g.rotate(flip ? mid + Math.PI : mid);
-        g.fillStyle = '#fff'; g.font = '700 ' + Math.round(Math.max(12, Math.min(16, size / 25))) + 'px ' + font;
-        g.textBaseline = 'middle';
+        g.fillStyle = '#fff'; g.font = '800 ' + Math.round(Math.max(12, Math.min(17, size / 24))) + 'px ' + font;
+        g.textBaseline = 'middle'; g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 3;
         const nm = c[i].r.name.length > 9 ? c[i].r.name.slice(0, 8) + '…' : c[i].r.name;
-        if (flip) { g.textAlign = 'left'; g.fillText(nm, -r + 14, 0); } else { g.textAlign = 'right'; g.fillText(nm, r - 14, 0); }
+        if (flip) { g.textAlign = 'left'; g.fillText(nm, -rIn + 14, 0); } else { g.textAlign = 'right'; g.fillText(nm, rIn - 14, 0); }
         g.restore();
       }
-      g.beginPath(); g.arc(cc, cc, size * 0.09, 0, Math.PI * 2); g.fillStyle = ink; g.fill();
-      g.beginPath(); g.arc(cc, cc, size * 0.04, 0, Math.PI * 2); g.fillStyle = '#FFC21A'; g.fill();
+      // 입체감
+      const sh = g.createRadialGradient(cc - rIn * 0.3, cc - rIn * 0.35, rIn * 0.1, cc, cc, rIn);
+      sh.addColorStop(0, 'rgba(255,255,255,.22)'); sh.addColorStop(0.6, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,.22)');
+      g.beginPath(); g.arc(cc, cc, rIn, 0, Math.PI * 2); g.fillStyle = sh; g.fill();
+      // 전구
+      const bulbs = 24, on = Math.floor((t || 0) / (spinning ? 90 : 380)) % 2;
+      for (let b = 0; b < bulbs; b++) {
+        const a = b / bulbs * Math.PI * 2, x = cc + Math.cos(a) * (R - rim / 2), y = cc + Math.sin(a) * (R - rim / 2);
+        const lit = (b % 2) === on;
+        g.beginPath(); g.arc(x, y, rim * 0.22, 0, Math.PI * 2);
+        g.fillStyle = lit ? '#fffbe0' : '#a3740a'; g.shadowColor = lit ? '#fff3a0' : 'transparent'; g.shadowBlur = lit ? 8 : 0; g.fill();
+      }
+      g.shadowBlur = 0;
+      // 가운데
+      g.beginPath(); g.arc(cc, cc, size * 0.1, 0, Math.PI * 2); g.fillStyle = ink; g.fill();
+      g.beginPath(); g.arc(cc, cc, size * 0.045, 0, Math.PI * 2); g.fillStyle = '#FFC21A'; g.fill();
     }
-    draw();
+    // 대기 중에도 전구가 깜빡이게
+    const key0 = gameKey;
+    (function idle(t) { if (key0 !== gameKey) return; if (!spinning) draw(t); rafId = requestAnimationFrame(idle); })(performance.now());
+    function flap() { if (!FX.reduce && ptr.animate) ptr.animate([{ transform: 'translateX(-50%) rotate(0)' }, { transform: 'translateX(-50%) rotate(-24deg)' }, { transform: 'translateX(-50%) rotate(0)' }], { duration: 110 }); }
     function spin() {
       if (spinning) return;
-      spinning = true; $('#spin').disabled = true; result.hidden = true;
+      spinning = true; highlight = -1; $('#spin').disabled = true; result.hidden = true;
+      sfx.whoosh();
       const win = Math.floor(Math.random() * n), jit = (Math.random() - 0.5) * seg * 0.7;
       let target = -Math.PI / 2 - (win + 0.5) * seg + jit;
-      const turns = reduce ? 1 : 6 + Math.floor(Math.random() * 2);
+      const turns = reduce ? 1 : 7 + Math.floor(Math.random() * 3);
       while (target < rot + turns * Math.PI * 2) target += Math.PI * 2;
-      const from = rot, dur = reduce ? 500 : 4300, t0 = performance.now(), k = gameKey;
+      const from = rot, dur = reduce ? 500 : 5200, t0 = performance.now(), k = gameKey;
       let last = -1;
+      cancelAnimationFrame(rafId);
       (function f(t) {
         if (k !== gameKey) return;
-        const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4);
-        rot = from + (target - from) * e; draw();
+        const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4.2);
+        rot = from + (target - from) * e; draw(t);
         const cur = Math.floor((((-Math.PI / 2 - rot) % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2) / seg);
-        if (cur !== last) { last = cur; if (p > 0.55) buzz(6); }
-        if (p < 1) rafId = requestAnimationFrame(f);
-        else { spinning = false; spins++; const b = $('#spin'); b.disabled = false; b.textContent = '한 번 더 돌리기'; showResult(c[win]); }
+        if (cur !== last) { last = cur; sfx.tick(); flap(); if (p > 0.6) buzz(5); }
+        if (p < 1) { rafId = requestAnimationFrame(f); return; }
+        // 멈춘 칸을 반짝인 뒤 발표
+        highlight = win;
+        const t1 = performance.now();
+        (function glowLoop(tt) {
+          if (k !== gameKey) return;
+          const q = (tt - t1) / 900;
+          glow = 0.5 + 0.5 * Math.sin(q * Math.PI * 4); draw(tt);
+          if (q < 1 && !reduce) { rafId = requestAnimationFrame(glowLoop); return; }
+          spinning = false; const b = $('#spin'); b.disabled = false; b.textContent = '한 번 더 돌리기';
+          showResult(c[win], $('#wheel'));
+          (function idle2(t2) { if (k !== gameKey || spinning) return; draw(t2); rafId = requestAnimationFrame(idle2); })(performance.now());
+        })(t1);
       })(t0);
     }
     $('#spin').onclick = spin; cv.onclick = spin;
@@ -652,44 +695,56 @@
     for (let i = 0; i < n; i++) lines += '<line x1="' + X(i) + '" y1="0" x2="' + X(i) + '" y2="' + H + '" vector-effect="non-scaling-stroke"/>';
     for (const r of rungs) lines += '<line x1="' + X(r.g) + '" y1="' + r.y + '" x2="' + X(r.g + 1) + '" y2="' + r.y + '" vector-effect="non-scaling-stroke"/>';
     const cols = 'grid-template-columns:repeat(' + n + ',1fr)';
-    stage.innerHTML = '<p class="hint">번호 하나를 누르면 사다리를 타고 내려가요</p><div class="ladder">' +
+    stage.innerHTML = '<p class="hint" id="lh">번호 하나를 누르면 사다리를 타고 내려가요</p><div class="ladder">' +
       '<div class="lrow" id="ltop"></div>' +
       '<svg id="lsvg" viewBox="0 0 ' + n * 100 + ' ' + H + '" preserveAspectRatio="none"><g stroke="' + esc(css('--muted')) + '" stroke-width="5" stroke-linecap="round">' + lines +
-      '</g><polyline id="lpath" fill="none" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>' +
+      '</g><polyline id="lglow" fill="none" stroke-width="18" stroke-opacity=".35" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>' +
+      '<polyline id="lpath" fill="none" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>' +
       '<div class="lrow" id="lbot"></div></div>';
-    const top = $('#ltop'), bot = $('#lbot');
+    const top = $('#ltop'), bot = $('#lbot'), svg = $('#lsvg');
     top.style.cssText = cols; bot.style.cssText = cols;
     c.forEach((_, i) => {
-      const b = document.createElement('button'); b.textContent = String(i + 1); b.style.background = COLORS[i % COLORS.length]; b.dataset.l = i; top.append(b);
+      const b = document.createElement('button'); b.textContent = String(i + 1); b.style.background = COLORS[i % COLORS.length]; b.dataset.l = i;
+      b.style.animationDelay = (i * 0.08) + 's'; b.className = 'bounce'; top.append(b);
       const d = document.createElement('div'); d.className = 'lab'; d.textContent = '?'; bot.append(d);
     });
     top.onclick = (e) => {
       const b = e.target.closest('[data-l]'); if (!b || b.disabled) return;
-      [...top.children].forEach((x) => { x.disabled = x !== b; });
+      [...top.children].forEach((x) => { x.disabled = x !== b; x.classList.remove('bounce'); });
       b.disabled = true;
-      const i = +b.dataset.l, { pts, end } = trace(i), pl = $('#lpath');
-      pl.setAttribute('stroke', COLORS[i % COLORS.length]);
+      $('#lh').textContent = '두근두근…';
+      sfx.drum(14);
+      const i = +b.dataset.l, { pts, end } = trace(i), pl = $('#lpath'), gl = $('#lglow');
+      const color = COLORS[i % COLORS.length];
+      pl.setAttribute('stroke', color); gl.setAttribute('stroke', color);
       const segs = []; let total = 0;
       for (let k = 1; k < pts.length; k++) { const l = Math.hypot(pts[k][0] - pts[k - 1][0], (pts[k][1] - pts[k - 1][1]) * 1.6); segs.push(l); total += l; }
-      const dur = reduce ? 300 : 2600, t0 = performance.now(), key = gameKey;
+      const dur = reduce ? 300 : 3200, t0 = performance.now(), key = gameKey;
+      let lastCorner = 0, frame = 0;
       (function f(t) {
         if (key !== gameKey) return;
         const p = Math.min(1, (t - t0) / dur);
         let d = total * (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
-        const out = [pts[0]];
+        const out = [pts[0]]; let corners = 0;
         for (let k = 1; k < pts.length; k++) {
-          if (d >= segs[k - 1]) { out.push(pts[k]); d -= segs[k - 1]; } else {
+          if (d >= segs[k - 1]) { out.push(pts[k]); d -= segs[k - 1]; corners = k; } else {
             const q = segs[k - 1] ? d / segs[k - 1] : 0;
             out.push([pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * q, pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * q]); break;
           }
         }
-        pl.setAttribute('points', out.map((x) => x.join(',')).join(' '));
-        if (p < 1) rafId = requestAnimationFrame(f);
-        else {
-          const labs = bot.children; labs[end].textContent = c[end].r.name; labs[end].classList.add('win'); buzz([30, 40, 60]);
-          later(() => [...labs].forEach((l, j) => { if (j !== end) { l.textContent = c[j].r.name; l.classList.add('dim'); } }), 500);
-          showResult(c[end]);
+        if (corners !== lastCorner) { lastCorner = corners; sfx.beep(1 + corners * 0.04); buzz(6); }
+        const s = out.map((x) => x.join(',')).join(' ');
+        pl.setAttribute('points', s); gl.setAttribute('points', s);
+        // 선 끝에서 반짝이
+        if ((frame++ & 1) === 0) {
+          const head = out[out.length - 1], rb = rectOf(svg);
+          FX.sparkle(rb.left + head[0] / (n * 100) * rb.width, rb.top + head[1] / H * rb.height, '#FFE27A');
         }
+        if (p < 1) { rafId = requestAnimationFrame(f); return; }
+        const labs = bot.children;
+        labs[end].textContent = c[end].r.name; labs[end].classList.add('win', 'flip'); buzz([30, 40, 60]);
+        later(() => [...labs].forEach((l, j) => { if (j !== end) { l.textContent = c[j].r.name; l.classList.add('dim', 'flip'); } }), 600);
+        showResult(c[end], labs[end]);
       })(t0);
     };
   }
@@ -701,45 +756,58 @@
     for (let i = 0; i < n; i++) {
       const [x, y] = pos[i];
       holes += '<g class="hole" data-h="' + i + '" tabindex="0" role="button" aria-label="' + (i + 1) + '번 구멍"><circle cx="' + x + '" cy="' + y + '" r="20" fill="transparent"/>' +
-        '<circle cx="' + x + '" cy="' + y + '" r="12" fill="#2B1A0C" stroke="' + COLORS[i] + '" stroke-width="4"/><text x="' + x + '" y="' + (y + 4) +
+        '<circle class="hring" cx="' + x + '" cy="' + y + '" r="12" fill="#2B1A0C" stroke="' + COLORS[i] + '" stroke-width="4"/><text x="' + x + '" y="' + (y + 4) +
         '" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">' + (i + 1) + '</text><g class="sw"></g></g>';
     }
     stage.innerHTML = '<p class="hint" id="phint">구멍을 눌러 칼을 꽂으세요. 해적이 튀어나오는 칸이 오늘의 식당!</p>' +
-      '<div class="pirate"><svg viewBox="0 0 310 330"><g transform="translate(155,112)"><g id="pgrp">' +
+      '<div class="pirate" id="pwrap"><svg viewBox="0 0 310 330" id="psvg"><g transform="translate(155,112)"><g id="pgrp">' +
       '<circle r="30" fill="#F2C9A0"/><path d="M-30 -6Q0 -26 30 -6L30 -12Q0 -34 -30 -12Z" fill="#D33B2C"/><path d="M-44 -14Q0 -62 44 -14Q0 -26 -44 -14Z" fill="#1B1B1B"/>' +
       '<circle cx="0" cy="-28" r="5" fill="#fff"/><circle cx="-11" cy="0" r="3.5" fill="#1B1B1B"/><circle cx="11" cy="0" r="7" fill="#1B1B1B"/>' +
-      '<path d="M-30 -8L28 6" stroke="#1B1B1B" stroke-width="2"/><path d="M-10 13Q0 20 10 13" stroke="#7A3B1C" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>' +
+      '<path d="M-30 -8L28 6" stroke="#1B1B1B" stroke-width="2"/><path id="pmouth" d="M-10 13Q0 20 10 13" stroke="#7A3B1C" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<g id="psweat" opacity="0"><path d="M22 -16q3 6 0 9q-3-3 0-9z" fill="#7cc4ff"/></g></g></g>' +
       '<g id="barrel"><path d="M68 140Q54 220 68 305L242 305Q256 220 242 140Z" fill="#B7793F"/><path d="M110 140Q104 222 110 305M155 140V305M200 140Q206 222 200 305" stroke="#9A6231" stroke-width="3" fill="none"/>' +
       '<rect x="60" y="160" width="190" height="12" rx="4" fill="#5E3B1E"/><rect x="60" y="280" width="190" height="12" rx="4" fill="#5E3B1E"/>' +
       '<ellipse cx="155" cy="140" rx="88" ry="15" fill="#8C5A2B"/><ellipse cx="155" cy="140" rx="74" ry="10" fill="#4A2E15"/>' + holes + '</g></svg></div>' +
       '<div class="plegend" id="plegend"></div>';
-    const leg = $('#plegend');
+    const leg = $('#plegend'), wrap = $('#pwrap'), svgEl = $('#psvg');
     for (let i = 0; i < n; i++) {
       const s = document.createElement('span'); s.dataset.pl = i;
       const ic = document.createElement('i'); ic.style.background = COLORS[i]; ic.textContent = String(i + 1);
       s.append(ic, document.createTextNode(c[i].r.name)); leg.append(s);
     }
     let busy = false, left = n;
+    const toScreen = (x, y) => { const rb = rectOf(svgEl), k = Math.min(rb.width / 310, rb.height / 330); return [rb.left + rb.width / 2 + (x - 155) * k, rb.top + rb.height / 2 + (y - 165) * k]; };
     const hit = (g) => {
       if (busy || g.classList.contains('used')) return;
       busy = true; g.classList.add('used');
       const i = +g.dataset.h, [x, y] = pos[i], dir = x < 155 ? -1 : 1;
       g.querySelector('.sw').innerHTML = '<line x1="' + x + '" y1="' + y + '" x2="' + (x + dir * 48) + '" y2="' + (y - 14) + '" stroke="#D6DCE2" stroke-width="5" stroke-linecap="round"/>' +
         '<line x1="' + (x + dir * 44) + '" y1="' + (y - 12) + '" x2="' + (x + dir * 62) + '" y2="' + (y - 17) + '" stroke="' + COLORS[i] + '" stroke-width="8" stroke-linecap="round"/>';
-      const b = $('#barrel'); b.classList.remove('shake'); void b.getBBox(); b.classList.add('shake'); buzz(20 + (n - left) * 10); left--;
+      sfx.thunk();
+      const [sx, sy] = toScreen(x, y); FX.burst(sx, sy, 10, { gv: 300, life: 600, shape: 'star', c: '#FFE27A' });
+      const tension = (n - left) / n; left--;
+      FX.shake(wrap, 4 + tension * 14, 360);
+      $('#psweat').setAttribute('opacity', String(Math.min(1, tension * 1.6)));
+      buzz(20 + Math.round(tension * 60));
+      const wait = reduce ? 50 : 380 + tension * 700; // 남은 구멍이 적을수록 더 뜸을 들인다
+      if (!reduce && tension > 0.3) sfx.drum(6);
       later(() => {
         busy = false;
         if (i === trig) {
-          $('#pgrp').classList.add('fly'); buzz([60, 50, 120]);
+          $('#pmouth').setAttribute('d', 'M-10 16Q0 6 10 16');
+          $('#pgrp').classList.add('fly'); buzz([60, 50, 160]);
+          sfx.boom(); sfx.pop(); FX.flash('#fff');
+          FX.shake($('#game'), 16, 600);
+          const [bx, by] = toScreen(155, 140); FX.smoke(bx, by, 18); FX.burst(bx, by - 20, 60);
           $('#phint').textContent = (i + 1) + '번에서 해적이 튀어나왔어요!';
           stage.querySelectorAll('.hole').forEach((h) => h.classList.add('used'));
-          leg.querySelectorAll('[data-pl]').forEach((s) => { if (+s.dataset.pl !== i) s.classList.add('out'); });
-          later(() => showResult(c[i]), reduce ? 0 : 650);
+          leg.querySelectorAll('[data-pl]').forEach((s) => { if (+s.dataset.pl !== i) s.classList.add('out'); else s.classList.add('winpl'); });
+          later(() => showResult(c[i], leg.querySelector('.winpl')), reduce ? 0 : 900);
         } else {
           leg.querySelector('[data-pl="' + i + '"]').classList.add('out');
-          $('#phint').textContent = '휴, ' + (i + 1) + '번은 통과. 남은 구멍 ' + left + '개';
+          $('#phint').textContent = left <= 2 ? '휴… 이제 ' + left + '개 남았어요. 손에 땀이…' : '휴, ' + (i + 1) + '번은 통과. 남은 구멍 ' + left + '개';
         }
-      }, reduce ? 50 : 420);
+      }, wait);
     };
     stage.querySelectorAll('.hole').forEach((g) => {
       g.onclick = () => hit(g);
@@ -749,76 +817,99 @@
 
   function race(c) {
     const n = c.length;
-    stage.innerHTML = '<p class="commentary" id="rc">준비…</p><div class="race" id="track"></div>';
-    const track = $('#track'), runners = [];
+    stage.innerHTML = '<p class="commentary" id="rc">출발 준비!</p><div class="race" id="track"></div>';
+    const track = $('#track'), runners = [], rc = $('#rc');
     c.forEach((x, i) => {
       const lane = document.createElement('div'); lane.className = 'lane';
       const nm = document.createElement('span'); nm.textContent = (i + 1) + ' ' + x.r.name;
-      const ru = document.createElement('div'); ru.className = 'runner'; ru.style.background = COLORS[i % COLORS.length]; ru.textContent = String(i + 1);
+      const ru = document.createElement('div'); ru.className = 'runner';
+      const horse = document.createElement('i'); horse.textContent = '🏇';
+      const num = document.createElement('b'); num.textContent = String(i + 1); num.style.background = COLORS[i % COLORS.length];
+      ru.append(horse, num);
       lane.append(nm, ru); track.append(lane); runners.push(ru);
     });
-    const pos = new Array(n).fill(0), base = c.map(() => 0.13 + Math.random() * 0.05), rc = $('#rc');
-    const steps = ['3', '2', '1', '출발!'];
-    steps.forEach((s, i) => later(() => { rc.textContent = s; buzz(15); }, i * 550));
+    const pos = new Array(n).fill(0), base = c.map(() => 0.12 + Math.random() * 0.05);
+    const say = (t) => { rc.textContent = t; if (!reduce && rc.animate) rc.animate([{ transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 260 }); };
+    FX.countdown(['3', '2', '1', '출발!'], reduce ? 120 : 650, (t) => { if (!$('#rc')) return false; say(t); buzz(15); });
     later(() => {
-      let leader = -1, t = 0, prev = performance.now();
+      let leader = -1, t = 0, prev = performance.now(), hoof = 0, spurt = false;
       const key = gameKey;
       (function f(now) {
         if (key !== gameKey) return;
-        const dt = Math.min(0.08, (now - prev) / 1000); prev = now; t++;
+        const dt = Math.min(0.06, (now - prev) / 1000); prev = now; t++;
+        const maxPos = Math.max(...pos);
+        const slow = maxPos > 0.86 ? 0.45 : 1; // 결승선 앞에서 느린 화면
         for (let i = 0; i < n; i++) {
-          let v = base[i] * (0.55 + Math.random() * 0.9);
-          if (Math.random() < 0.012) v *= 3.2;
+          let v = base[i] * (0.5 + Math.random() * 1.0);
+          if (Math.random() < 0.014) v *= 3.4;
           if (Math.random() < 0.008) v *= 0.1;
-          pos[i] = Math.min(1, pos[i] + v * dt);
+          if (maxPos > 0.7 && pos[i] < maxPos - 0.05 && Math.random() < 0.03) v *= 2.6; // 뒤따르는 말의 추격
+          pos[i] = Math.min(1, pos[i] + v * dt * slow);
         }
-        const W = track.clientWidth - 48;
-        runners.forEach((ru, i) => { ru.style.transform = 'translateX(' + (pos[i] * W) + 'px)'; });
+        const W = track.clientWidth - 56;
         let lead = 0; for (let i = 1; i < n; i++) if (pos[i] > pos[lead]) lead = i;
-        if (lead !== leader && t > 20) { leader = lead; rc.textContent = (lead + 1) + '번 ' + c[lead].r.name + ' 선두!'; buzz(8); }
+        runners.forEach((ru, i) => { ru.style.transform = 'translateX(' + (pos[i] * W) + 'px)'; ru.classList.toggle('lead', i === lead); });
+        if (now - hoof > 140) { hoof = now; sfx.hoof(); const rb = rectOf(runners[lead]); FX.dust(rb.left + 6, rb.bottom - 6); }
+        if (lead !== leader && t > 25) { leader = lead; say((lead + 1) + '번 ' + c[lead].r.name + ' 선두!'); buzz(8); }
+        if (!spurt && maxPos > 0.86) { spurt = true; say('막판 스퍼트!'); sfx.drum(10); }
         const done = pos.map((p, i) => p >= 1 ? i : -1).filter((i) => i >= 0);
         if (done.length) {
           const w = done[Math.floor(Math.random() * done.length)];
-          runners[w].classList.add('win'); rc.textContent = (w + 1) + '번 ' + c[w].r.name + ' 우승!'; buzz([60, 50, 120]);
-          showResult(c[w]); return;
+          runners[w].classList.add('win'); say((w + 1) + '번 ' + c[w].r.name + ' 우승!'); buzz([60, 50, 120]);
+          const rb = rectOf(runners[w]); FX.burst(rb.left + rb.width / 2, rb.top + rb.height / 2, 50);
+          showResult(c[w], runners[w]); return;
         }
         rafId = requestAnimationFrame(f);
       })(performance.now());
-    }, reduce ? 100 : 2300);
+    }, reduce ? 500 : 2600);
   }
 
   function cup(c) {
-    let bracket = c.slice(), nextR = [], idx = 0;
+    let bracket = c.slice(), nextR = [], idx = 0, lastRound = 0, locked = false;
     const roundName = (k) => ({ 8: '8강', 4: '4강', 2: '결승' }[k] || '');
     function draw() {
       stage.textContent = '';
+      if (bracket.length !== lastRound) { lastRound = bracket.length; FX.stamp(roundName(bracket.length) + '!', true); sfx.pop(); }
       const wrap = document.createElement('div'); wrap.className = 'cup';
       const h = document.createElement('p'); h.className = 'hint';
       h.textContent = roundName(bracket.length) + ' ' + (idx / 2 + 1) + '/' + bracket.length / 2 + ' · 더 끌리는 곳을 누르세요';
       const pair = document.createElement('div'); pair.className = 'pair';
-      const mk = (x, col) => {
+      const mk = (x, col, from) => {
         const b = document.createElement('button'); b.className = 'cupcard'; b.style.background = col;
         const t = document.createElement('b'); t.textContent = x.r.name;
         const s = document.createElement('small'); s.textContent = x.r.cat + ' · 도보 ' + walkMin(x.m) + '분';
-        b.append(t, s); b.onclick = () => pick(x); return b;
+        b.append(t, s); b.onclick = () => pick(x, b);
+        if (!reduce && b.animate) b.animate([{ transform: 'translateX(' + from + '%) rotate(' + (from / 10) + 'deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+        return b;
       };
       const vs = document.createElement('div'); vs.className = 'vs'; vs.textContent = 'VS';
-      pair.append(mk(bracket[idx], COLORS[0]), vs, mk(bracket[idx + 1], COLORS[1]));
+      pair.append(mk(bracket[idx], COLORS[0], -120), vs, mk(bracket[idx + 1], COLORS[1], 120));
       wrap.append(h, pair); stage.append(wrap);
+      if (!reduce && vs.animate) later(() => { vs.animate([{ transform: 'scale(3)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 260, easing: 'ease-in' }); sfx.thunk(); FX.shake(pair, 6, 250); }, 300);
     }
-    function pick(x) {
-      buzz(10);
-      const winners = nextR.concat([x]);
-      if (idx + 2 >= bracket.length) {
-        if (winners.length === 1) {
-          stage.textContent = '';
-          const h = document.createElement('p'); h.className = 'hint'; h.textContent = '우승';
-          const b = document.createElement('p'); b.className = 'slot done'; b.textContent = x.r.name;
-          stage.append(h, b); buzz([60, 50, 120]); showResult(x); return;
-        }
-        bracket = winners; nextR = []; idx = 0;
-      } else { nextR = winners; idx += 2; }
-      draw();
+    function pick(x, el) {
+      if (locked) return;
+      locked = true; buzz(10); sfx.pop();
+      const other = [...stage.querySelectorAll('.cupcard')].find((b) => b !== el);
+      if (!reduce && el.animate) {
+        el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1.04)' }], { duration: 300, fill: 'forwards' });
+        if (other) other.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(60px) rotate(12deg) scale(.7)', opacity: 0 }], { duration: 320, fill: 'forwards', easing: 'ease-in' });
+      }
+      const rb = rectOf(el); FX.burst(rb.left + rb.width / 2, rb.top + rb.height / 2, 18, { life: 700 });
+      later(() => {
+        locked = false;
+        const winners = nextR.concat([x]);
+        if (idx + 2 >= bracket.length) {
+          if (winners.length === 1) {
+            stage.textContent = '';
+            const tro = document.createElement('div'); tro.className = 'trophy'; tro.textContent = '🏆';
+            const b = document.createElement('p'); b.className = 'slot done'; b.textContent = x.r.name;
+            stage.append(tro, b); buzz([60, 50, 120]); showResult(x, b); return;
+          }
+          bracket = winners; nextR = []; idx = 0;
+        } else { nextR = winners; idx += 2; }
+        draw();
+      }, reduce ? 0 : 380);
     }
     draw();
   }
@@ -826,35 +917,63 @@
   function bomb(c) {
     let cur = 0, started = false, exploded = false;
     const fuse = 6000 + Math.random() * 9000;
-    stage.innerHTML = '<p class="hint" id="bh">폭탄이 언제 터질지 아무도 몰라요</p><div class="bomb" id="bm"><span id="bn"></span></div><button class="btn primary big" id="bb">불 붙이기</button>';
-    const bn = $('#bn'), bm = $('#bm'), bb = $('#bb'), bh = $('#bh');
+    stage.innerHTML = '<p class="hint" id="bh">폭탄이 언제 터질지 아무도 몰라요</p>' +
+      '<div class="bombwrap" id="bw"><div class="bomb" id="bm"><i class="fuse" id="fz"></i><span id="bn"></span></div></div>' +
+      '<button class="btn primary big" id="bb">불 붙이기</button>';
+    const bn = $('#bn'), bm = $('#bm'), bb = $('#bb'), bh = $('#bh'), bw = $('#bw');
     bn.textContent = c[cur].r.name;
     bb.onclick = () => {
       if (exploded) return;
       if (!started) {
-        started = true; bb.textContent = '넘기기 →'; bh.textContent = '폰을 옆 사람에게 넘기며 버튼을 누르세요'; bm.classList.add('tick');
+        started = true; bb.textContent = '넘기기 →'; bh.textContent = '폰을 옆 사람에게 넘기며 버튼을 누르세요'; bm.classList.add('lit');
+        sfx.whoosh();
         let elapsed = 0;
         const tick = () => {
           if (elapsed >= fuse) {
-            exploded = true; bm.classList.remove('tick'); bb.hidden = true;
-            bh.textContent = '펑!'; bh.className = 'boom'; buzz([100, 60, 200]); showResult(c[cur]); return;
+            exploded = true; bb.hidden = true; bm.classList.remove('lit');
+            bh.textContent = '펑!'; bh.className = 'boom';
+            sfx.boom(); FX.flash('#fff3c4', 500); buzz([100, 60, 220]);
+            FX.shake($('#game'), 22, 700);
+            const rb = rectOf(bm); const cx = rb.left + rb.width / 2, cy = rb.top + rb.height / 2;
+            FX.burst(cx, cy, 90, { c: undefined }); FX.smoke(cx, cy, 22);
+            bm.classList.add('blown');
+            later(() => showResult(c[cur], bm), reduce ? 0 : 700); return;
           }
-          const frac = elapsed / fuse; bm.style.setProperty('--heat', String(0.15 + frac * 0.7)); buzz(10);
-          const step = Math.max(110, 650 - 520 * frac); elapsed += step; later(tick, step);
+          const frac = elapsed / fuse;
+          bm.style.setProperty('--heat', String(0.15 + frac * 0.75));
+          bw.style.setProperty('--rate', (0.5 - frac * 0.38).toFixed(2) + 's');
+          sfx.beep(1 + frac * 0.6); buzz(10);
+          const rb = rectOf($('#fz')); FX.sparkle(rb.left + rb.width / 2, rb.top, '#FFB020');
+          const step = Math.max(100, 650 - 540 * frac); elapsed += step; later(tick, step);
         };
         tick();
-      } else { cur = (cur + 1) % c.length; bn.textContent = c[cur].r.name; buzz(8); }
+      } else {
+        cur = (cur + 1) % c.length; bn.textContent = c[cur].r.name; buzz(8); sfx.tock(1.2);
+        if (!reduce && bn.animate) bn.animate([{ transform: 'translateY(10px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 160 });
+      }
     };
   }
 
   function slot(c) {
-    stage.innerHTML = '<div class="slot" id="slot">…</div><p class="hint">후보 ' + c.length + '곳 중에서 뽑는 중</p>';
-    const win = Math.floor(Math.random() * c.length), el = $('#slot');
-    let i = 0, d = 45; const end = performance.now() + (reduce ? 200 : 1500);
+    stage.innerHTML = '<div class="slotbox" id="sb"><div class="reel" id="reel"></div></div><p class="hint">후보 ' + c.length + '곳 중에서 뽑는 중</p>';
+    const win = Math.floor(Math.random() * c.length), reel = $('#reel'), sb = $('#sb');
+    const nameAt = (k) => c[((k % c.length) + c.length) % c.length].r.name;
+    let i = 0, d = 40; const end = performance.now() + (reduce ? 200 : 2000);
+    sb.classList.add('spinning');
+    const show = (k, fast) => {
+      reel.textContent = '';
+      for (const off of [-1, 0, 1]) { const line = document.createElement('div'); line.textContent = nameAt(k + off); if (off === 0) line.className = 'mid'; reel.append(line); }
+      if (!reduce && reel.animate) reel.animate([{ transform: 'translateY(-34%)', filter: fast ? 'blur(2px)' : 'none' }, { transform: 'translateY(0)', filter: 'none' }], { duration: Math.min(d, 220), easing: 'ease-out' });
+    };
     const tick = () => {
-      el.textContent = c[i % c.length].r.name; i++;
-      if (performance.now() < end) { d *= 1.1; later(tick, d); }
-      else { el.textContent = c[win].r.name; el.classList.add('done'); buzz(40); showResult(c[win]); }
+      show(i, d < 90); i++; sfx.tick();
+      if (performance.now() < end) { d *= 1.085; later(tick, d); return; }
+      // 당첨 칸으로 멈추고 살짝 튕긴다
+      reel.textContent = '';
+      for (const off of [-1, 0, 1]) { const line = document.createElement('div'); line.textContent = off === 0 ? c[win].r.name : nameAt(win + off); if (off === 0) line.className = 'mid'; reel.append(line); }
+      if (!reduce && reel.animate) reel.animate([{ transform: 'translateY(-20%)' }, { transform: 'translateY(6%)' }, { transform: 'none' }], { duration: 420, easing: 'ease-out' });
+      sb.classList.remove('spinning'); sb.classList.add('done'); buzz(40);
+      showResult(c[win], sb);
     };
     tick();
   }
@@ -873,7 +992,13 @@
     }
     return false;
   }
-  function onMotionGame(e) { if (curGame === 'shake' && shaken(e)) { window.removeEventListener('devicemotion', onMotionGame); slot(cands); } }
+  function onMotionGame(e) {
+    if (curGame === 'shake' && shaken(e)) {
+      window.removeEventListener('devicemotion', onMotionGame);
+      sfx.whoosh(); FX.shake($('#game'), 12, 400); FX.burst(innerWidth / 2, innerHeight / 2, 30);
+      slot(cands);
+    }
+  }
   let lastHomeShake = 0;
   function onMotionHome(e) {
     if (!settings.shake || curGame || $('#sheetRoot').childElementCount || !$('#onb').hidden || S.state !== 'ready') return;
@@ -892,7 +1017,7 @@
     const ph = document.createElement('div'); ph.className = 'phone';
     const t = document.createElement('p'); t.className = 'commentary'; t.textContent = '폰을 흔들어 주세요!';
     const b = document.createElement('button'); b.className = 'btn'; b.textContent = '흔들기 어려우면 여기를 누르세요';
-    b.onclick = () => { window.removeEventListener('devicemotion', onMotionGame); slot(c); };
+    b.onclick = () => { window.removeEventListener('devicemotion', onMotionGame); sfx.whoosh(); slot(c); };
     stage.append(ph, t, b);
     motionPermission().then((ok) => {
       if (ok) { window.addEventListener('devicemotion', onMotionGame); window.addEventListener('devicemotion', onMotionHome); }
@@ -922,11 +1047,12 @@
   function row(...kids) { const d = document.createElement('div'); d.className = 'actions'; d.append(...kids); return d; }
   function note(t) { return textEl('p', t, 'note'); }
 
-  function showResult(cand) {
+  function showResult(cand, fromEl) {
     const r = cand.r, mins = walkMin(cand.m);
     result.textContent = ''; result.hidden = false;
+    const title = textEl('h3', r.name);
     result.append(
-      textEl('div', S.round + '차 당첨', 'eyebrow'), textEl('h3', r.name),
+      textEl('div', S.round + '차 당첨', 'eyebrow'), title,
       textEl('div', r.cat + ' · 도보 약 ' + mins + '분 (' + Math.round(cand.m) + 'm)', 'meta'), badges(r),
     );
     if (r.food) result.append(textEl('div', '대표 음식: ' + r.food, 'meta'));
@@ -935,7 +1061,17 @@
       row(link('카카오맵', kakaoPlace(r), 'sm'), link('길찾기', kakaoRoute(r), 'sm'), btn('공유', 'sm', () => share(r, S.round, mins))),
       row(btn('이번엔 빼기 (30일)', 'sm', () => { hide(r, 30); startGame(curGame); })),
       textEl('p', '영업시간·메뉴는 카카오맵에서 확인해 주세요.', 'fine'));
-    confetti();
+    if (CONFIG.donate) {
+      const d = link('☕ 만든 사람에게 커피 한 잔', CONFIG.donate, 'sm donate');
+      result.append(d);
+    }
+    // 축하 연출: 도장, 양쪽 폭죽, 팡파르, 글자 튀어나오기
+    FX.popText(title);
+    FX.stamp('당첨!');
+    sfx.fanfare();
+    FX.cannons(45);
+    if (fromEl && fromEl.getBoundingClientRect) { const rb = fromEl.getBoundingClientRect(); FX.burst(rb.left + rb.width / 2, rb.top + rb.height / 2, 36); }
+    if (!reduce && result.animate) result.animate([{ transform: 'translateY(40px) scale(.96)', opacity: 0 }, { transform: 'translateY(-6px) scale(1.01)', opacity: 1, offset: 0.7 }, { transform: 'none', opacity: 1 }], { duration: 520, easing: 'ease-out' });
   }
 
   // ------------------------------------------------------------ 시트(목록·상세·지역·설정)
@@ -1066,6 +1202,12 @@
         return x;
       };
       b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'));
+      const snd = document.createElement('button'); snd.className = 'setrow';
+      const paint = () => snd.setAttribute('aria-pressed', !(window.MMFX && MMFX.isMuted()));
+      snd.append(textEl('span', '게임 효과음')); const si = document.createElement('i'); si.className = 'switch'; snd.append(si);
+      snd.onclick = () => { if (window.MMFX) { MMFX.setMuted(!MMFX.isMuted()); paint(); paintSound(); } };
+      paint(); b.append(snd);
+      if (CONFIG.donate) b.append(link('☕ 만든 사람에게 커피 한 잔 사 주기', CONFIG.donate, 'donate'));
       const hc = Object.keys(hidden).filter(isHidden).length;
       if (hc) b.append(btn('숨긴 식당 ' + hc + '곳 모두 다시 보기', '', () => { hidden = {}; store.set('hidden', hidden); toast('모두 다시 보이게 했어요'); render(); closeSheet(); }));
       let confirmClear = false;
@@ -1121,17 +1263,18 @@
     if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
     t.textContent = m; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
   }
-  function confetti() {
-    if (reduce) return;
-    const w = document.createElement('div'); w.className = 'confetti';
-    for (let i = 0; i < 34; i++) {
-      const p = document.createElement('i');
-      p.style.left = Math.random() * 100 + '%'; p.style.background = COLORS[i % 8]; p.style.animationDelay = Math.random() * 0.3 + 's';
-      p.style.setProperty('--dx', (Math.random() - 0.5) * 160 + 'px'); p.style.setProperty('--r', Math.random() * 720 + 'deg');
-      w.append(p);
-    }
-    document.body.append(w); setTimeout(() => w.remove(), 2200);
-  }
+  // ------------------------------------------------------------ 설정 파일(후원 링크 등). 허용한 주소만 쓴다.
+  const CONFIG = { donate: '' };
+  fetch('config.json', { cache: 'no-cache' }).then((r) => r.ok ? r.json() : {}).then((c) => {
+    const u = String((c && c.donate) || '');
+    if (/^https:\/\/(toss\.me|qr\.kakaopay\.com|link\.kakaopay\.com)\/[\w\-./?=&%]+$/.test(u)) CONFIG.donate = u;
+  }).catch(() => { /* 없으면 후원 버튼 없음 */ });
+
+  // 효과음 켜기/끄기
+  const soundBtn = $('#gSound');
+  const paintSound = () => { soundBtn.textContent = (window.MMFX && MMFX.isMuted()) ? '🔇' : '🔊'; soundBtn.setAttribute('aria-label', (window.MMFX && MMFX.isMuted()) ? '효과음 켜기' : '효과음 끄기'); };
+  soundBtn.onclick = () => { if (window.MMFX) { MMFX.setMuted(!MMFX.isMuted()); paintSound(); if (!MMFX.isMuted()) sfx.pop(); } };
+  paintSound();
 
   // ------------------------------------------------------------ 시작
   function startApp(useLocation) {

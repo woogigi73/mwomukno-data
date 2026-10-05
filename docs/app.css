@@ -250,3 +250,88 @@ input{font:inherit}
   .games{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 .banner .btn:not(.primary){background:rgba(255,255,255,.16);color:#fff}
+
+/* ===================== 게임 연출 ===================== */
+.fxcanvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:55}
+.fxflash{position:fixed;inset:0;pointer-events:none;z-index:56}
+.fxstamp{position:fixed;left:50%;top:42%;z-index:57;pointer-events:none;font-size:clamp(56px,18vw,120px);font-weight:900;color:#E4473A;
+  border:8px solid #E4473A;border-radius:22px;padding:2px 26px;background:rgba(255,255,255,.85);letter-spacing:4px;white-space:nowrap;
+  text-shadow:0 2px 0 rgba(0,0,0,.08);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.fxstamp.small{font-size:clamp(40px,12vw,72px);border-width:6px;color:var(--ink);border-color:var(--accent);background:var(--accent);top:30%}
+.fxcount{position:fixed;left:50%;top:45%;z-index:57;pointer-events:none;font-size:clamp(90px,28vw,180px);font-weight:900;color:var(--accent);
+  -webkit-text-stroke:4px var(--ink);text-shadow:0 8px 30px rgba(0,0,0,.25)}
+.fxch{display:inline-block;animation:chpop .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes chpop{from{transform:translateY(18px) scale(.3);opacity:0}}
+.sound{min-width:44px}
+.donate{font-size:13px}
+
+/* 룰렛 */
+.wheel{filter:drop-shadow(0 10px 24px rgba(0,0,0,.28))}
+.wheel canvas{box-shadow:none}
+.ptr{top:-14px;border-left-width:17px;border-right-width:17px;border-top:34px solid #E4473A;transform-origin:50% 0;z-index:2;
+  filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
+.ptr::after{content:"";position:absolute;left:-7px;top:-40px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #E4473A}
+
+/* 사다리 */
+.lrow button.bounce{animation:hop .9s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:none}50%{transform:translateY(-5px)}}
+.lab.flip{animation:flip .55s ease-out both}
+@keyframes flip{from{transform:rotateX(90deg)}}
+.lab.win{box-shadow:0 0 0 3px var(--ink),0 0 24px var(--accent)}
+
+/* 해적 */
+.plegend .winpl{background:var(--accent);color:var(--accent-ink);transform:scale(1.12);font-weight:900}
+.hole:not(.used):hover .hring{stroke-width:6}
+
+/* 경마 */
+.lane{background:repeating-linear-gradient(90deg,#4f9a4a 0 34px,#58a653 34px 68px);border-right:0;max-height:66px}
+.lane:nth-child(odd){background:repeating-linear-gradient(90deg,#468f42 0 34px,#4f9a4a 34px 68px)}
+.lane::after{content:"";position:absolute;right:0;top:0;bottom:0;width:14px;
+  background:repeating-conic-gradient(#111 0 25%,#fff 0 50%) 0 0/14px 14px}
+.lane+.lane{border-top:2px solid rgba(255,255,255,.55)}
+.lane span{color:rgba(255,255,255,.9);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.runner{width:52px;height:46px;margin-top:-23px;border-radius:0;background:none!important;display:block}
+.runner i{font-style:normal;font-size:34px;line-height:46px;display:block;transform:scaleX(-1);filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
+.runner b{position:absolute;right:-2px;top:-2px;min-width:20px;height:20px;border-radius:10px;color:#fff;font-size:11px;font-weight:900;display:grid;
+  place-items:center;border:2px solid #fff}
+.runner.lead::before{content:"👑";position:absolute;left:12px;top:-20px;font-size:18px;animation:hop .5s ease-in-out infinite}
+.runner.win{box-shadow:none}
+.runner.win i{animation:hop .35s ease-in-out infinite}
+.commentary{font-size:clamp(20px,6vw,28px)}
+
+/* 월드컵 */
+.vs{font-size:34px;color:var(--bad);text-shadow:0 3px 0 var(--ink)}
+.cupcard{box-shadow:0 8px 22px rgba(0,0,0,.2);position:relative;overflow:hidden}
+.cupcard::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 45%,transparent 60%);
+  transform:translateX(-120%);animation:shine 2.4s ease-in-out infinite}
+@keyframes shine{60%,100%{transform:translateX(120%)}}
+.trophy{font-size:90px;line-height:1;animation:trophy 1.2s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes trophy{from{transform:scale(.2) rotate(-30deg);opacity:0}}
+
+/* 폭탄 */
+.bombwrap{--rate:.5s;position:relative}
+.bomb{width:210px;height:210px;background:radial-gradient(circle at 34% 30%,#555 0,#1b1b1b 45%,#000 100%);box-shadow:0 14px 30px rgba(0,0,0,.35)}
+.bomb.lit{animation:pulse var(--rate) infinite alternate}
+.bomb::before{inset:0;background:radial-gradient(circle,var(--bad) 0,transparent 70%)}
+.fuse{position:absolute;right:22px;top:-22px;width:12px;height:40px;border-radius:6px;background:#8a6a3a;transform:rotate(35deg)}
+.bomb.lit .fuse::after{content:"";position:absolute;left:-7px;top:-12px;width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0,#ffd23a 35%,#ff6a00 65%,transparent 70%);animation:spark .12s infinite alternate}
+@keyframes spark{to{transform:scale(1.35) rotate(40deg)}}
+.bomb.blown{animation:blown .5s ease-out forwards}
+@keyframes blown{40%{transform:scale(1.4)}100%{transform:scale(0);opacity:0}}
+.boom{font-size:64px;animation:chpop .45s cubic-bezier(.2,1.6,.4,1) both}
+
+/* 바로 뽑기 슬롯 */
+.slotbox{position:relative;width:min(94%,500px);border-radius:24px;padding:16px;background:var(--tile);box-shadow:var(--shadow),inset 0 0 0 6px #b98a00;
+  overflow:hidden}
+.slotbox::before{content:"";position:absolute;inset:3px;border-radius:21px;pointer-events:none;
+  background:radial-gradient(circle,#fff6b0 0 3px,transparent 4px) 0 0/22px 22px;opacity:.5}
+.slotbox.spinning::before{animation:bulbs .18s steps(2) infinite}
+@keyframes bulbs{50%{opacity:1}}
+.reel{display:grid;gap:4px;text-align:center;color:var(--tile-ink);position:relative}
+.reel div{font-size:clamp(16px,5vw,22px);font-weight:800;opacity:.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.reel .mid{font-size:clamp(26px,8vw,40px);font-weight:900;opacity:1;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 10px}
+.slotbox.done{box-shadow:var(--shadow),inset 0 0 0 6px var(--accent),0 0 40px var(--accent)}
+.slotbox.done .mid{background:var(--accent);color:var(--accent-ink)}
+
+@media (prefers-reduced-motion:reduce){.fxcanvas,.fxstamp,.fxcount,.fxflash{display:none}}
