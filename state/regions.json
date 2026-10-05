@@ -1243,8 +1243,8 @@
   "last": "20261005",
   "model": 0,
   "name": "경기도 시흥시",
-  "sha": "aba45fdf55f42003475c9e9bd5c57b0adb96607b4092953f63b4255d87bd3843",
-  "size": 1225129
+  "sha": "82c49e2ef0e23e34df3ac8f7a6063c55f847b78fee41e7eb7a577373d24b7726",
+  "size": 1225896
  },
  "4020000": {
   "bbox": [
@@ -1258,8 +1258,8 @@
   "last": "20261005",
   "model": 0,
   "name": "경기도 군포시",
-  "sha": "a630f3aede30cdd7e54be513848393ccd034436c2a5cf6dddb870bb443fb6fae",
-  "size": 468329
+  "sha": "be12bfc5d2da504466af32be4bfe5191fef545f07eabe92ac53932326c3bd7d3",
+  "size": 482857
  },
  "4030000": {
   "bbox": [
@@ -1273,8 +1273,8 @@
   "last": "20261005",
   "model": 0,
   "name": "경기도 의왕시",
-  "sha": "bff388a4dbf3c4cf10260469d20a702c5325d7145bbe94f43f4585aecaf59afe",
-  "size": 237226
+  "sha": "d127dd09789e1352e98be1c665d224e8ad40368e31881cbcecd596a1a6051239",
+  "size": 240945
  },
  "4040000": {
   "bbox": [
