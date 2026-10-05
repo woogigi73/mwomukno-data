@@ -1438,8 +1438,8 @@
   "last": "20261005",
   "model": 0,
   "name": "충청북도 제천시",
-  "sha": "dae53a5a73a79cc3ca85602ef7526b52c256522eeb70e1bbb9987c456491dd67",
-  "size": 457644
+  "sha": "1f5d34b0f496e1d22c1e06a825052feeea9f688753361f9b8f32a63d836a84fc",
+  "size": 459652
  },
  "4420000": {
   "bbox": [
@@ -1453,8 +1453,8 @@
   "last": "20261005",
   "model": 0,
   "name": "충청북도 보은군",
-  "sha": "87fd445c486d4ad648784199aad3ee6b82c9bd587a5c83956c9c0ea401b4ee8b",
-  "size": 101859
+  "sha": "d4b30dea87dd67a7930f1e9bcb6cba5cc50ec47f70c9e777177fa58935b91ccf",
+  "size": 105102
  },
  "4430000": {
   "bbox": [
@@ -1468,8 +1468,8 @@
   "last": "20261005",
   "model": 0,
   "name": "충청북도 옥천군",
-  "sha": "b5f82ec48d1d78915da6666b58886dbaf8567edf98f641933f14aece408f382f",
-  "size": 147327
+  "sha": "9292c96c3bc43312a03738a6df515e0e0b0d21d0425f944ff2c8a8af0937846b",
+  "size": 152079
  },
  "4440000": {
   "bbox": [
@@ -1483,8 +1483,8 @@
   "last": "20261005",
   "model": 0,
   "name": "충청북도 영동군",
-  "sha": "6784a81565ce73af2c9e0e087697765534b53c9b4e7ab53ae02b9602b7525859",
-  "size": 128877
+  "sha": "a6df9a3de3b6b79e3b3ae4f6ac6183c26794aad6a7edac09739a712fc57e5f75",
+  "size": 133149
  },
  "4450000": {
   "bbox": [
@@ -1498,8 +1498,8 @@
   "last": "20261005",
   "model": 0,
   "name": "충청북도 진천군",
-  "sha": "3f89c85cb6e0d5efa77ec8dd13b48221cb05fdbc0c8745c3acf055bfdf10eeca",
-  "size": 289945
+  "sha": "7e0e4d4da6ab649928d95f7155785bd612839157b2b36969b160616db1da439b",
+  "size": 295432
  },
  "4460000": {
   "bbox": [
