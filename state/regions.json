@@ -2824,8 +2824,8 @@
   "last": "20261005",
   "model": 0,
   "name": "전남광주통합특별시 영광군",
-  "sha": "a1d49015aad807cf49e051af0a08fb194da7652ee0e4d1d0b5d796a2c7dbc784",
-  "size": 137539
+  "sha": "476e08b53623c2de94166421e556619b5df092174ac66e95c659443a91b2fdce",
+  "size": 138210
  },
  "5895000": {
   "bbox": [
@@ -2839,8 +2839,8 @@
   "last": "20261005",
   "model": 0,
   "name": "전남광주통합특별시 장성군",
-  "sha": "1cba2fc57e81b7614acc031476d9717b584f81c0f5f61622dec1645998ce182d",
-  "size": 109196
+  "sha": "31a86e3172a1d2b1118f48851c92ddbb53db14b030b75d373a8edea7f449a22b",
+  "size": 112580
  },
  "5900000": {
   "bbox": [
@@ -2854,8 +2854,8 @@
   "last": "20261005",
   "model": 0,
   "name": "전남광주통합특별시 완도군",
-  "sha": "f11bd32d8f2977cfaf9a26932c171619077287ddef34754addfd6916cbfae983",
-  "size": 141467
+  "sha": "95e31dba950a2c50e5c37ee80c66cc7e06873d3df2b2759bef31a37044031825",
+  "size": 145519
  },
  "5905000": {
   "bbox": [
@@ -2869,8 +2869,8 @@
   "last": "20261005",
   "model": 0,
   "name": "전남광주통합특별시 진도군",
-  "sha": "8ecd4bfbd479d94a9df57a5fa66d870aca620aaf82d939e074fa3aaab88df71d",
-  "size": 87871
+  "sha": "f334419d29f6effeb036ea8c4da04fa1e5d0ac2348f70d9abab3a77ca55c08da",
+  "size": 90573
  },
  "5910000": {
   "bbox": [
@@ -2884,8 +2884,8 @@
   "last": "20261005",
   "model": 0,
   "name": "전남광주통합특별시 신안군",
-  "sha": "99239b16dd1b81913d9be492d8d29b0d96b341c7ab348d8a7d5c8330ca1c1688",
-  "size": 83546
+  "sha": "02a8faca87e297a88a2dc130c1073bee776aceb46e48497c5ff54d7faf0828d2",
+  "size": 85956
  },
  "6510000": {
   "bbox": [
@@ -2899,8 +2899,8 @@
   "last": "20261005",
   "model": 0,
   "name": "제주특별자치도 제주시",
-  "sha": "faa52dfe823642394f7d5e26468bc0772cfee458290e62691aec4e9f067f2ff7",
-  "size": 2168009
+  "sha": "9ab68a7c3a51933481b37d6f174d1e0b395fd014cd4712694b95632e93f079c8",
+  "size": 2180776
  },
  "6520000": {
   "empty": "20260929",
