@@ -1573,8 +1573,8 @@
   "last": "20261011",
   "model": 0,
   "name": "충청남도 공주시",
-  "sha": "0a666fdc3c44ad40b8878f57738603ddd51d11e32f77ab952f8a02f606759d42",
-  "size": 412294
+  "sha": "365a6ccc367a4a2b03c58dfba6653597f9b78081e602b8910b2ce26b6e3801f0",
+  "size": 412314
  },
  "4510000": {
   "bbox": [
@@ -1603,8 +1603,8 @@
   "last": "20261011",
   "model": 0,
   "name": "충청남도 아산시",
-  "sha": "0315afb6e373d8f2cafad1f08e9f225e7019d4ff70f158843c552943afdd8dee",
-  "size": 983703
+  "sha": "70903597277791fe8b696d15d7f419b5f39ec2a3a5285834f9ab6ea15d1a94f0",
+  "size": 983713
  },
  "4530000": {
   "bbox": [
@@ -1798,8 +1798,8 @@
   "last": "20261011",
   "model": 0,
   "name": "경상북도 안동시",
-  "sha": "11d1e478754b723c0a7cd300edf2fc4bdc997ec133655c78566d664e9e9815b2",
-  "size": 514394
+  "sha": "df9f446bdce5a5122eefe872126a96ba518bcf5b71b1189de57c9407bc9cebf9",
+  "size": 514420
  },
  "5080000": {
   "bbox": [
@@ -1813,8 +1813,8 @@
   "last": "20261011",
   "model": 0,
   "name": "경상북도 구미시",
-  "sha": "9b372bf07d4ec434b7860d4d523bb7f7ef10903bd200f8b756eec8c4e4260a1c",
-  "size": 1135160
+  "sha": "97e43466c2e02a0140366d5a35a726dd198cd35cb3c6fb61f7cb9c713fc2bc57",
+  "size": 1135187
  },
  "5090000": {
   "bbox": [
@@ -1828,8 +1828,8 @@
   "last": "20261011",
   "model": 0,
   "name": "경상북도 영주시",
-  "sha": "5f033d6a70c4b053c8bdc3cd8766cbedc11385f20fcffa6fd32bbea177fe001d",
-  "size": 317399
+  "sha": "34f8aa87e10c9c16997dd113ee84e5d17a1c5085af1aae6de8d5fe0b71eae6c1",
+  "size": 317408
  },
  "5100000": {
   "bbox": [
@@ -2008,8 +2008,8 @@
   "last": "20261011",
   "model": 0,
   "name": "경상북도 칠곡군",
-  "sha": "f2dd537af93be281d432a759cb071c6fc7698b84ff1a5a2367045575161cac2f",
-  "size": 363202
+  "sha": "7a9de5ece9bb993f018bf47db5d313d27bb799f4907e7553b9709e5f7e6c8832",
+  "size": 363231
  },
  "5230000": {
   "bbox": [
@@ -2338,8 +2338,8 @@
   "last": "20261011",
   "model": 0,
   "name": "경기도 화성시 동탄구",
-  "sha": "8a9f377bed4f02b2ab0a07a07493a893a048f6c61055ecb9468d930fc1d384a7",
-  "size": 2236374
+  "sha": "6ab5755ea4a236677ad8ee73c02a17ca40c1a36e55ad2d281cfb7cfca59976b3",
+  "size": 2236383
  },
  "5540000": {
   "bbox": [
@@ -2479,8 +2479,8 @@
   "last": "20261011",
   "model": 0,
   "name": "충청북도 청주시 청원구",
-  "sha": "7ce2a737ca667a02732351fcf0f89d4f319ff94e4327f34de1579133a45ef5cc",
-  "size": 2476976
+  "sha": "8f3caa3cee343b476c277ef0cd5caa7250dd7334c7ffb1c94507432d7267d7da",
+  "size": 2476985
  },
  "5780000": {
   "bbox": [
@@ -2569,8 +2569,8 @@
   "last": "20261011",
   "model": 0,
   "name": "전남광주통합특별시 동구",
-  "sha": "02479738479e476b3a18097a07342a5c7ace3a7a9336e8dd47df9d4e73016152",
-  "size": 484319
+  "sha": "24554aa8007b335c4632c31cd3d45b24e56a03f63f825b9e2926952b462a04c7",
+  "size": 484327
  },
  "5810000": {
   "bbox": [
@@ -2614,8 +2614,8 @@
   "last": "20261011",
   "model": 0,
   "name": "전남광주통합특별시 북구",
-  "sha": "0e1d80ec0fbb3cdd6377957a2a3a9faea9fad1cc6655a35d13420f44b579e13c",
-  "size": 979288
+  "sha": "ca5a69dbfe5851d2b8da56e01179109acc06395560cfbefe20aae68dde689e4f",
+  "size": 979307
  },
  "5825000": {
   "bbox": [
@@ -2794,8 +2794,8 @@
   "last": "20261011",
   "model": 0,
   "name": "전남광주통합특별시 무안군",
-  "sha": "7c2d4e5443caecd9355c7d979bab4c8217c312c0682d04d8e5bf4b13750ea401",
-  "size": 287301
+  "sha": "e778ab5d3032264e3070766e30d2831cd55e5da33d6ecb7ec82acd32f5ef2c03",
+  "size": 287311
  },
  "5885000": {
   "bbox": [
@@ -2854,8 +2854,8 @@
   "last": "20261011",
   "model": 0,
   "name": "전남광주통합특별시 완도군",
-  "sha": "910a64a7ceb9d2ee126e86d29b2e67b61c348e48f324e2828e7536044d25096f",
-  "size": 146017
+  "sha": "cfec7f767f6e7bef22a85644924a7dea9bc491bdb5c02f22d08571c28c38bf86",
+  "size": 146027
  },
  "5905000": {
   "bbox": [
@@ -2869,8 +2869,8 @@
   "last": "20261011",
   "model": 0,
   "name": "전남광주통합특별시 진도군",
-  "sha": "f5087f531a32c4c47c0a93581dbab59f63ff08bee7f5fd4ffb0cc00ed8aa9489",
-  "size": 90752
+  "sha": "234b2b54ecefcee962e81d2ee6cc6b4251202cf774b4774f5a331bdd81a91536",
+  "size": 90761
  },
  "5910000": {
   "bbox": [
