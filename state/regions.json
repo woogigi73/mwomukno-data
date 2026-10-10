@@ -1238,13 +1238,13 @@
    37471463,
    126875124
   ],
-  "count": 6344,
+  "count": 6345,
   "estimate": 5841,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 시흥시",
-  "sha": "82c49e2ef0e23e34df3ac8f7a6063c55f847b78fee41e7eb7a577373d24b7726",
-  "size": 1225896
+  "sha": "dc28f534fba789316e936177b7263313b9f4a480113f2edd6e1eba9d57d24bfd",
+  "size": 1226036
  },
  "4020000": {
   "bbox": [
@@ -1253,13 +1253,13 @@
    37377400,
    126961132
   ],
-  "count": 2514,
+  "count": 2516,
   "estimate": 2250,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 군포시",
-  "sha": "be12bfc5d2da504466af32be4bfe5191fef545f07eabe92ac53932326c3bd7d3",
-  "size": 482857
+  "sha": "d8d7523dcd2b1c70b25ec575645769defb369742979a5a3efa1c15233848c3f2",
+  "size": 483278
  },
  "4030000": {
   "bbox": [
@@ -1270,11 +1270,11 @@
   ],
   "count": 1338,
   "estimate": 1145,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 의왕시",
-  "sha": "4e91d3629a4e964fa686af8d7181ecc60797e1accbaedfc5de56d2b5488084d3",
-  "size": 245503
+  "sha": "1e8dd5c19d41bf80336cf51e132d02d6869e5dd457fd377ed73f3b2de7a0abae",
+  "size": 245515
  },
  "4040000": {
   "bbox": [
@@ -1283,13 +1283,13 @@
    37577110,
    127275318
   ],
-  "count": 3266,
+  "count": 3269,
   "estimate": 2912,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 하남시",
-  "sha": "5d481545d19f782fd0f9bad5acd75bbf170e5408c0d3487e5c600886e6710fac",
-  "size": 657279
+  "sha": "9c791841fe448028cd706182502387ed37b9e2af239e67119556feb1c64eeb93",
+  "size": 657859
  },
  "4050000": {
   "bbox": [
@@ -1298,13 +1298,13 @@
    37363532,
    127423756
   ],
-  "count": 10100,
+  "count": 10099,
   "estimate": 8717,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 용인시 수지구",
-  "sha": "c49947a83bed76beb0329efd53e9d911557e912a3a845c728f130268a4bf7e71",
-  "size": 2010052
+  "sha": "0bc1caab0e67178765e5ea64f40b9943953a1115a8854ed1800de9abc93932b2",
+  "size": 2009765
  },
  "4060000": {
   "bbox": [
@@ -1313,13 +1313,13 @@
    37998589,
    127012288
   ],
-  "count": 6326,
+  "count": 6287,
   "estimate": 5802,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 파주시",
-  "sha": "0f667da26fc9a40f0df6b4e518ce9882ec1a8aa6d485cd86f28f47dd51a81970",
-  "size": 1151474
+  "sha": "d8180ce73da7d62528771834631725b6d7ca0b37c32b45aa5697eb9cbe30ddb3",
+  "size": 1144625
  },
  "4070000": {
   "bbox": [
@@ -1328,13 +1328,13 @@
    37347724,
    127633569
   ],
-  "count": 3588,
+  "count": 3597,
   "estimate": 3143,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 이천시",
-  "sha": "71a20fd920e72af921800cd64e12a61ab8d5c030c59486ba9c7a462a331adc64",
-  "size": 639115
+  "sha": "38bb06dbecad104f7fa20982cf340f352fab0d2b7081d4b521203d02da0ef220",
+  "size": 640664
  },
  "4080000": {
   "bbox": [
@@ -1345,11 +1345,11 @@
   ],
   "count": 3369,
   "estimate": 3046,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 안성시",
-  "sha": "12c1b99ebf22226a2daaa979ba781a06af030ec355809c850809e8c0e779bcbb",
-  "size": 589801
+  "sha": "807335a17b47d0566933e61c021615d3a77cdbf573a3dae8cc25dcb5aa513139",
+  "size": 589734
  },
  "4090000": {
   "bbox": [
@@ -1358,13 +1358,13 @@
    37757918,
    126921720
   ],
-  "count": 5250,
+  "count": 5245,
   "estimate": 4800,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 김포시",
-  "sha": "0c9a394d1c24f0ad4e40599852c241a5e279f3055e7aadcb3eefef80742101c9",
-  "size": 989465
+  "sha": "cf0ef6f04b616d3fd694d9d61f551bfc54434f8b1543986ca89115eb581bc4f3",
+  "size": 988580
  },
  "4140000": {
   "bbox": [
@@ -1373,13 +1373,13 @@
    38215445,
    127147034
   ],
-  "count": 970,
+  "count": 975,
   "estimate": 862,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 연천군",
-  "sha": "9c1c02913e386f44f042a0e00354ea3725e81e8d6c78b0e8f529b41d4313dee6",
-  "size": 158151
+  "sha": "a00531f2fc785ebba96488ce3f76c291ffbe2919457910e0c34a9bab8823f499",
+  "size": 158956
  },
  "4160000": {
   "bbox": [
@@ -1388,13 +1388,13 @@
    38025924,
    127564710
   ],
-  "count": 1936,
+  "count": 1938,
   "estimate": 1756,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 가평군",
-  "sha": "c26f141108a6f452d72afca6b1ebd8463a1a65471ccdef030c90da742fad1e14",
-  "size": 330595
+  "sha": "6438e7340bf5b4865d0e15fc772c3bd1c27304b8f633f16bf2c89f0a79315cf5",
+  "size": 330922
  },
  "4170000": {
   "bbox": [
@@ -1403,13 +1403,13 @@
    37647851,
    127798202
   ],
-  "count": 2091,
+  "count": 2089,
   "estimate": 1882,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "경기도 양평군",
-  "sha": "db08d7c40462d70629c87ca9ea92360160eac4d476ac178c63589b2dd4f8ac4f",
-  "size": 343967
+  "sha": "dd433b17a785818609f00ee07ed7276ff6c426b059aba01cb1c7c8b98b81aa65",
+  "size": 343702
  },
  "4390000": {
   "bbox": [
@@ -1418,13 +1418,13 @@
    37199138,
    128095366
   ],
-  "count": 4129,
+  "count": 4120,
   "estimate": 3729,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 충주시",
-  "sha": "cc8c03bf747fae408e3ec02b64fef7bf695fd7f3fcaed574a84dd187ece28772",
-  "size": 724919
+  "sha": "767f9460dfe32ddbeaebb2df1481fa7b478473bd1d4ff6ceaebdf85e474c0140",
+  "size": 723130
  },
  "4400000": {
   "bbox": [
@@ -1433,13 +1433,13 @@
    37224397,
    128299795
   ],
-  "count": 2615,
+  "count": 2610,
   "estimate": 2375,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 제천시",
-  "sha": "1f5d34b0f496e1d22c1e06a825052feeea9f688753361f9b8f32a63d836a84fc",
-  "size": 459652
+  "sha": "40e7e52d80fac1817a4e816e1046e9b0ed0ee25d2db899eea3dc6dcfc5a41a1b",
+  "size": 458431
  },
  "4420000": {
   "bbox": [
@@ -1450,11 +1450,11 @@
   ],
   "count": 612,
   "estimate": 569,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 보은군",
-  "sha": "d4b30dea87dd67a7930f1e9bcb6cba5cc50ec47f70c9e777177fa58935b91ccf",
-  "size": 105102
+  "sha": "c470ce5220c002d11591e866ab200d6d2d6b88b22f9686655830d7bcf0ffed35",
+  "size": 105099
  },
  "4430000": {
   "bbox": [
@@ -1463,13 +1463,13 @@
    36418580,
    127824549
   ],
-  "count": 902,
+  "count": 893,
   "estimate": 813,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 옥천군",
-  "sha": "9292c96c3bc43312a03738a6df515e0e0b0d21d0425f944ff2c8a8af0937846b",
-  "size": 152079
+  "sha": "1dabbefb3e6cfe1899f1ce1c7c7d2607fb0fb4a00362eb1521df3d3c03762b63",
+  "size": 150444
  },
  "4440000": {
   "bbox": [
@@ -1478,13 +1478,13 @@
    36288755,
    128016919
   ],
-  "count": 791,
+  "count": 793,
   "estimate": 743,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 영동군",
-  "sha": "a6df9a3de3b6b79e3b3ae4f6ac6183c26794aad6a7edac09739a712fc57e5f75",
-  "size": 133149
+  "sha": "e11404a779cc74cc07d5a3f0b9700da3c896d6327cb6ff5ede6868b8adf4a3f8",
+  "size": 133508
  },
  "4450000": {
   "bbox": [
@@ -1493,13 +1493,13 @@
    37005528,
    127568297
   ],
-  "count": 1749,
+  "count": 1752,
   "estimate": 1593,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 진천군",
-  "sha": "db5b0c14ccb040d1cb26cd990d14ed46d40614774dfcb99ef9957e1b5ea15337",
-  "size": 299690
+  "sha": "ae7fd0f9a9a58fffc108e8338c34da2c575bbecdec7d61b673ab5642ac763365",
+  "size": 300200
  },
  "4460000": {
   "bbox": [
@@ -1510,10 +1510,10 @@
   ],
   "count": 733,
   "estimate": 664,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 괴산군",
-  "sha": "09c56504d638b81e61bc7bdfadd81fa937d0261a2e499f1e17ca20ccfc074df8",
+  "sha": "cd5439d3a9c848e602a0a92e1da71d06b0ac09bd746b401bf66c1f557d546e69",
   "size": 125504
  },
  "4470000": {
@@ -1523,13 +1523,13 @@
    37143583,
    127777471
   ],
-  "count": 2315,
+  "count": 2312,
   "estimate": 2244,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 음성군",
-  "sha": "e0d4dd14902e8c60eca928af1cc5fab1069cd8f8f33d49001428e8b7799f1d9b",
-  "size": 397981
+  "sha": "526dc69c31898638296ed5387d1f63c6cefe8936d199e0da45f3ea5877c0b333",
+  "size": 397446
  },
  "4480000": {
   "bbox": [
@@ -1538,13 +1538,13 @@
    37582533,
    128612381
   ],
-  "count": 755,
+  "count": 752,
   "estimate": 722,
-  "last": "20261005",
+  "last": "20261011",
   "model": 0,
   "name": "충청북도 단양군",
-  "sha": "4a0832c102697b6e2db30bbece183aaa7d76d13704663ae7a05d23f1e0ed189c",
-  "size": 127031
+  "sha": "488144716c6ab39de33a730d2faf59971e14b454f3162b116f19b52b738f8dce",
+  "size": 126424
  },
  "4490000": {
   "bbox": [
