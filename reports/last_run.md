@@ -1,16 +1,14 @@
-# 데이터 갱신 보고서 (2026-10-11 03:06 KST)
+# 데이터 갱신 보고서 (2026-10-11 03:45 KST)
 
-- 오늘 이미 쓴 호출: {'general': 2873, 'rest': 887, 'model': 19, 'kakao': 0}
-  · 3930000 실패: URLError: <urlopen error timed out> 
-  · 3940000 실패: URLError: <urlopen error timed out> 
-  · 3970000 실패: URLError: <urlopen error timed out> 
-  · 3980000 실패: URLError: <urlopen error timed out> 
-  · 3990000 실패: URLError: <urlopen error timed out> 
-  · 4000000 실패: URLError: <urlopen error timed out> 
-  · 4010000 실패: URLError: <urlopen error timed out> 
-  · 4020000 실패: URLError: <urlopen error timed out> 
+- 오늘 이미 쓴 호출: {'general': 2881, 'rest': 887, 'model': 19, 'kakao': 0}
+  · 3930000 경기도 안산시 상록구: 8474곳 (모범 0, 카카오 매칭 +0)
+  · 3940000 경기도 고양시 덕양구: 10710곳 (모범 0, 카카오 매칭 +0)
+  · 3970000 경기도 과천시: 716곳 (모범 0, 카카오 매칭 +0)
+  · 3980000 경기도 구리시: 2394곳 (모범 0, 카카오 매칭 +0)
+  · 3990000 경기도 남양주시: 8199곳 (모범 0, 카카오 매칭 +0)
+  · 4000000 경기도 오산시: 2745곳 (모범 0, 카카오 매칭 +0)
 
 ## 요약
-- 이번 실행에서 갱신한 지역: 0
+- 이번 실행에서 갱신한 지역: 6
 - 데이터가 있는 지역: 191/193
-- 오늘 호출 수: 일반 2881/8500, 휴게 887/8500, 모범 19/900, 카카오 0/60000
+- 오늘 호출 수: 일반 3181/8500, 휴게 983/8500, 모범 19/900, 카카오 0/60000
