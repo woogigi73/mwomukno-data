@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=3">
+<link rel="stylesheet" href="app.css?v=4">
 <title>뭐 먹노?</title>
 </head>
 <body>
@@ -28,10 +28,19 @@
 
   <section class="mapwrap" id="mapwrap">
     <canvas id="map" role="img" aria-label="도보 반경 지도"></canvas>
+    <div class="sweep" id="sweep" aria-hidden="true"></div>
+    <div class="pulse" id="pulse" aria-hidden="true"></div>
     <div class="maptop" id="journey"></div>
     <button class="locbtn" id="locBtn" aria-label="내 위치로">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
     </button>
+    <div class="zoom" role="group" aria-label="지도 확대">
+      <button id="zoomIn" aria-label="확대">+</button>
+      <span id="zoomLbl">×1</span>
+      <button id="zoomOut" aria-label="축소">−</button>
+    </div>
+    <button class="recbtn" id="recBtn"><span aria-hidden="true">🍽</span>먹은 곳</button>
+    <div class="mcard" id="card" role="dialog" aria-label="식당 정보" hidden></div>
     <div class="status" id="status" hidden></div>
     <div class="mapbot">
       <div class="radius" id="radius" role="group" aria-label="도보 반경"></div>
@@ -48,7 +57,7 @@
     </div>
     <div class="row">
       <div class="seg" role="group" aria-label="차수" id="rounds"></div>
-      <button class="check" id="tExcl"><span class="box">✓</span>이번 주 간 곳 빼기</button>
+      <div class="tierwrap"><span class="tlabel">추천</span><div class="seg tiers" role="group" aria-label="추천 등급" id="tiers"></div></div>
     </div>
     <div class="cats" id="cats" role="group" aria-label="종류"></div>
     <div class="next" id="next" hidden></div>
@@ -80,6 +89,7 @@
       <li>도보 5·10·15·20분 안의 영업 중인 식당</li>
       <li>룰렛·사다리·해적 룰렛·경마·월드컵·폭탄 돌리기</li>
       <li>1차 → 2차 → 3차, 이번 주 간 곳은 자동 제외</li>
+      <li>먹은 곳에 별점을 남기면 다음 주 추천에 반영</li>
       <li>위치는 이 폰 안에서만 쓰고 어디에도 보내지 않아요</li>
     </ul>
     <button class="btn primary big" id="onbLoc">내 위치로 시작하기</button>
@@ -88,7 +98,7 @@
 </div>
 
 <noscript><p>자바스크립트를 켜야 쓸 수 있어요.</p></noscript>
-<script src="fx.js?v=3" defer></script>
-<script src="app.js?v=3" defer></script>
+<script src="fx.js?v=4" defer></script>
+<script src="app.js?v=4" defer></script>
 </body>
 </html>

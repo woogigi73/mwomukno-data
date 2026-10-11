@@ -335,3 +335,104 @@ input{font:inherit}
 .slotbox.done .mid{background:var(--accent);color:var(--accent-ink)}
 
 @media (prefers-reduced-motion:reduce){.fxcanvas,.fxstamp,.fxcount,.fxflash{display:none}}
+
+/* ===================== v4: 지도 확대·정보 카드·추천 등급·기록 ===================== */
+#map{touch-action:none;cursor:grab}
+#map:active{cursor:grabbing}
+/* 레이더 빛줄기 */
+.sweep{position:absolute;left:50%;top:50%;width:300px;height:300px;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:conic-gradient(from 0deg,rgba(255,194,26,0) 0deg,rgba(255,194,26,0) 290deg,rgba(255,194,26,.30) 355deg,rgba(255,220,110,.55) 360deg);
+  animation:sweep 4.2s linear infinite;mix-blend-mode:multiply}
+@media (prefers-color-scheme:dark){.sweep{mix-blend-mode:screen}}
+@keyframes sweep{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.pulse{position:absolute;width:0;height:0;pointer-events:none}
+.pulse::before,.pulse::after{content:"";position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;border:3px solid var(--accent);
+  animation:ring 2.4s ease-out infinite}
+.pulse::after{animation-delay:1.2s}
+@keyframes ring{from{transform:scale(.6);opacity:.95}to{transform:scale(4.2);opacity:0}}
+
+/* 오른쪽 위 버튼 묶음 */
+.zoom{position:absolute;right:10px;top:62px;width:44px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);display:grid;overflow:hidden}
+.zoom button{height:42px;font-size:24px;font-weight:700;line-height:1}
+.zoom button:active{background:var(--chip)}
+.zoom span{font-size:10.5px;font-weight:800;text-align:center;color:var(--muted);border-block:1px solid var(--line);padding:3px 0;font-variant-numeric:tabular-nums}
+.recbtn{position:absolute;right:10px;top:178px;width:44px;border-radius:12px;background:var(--ink);color:var(--bg);box-shadow:var(--shadow);
+  display:grid;justify-items:center;gap:1px;padding:7px 0 6px;font-size:10.5px;font-weight:800;line-height:1.1}
+.recbtn span{font-size:19px}
+.maptop{right:64px}
+
+/* 점을 누르면 뜨는 카드 */
+.mcard{position:absolute;z-index:6;width:min(280px,calc(100% - 20px));transform:translate(-50%,-100%);background:var(--surface);border-radius:16px;
+  box-shadow:0 12px 34px rgba(10,20,35,.32);padding:11px 12px 12px;display:grid;gap:6px}
+.mcard::after{content:"";position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:var(--surface);transform:translateX(-50%) rotate(45deg);
+  border-radius:0 0 3px 0}
+.mcard.below{transform:translate(-50%,0)}
+.mcard.below::after{bottom:auto;top:-7px;border-radius:3px 0 0 0}
+.c-head{display:flex;align-items:center;gap:8px}
+.c-head i{flex:none;width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 3px var(--chip)}
+.c-head b{flex:1;min-width:0;font-size:16.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-x{flex:none;width:30px;height:30px;border-radius:9px;background:var(--chip);font-size:18px;font-weight:700;padding:0}
+.c-meta{font-size:12.5px;color:var(--muted);line-height:1.4}
+.mcard .badges{display:flex;flex-wrap:wrap;gap:4px}
+.c-acts{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:6px;margin-top:2px}
+.c-acts .btn{padding:9px 4px;font-size:13.5px;border-radius:11px}
+.bdg.star{background:#FFE9A8;color:#6B4A00}
+.bdg.like{background:#FFE1DC;color:#B3261E}
+@media (prefers-color-scheme:dark){.bdg.star{background:#4A3A10;color:#FFD86A}.bdg.like{background:#4A1F1A;color:#FFB4A8}}
+
+/* 추천 등급 */
+.tierwrap{display:inline-flex;align-items:center;gap:6px;min-width:0}
+.tlabel{font-size:12px;font-weight:800;color:var(--muted)}
+.seg.tiers button{padding:8px 10px}
+.seg.tiers button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 2px 8px rgba(224,165,0,.35)}
+
+/* 별점 */
+.stars{display:inline-flex;gap:2px}
+.stars button{font-size:22px;line-height:1;padding:3px 2px;color:var(--line);transition:color .15s}
+.stars button[aria-pressed="true"]{color:#F5B400;text-shadow:0 1px 6px rgba(245,180,0,.45)}
+.stars.big{gap:6px;justify-content:center;width:100%}
+.stars.big button{font-size:40px;padding:4px}
+.myrate{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--chip);border-radius:12px;padding:6px 6px 6px 12px;font-weight:800;font-size:14px}
+.hist{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line)}
+.hist>div:first-child{display:grid;min-width:0}
+.hist .stars{flex:none}
+.hist b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist small{color:var(--muted);font-size:12px}
+.hist .stars button{font-size:20px}
+.banner.review{display:grid;gap:6px;text-align:center}
+
+/* 화면을 조금 더 생기 있게 */
+.top{background:linear-gradient(180deg,var(--surface),var(--bg))}
+.brand b{display:inline-block;animation:wob 5s ease-in-out infinite;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+@keyframes wob{0%,86%,100%{transform:none}90%{transform:rotate(-8deg) scale(1.08)}94%{transform:rotate(6deg) scale(1.08)}}
+.count{background:linear-gradient(135deg,var(--ink),#2b3a52)}
+.panel{box-shadow:0 -8px 24px rgba(20,30,45,.10);border-radius:20px 20px 0 0;border-top:0;position:relative;z-index:2;margin-top:-14px}
+.game{position:relative;overflow:hidden;background:linear-gradient(160deg,#2a3546,var(--tile) 70%);transition:transform .12s;
+  box-shadow:0 4px 0 rgba(0,0,0,.22)}
+.game:active{transform:translateY(3px) scale(.97);box-shadow:0 1px 0 rgba(0,0,0,.22)}
+.game svg{filter:drop-shadow(0 2px 4px rgba(255,194,26,.35))}
+.game.hot{background:linear-gradient(160deg,#FFD65A,var(--accent) 60%,#F2A900)}
+.game.hot svg{filter:none}
+.game::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.18) 50%,transparent 65%);
+  transform:translateX(-130%);animation:shine 5.5s ease-in-out infinite;pointer-events:none}
+.game:nth-child(2)::after{animation-delay:.35s}.game:nth-child(3)::after{animation-delay:.7s}.game:nth-child(4)::after{animation-delay:1.05s}
+.game:nth-child(5)::after{animation-delay:1.4s}.game:nth-child(6)::after{animation-delay:1.75s}.game:nth-child(7)::after{animation-delay:2.1s}
+.game:nth-child(8)::after{animation-delay:2.45s}
+.games .game{animation:tilein .45s cubic-bezier(.2,1.4,.4,1) both}
+.games .game:nth-child(2){animation-delay:.04s}.games .game:nth-child(3){animation-delay:.08s}.games .game:nth-child(4){animation-delay:.12s}
+.games .game:nth-child(5){animation-delay:.16s}.games .game:nth-child(6){animation-delay:.2s}.games .game:nth-child(7){animation-delay:.24s}
+.games .game:nth-child(8){animation-delay:.28s}
+@keyframes tilein{from{transform:translateY(14px) scale(.85);opacity:0}}
+.tog[aria-pressed="true"]{box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.tog.meal[aria-pressed="true"]{border-color:var(--meal);background:color-mix(in srgb,var(--meal) 10%,var(--surface))}
+.tog.drink[aria-pressed="true"]{border-color:var(--drink);background:color-mix(in srgb,var(--drink) 10%,var(--surface))}
+.tog.cafe[aria-pressed="true"]{border-color:var(--cafe);background:color-mix(in srgb,var(--cafe) 10%,var(--surface))}
+.radius button[aria-pressed="true"]{box-shadow:0 2px 8px rgba(224,165,0,.4)}
+@media (prefers-color-scheme:dark){.game{background:linear-gradient(160deg,#2e3947,var(--tile) 70%)}.count{background:linear-gradient(135deg,#2b3a52,#1a2433);color:var(--ink)}}
+@media (orientation:landscape) and (min-width:600px){.panel{margin-top:0;border-radius:0}}
+@media (prefers-reduced-motion:reduce){
+  .sweep,.pulse,.game::after{display:none}
+  .brand b,.games .game{animation:none}
+}
+.mapbot{bottom:24px}
+@media (orientation:landscape) and (min-width:600px){.mapbot{bottom:10px}}
