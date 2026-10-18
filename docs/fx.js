@@ -1,9 +1,10 @@
 /* 뭐 먹노? 연출 엔진: 효과음(외부 파일 없이 합성), 폭죽·불꽃·연기 입자, 화면 흔들림, 번쩍임, "당첨!" 도장.
- * 저사양 폰을 위해 입자 수를 제한하고, '동작 줄이기' 설정이면 시각 효과를 끈다.
+ * 저사양 폰을 위해 입자 수를 제한하고, 설정에서 '화면 효과 줄이기'를 켜면 시각 효과를 끈다.
  */
 'use strict';
 (function () {
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 효과 줄이기는 사이트 설정으로만 정한다 (폰 절전 모드가 '애니메이션 끄기'를 켜도 PC와 같게 보이도록)
+  const reduce = (() => { try { return JSON.parse(localStorage.getItem('mm.settings') || '{}').lowfx === true; } catch (e) { return false; } })();
   let muted = (() => { try { return localStorage.getItem('mm.mute') === '1'; } catch (e) { return false; } })();
 
   // ------------------------------------------------------------ 효과음

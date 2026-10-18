@@ -236,7 +236,7 @@ input{font:inherit}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
 .confetti i{position:absolute;top:-14px;width:8px;height:12px;border-radius:2px;animation:fall 1.6s cubic-bezier(.3,.6,.5,1) forwards}
 @keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
-@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+html.lowfx *{animation-duration:.01ms!important;transition-duration:.01ms!important}
 
 /* 좁은 화면에서 가로로 넘치지 않게: 그리드 칸이 내용 폭만큼 늘어나지 않도록 */
 .app{grid-template-columns:minmax(0,1fr)}
@@ -334,7 +334,7 @@ input{font:inherit}
 .slotbox.done{box-shadow:var(--shadow),inset 0 0 0 6px var(--accent),0 0 40px var(--accent)}
 .slotbox.done .mid{background:var(--accent);color:var(--accent-ink)}
 
-@media (prefers-reduced-motion:reduce){.fxcanvas,.fxstamp,.fxcount,.fxflash{display:none}}
+html.lowfx .fxcanvas,html.lowfx .fxstamp,html.lowfx .fxcount,html.lowfx .fxflash{display:none}
 
 /* ===================== v4: 지도 확대·정보 카드·추천 등급·기록 ===================== */
 #map{touch-action:none;cursor:grab}
@@ -430,9 +430,12 @@ input{font:inherit}
 .radius button[aria-pressed="true"]{box-shadow:0 2px 8px rgba(224,165,0,.4)}
 @media (prefers-color-scheme:dark){.game{background:linear-gradient(160deg,#2e3947,var(--tile) 70%)}.count{background:linear-gradient(135deg,#2b3a52,#1a2433);color:var(--ink)}}
 @media (orientation:landscape) and (min-width:600px){.panel{margin-top:0;border-radius:0}}
-@media (prefers-reduced-motion:reduce){
-  .sweep,.pulse,.game::after{display:none}
-  .brand b,.games .game{animation:none}
-}
+html.lowfx .sweep,html.lowfx .pulse,html.lowfx .game::after{display:none}
+html.lowfx .brand b,html.lowfx .games .game{animation:none}
 .mapbot{bottom:24px}
 @media (orientation:landscape) and (min-width:600px){.mapbot{bottom:10px}}
+
+/* ===================== v5: 길 지도 배경 ===================== */
+.osm{position:absolute;right:10px;bottom:72px;z-index:3;font-size:10.5px;font-weight:700;color:var(--muted);background:color-mix(in srgb,var(--surface) 80%,transparent);
+  border-radius:6px;padding:2px 6px;text-decoration:none}
+@media (orientation:landscape) and (min-width:600px){.osm{bottom:58px}}

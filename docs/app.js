@@ -9,7 +9,9 @@
   const NEW_DAYS = 90;
   const DAY = 864e5;
   const COLORS = ['#E4473A', '#3E6BE0', '#1C9A55', '#F08A24', '#8A4FD0', '#149E9E', '#D64C8A', '#6B7A1E'];
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 효과 줄이기: 폰 설정(절전 모드 등)과 상관없이 이 사이트의 설정으로만 정한다. 그래야 PC와 폰 화면이 같다.
+  const reduce = (() => { try { return JSON.parse(localStorage.getItem('mm.settings') || '{}').lowfx === true; } catch (e) { return false; } })();
+  document.documentElement.classList.toggle('lowfx', reduce);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
@@ -21,7 +23,7 @@
   let visits = store.get('visits', []);         // [[id, name, time]]
   let fav = new Set(store.get('fav', []));
   let hidden = store.get('hidden', {});          // {id: [until(0=계속), name]}
-  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good' }, store.get('settings', {}));
+  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good', lowfx: false, basemap: true }, store.get('settings', {}));
   const saveSettings = () => store.set('settings', settings);
 
   // ------------------------------------------------------------ 상태
@@ -323,6 +325,60 @@
   let popAnim = 0; // 점이 톡톡 나타나는 연출 시작 시각
   let lastPoolKey = '';
   function resetView() { V.zoom = 1; V.px = 0; V.py = 0; hideCard(); }
+
+  // 길·건물 배경: OpenStreetMap 지도 그림을 레이더 느낌(흑백·옅게)으로 깐다.
+  // 화면에 보이는 칸만 받고(미리 받기 없음), 브라우저 캐시를 그대로 쓴다. 못 받으면 격자만 보인다.
+  const tiles = new Map(); // 'z/x/y' -> Image
+  const osmAttr = $('#osmAttr');
+  const darkQ = matchMedia('(prefers-color-scheme: dark)');
+  const hasFilter = 'filter' in ctx;
+  let tileRaf = 0;
+  function tileImg(z, x, y) {
+    const n = 1 << z; x = ((x % n) + n) % n;
+    if (y < 0 || y >= n) return null;
+    const k = z + '/' + x + '/' + y;
+    let im = tiles.get(k);
+    if (im) { tiles.delete(k); tiles.set(k, im); return im; }
+    im = new Image();
+    im.referrerPolicy = 'strict-origin-when-cross-origin'; // 지도 제공처 정책: 어느 사이트에서 쓰는지 알려야 함
+    im.decoding = 'async';
+    im.onload = () => { if (!tileRaf) tileRaf = requestAnimationFrame(() => { tileRaf = 0; drawMap(); }); };
+    im.onerror = () => { im.bad = true; };
+    im.src = 'https://tile.openstreetmap.org/' + k + '.png';
+    tiles.set(k, im);
+    if (tiles.size > 260) tiles.delete(tiles.keys().next().value);
+    return im;
+  }
+  const ready = (im) => im && im.complete && !im.bad && im.naturalWidth > 0;
+  function drawTiles(cx, cy, mpp, w, h, cosLat, dpr) {
+    if (!settings.basemap || !navigator.onLine) return false;
+    const z = Math.max(3, Math.min(19, Math.round(Math.log2(156543.03 * cosLat * dpr / mpp))));
+    const s = (156543.03 * cosLat / (1 << z)) / mpp; // 지도 그림 1px이 화면에서 몇 px인지
+    const n = 256 * (1 << z), lat = S.center.lat * Math.PI / 180;
+    const Cx = (S.center.lng + 180) / 360 * n, Cy = (1 - Math.log(Math.tan(lat) + 1 / Math.cos(lat)) / Math.PI) / 2 * n;
+    const x0 = Math.floor((Cx - cx / s) / 256), x1 = Math.floor((Cx + (w - cx) / s) / 256);
+    const y0 = Math.floor((Cy - cy / s) / 256), y1 = Math.floor((Cy + (h - cy) / s) / 256);
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 64) return false;
+    const dark = darkQ.matches;
+    ctx.save();
+    if (hasFilter) ctx.filter = dark ? 'grayscale(1) invert(1) brightness(.9) contrast(.85)' : 'grayscale(1) contrast(.9) brightness(1.04)';
+    ctx.globalAlpha = hasFilter ? (dark ? 0.5 : 0.62) : 0.4;
+    ctx.imageSmoothingEnabled = true;
+    const size = 256 * s + 0.5;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
+      const sx = cx + (tx * 256 - Cx) * s, sy = cy + (ty * 256 - Cy) * s;
+      const im = tileImg(z, tx, ty);
+      if (ready(im)) { ctx.drawImage(im, sx, sy, size, size); continue; }
+      // 아직 안 받아졌으면 한 단계 넓은 그림을 잘라서 임시로
+      if (z > 3) {
+        const pn = 1 << (z - 1), p = tiles.get((z - 1) + '/' + ((((tx >> 1) % pn) + pn) % pn) + '/' + (ty >> 1));
+        if (ready(p)) ctx.drawImage(p, (tx & 1) * 128, (ty & 1) * 128, 128, 128, sx, sy, size, size);
+      }
+    }
+    ctx.restore();
+    return true;
+  }
+  darkQ.addEventListener && darkQ.addEventListener('change', () => drawMap());
   function drawMap() {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -340,10 +396,12 @@
       surface: css('--surface'), bg: css('--bg'), b: css('--meal'), s: css('--drink'), bs: css('--both'), c: css('--cafe') };
     const font = css('--font');
     ctx.fillStyle = P.map; ctx.fillRect(0, 0, w, h);
-    // 100m 격자
+    const based = drawTiles(cx, cy, mpp, w, h, cosLat, dpr);
+    osmAttr.hidden = !based;
+    // 100m 격자 (길 그림이 있으면 더 옅게)
     const grid = 100 / mpp;
     if (grid > 12) {
-      ctx.strokeStyle = P.line; ctx.globalAlpha = 0.45; ctx.lineWidth = 1; ctx.beginPath();
+      ctx.strokeStyle = P.line; ctx.globalAlpha = based ? 0.18 : 0.45; ctx.lineWidth = 1; ctx.beginPath();
       for (let x = ((cx % grid) + grid) % grid; x < w; x += grid) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
       for (let y = ((cy % grid) + grid) % grid; y < h; y += grid) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
       ctx.stroke(); ctx.globalAlpha = 1;
@@ -1399,11 +1457,14 @@
             const ok = await motionPermission();
             if (ok) window.addEventListener('devicemotion', onMotionHome); else { settings.shake = false; toast('이 폰에서는 흔들기를 쓸 수 없어요'); }
           }
-          saveSettings(); x.setAttribute('aria-pressed', settings[key]); render();
+          saveSettings(); x.setAttribute('aria-pressed', settings[key]);
+          if (key === 'lowfx') { location.reload(); return; }
+          if (key === 'basemap') drawMap();
+          render();
         };
         return x;
       };
-      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'));
+      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('지도에 길·건물 보이기', 'basemap'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
       const snd = document.createElement('button'); snd.className = 'setrow';
       const paint = () => snd.setAttribute('aria-pressed', !(window.MMFX && MMFX.isMuted()));
       snd.append(textEl('span', '게임 효과음')); const si = document.createElement('i'); si.className = 'switch'; snd.append(si);
@@ -1426,7 +1487,7 @@
       b.append(note('홈 화면에 추가하면 앱처럼 쓸 수 있어요.\n· 아이폰(사파리): 공유 버튼 → "홈 화면에 추가"\n· 안드로이드(크롬): 메뉴(⋮) → "홈 화면에 추가" 또는 "앱 설치"'));
       b.lastChild.style.whiteSpace = 'pre-line';
       b.append(note('식당 정보: 행정안전부 지방행정 인허가 공공데이터(일반·휴게·모범음식점)를 매일 자동 갱신 · 마지막 갱신 ' + (S.generated || '-') +
-        '. 실제 영업 여부와 다를 수 있어요. 위치와 기록은 이 폰의 브라우저에만 저장되고 어디에도 보내지 않아요.'));
+        '. 실제 영업 여부와 다를 수 있어요. 위치와 기록은 이 폰의 브라우저에만 저장돼요. 지도 그림: © OpenStreetMap 기여자.'));
       const pv = link('개인정보처리방침', 'privacy.html'); b.append(pv);
     });
   }
