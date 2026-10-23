@@ -5,7 +5,8 @@
 'use strict';
 (function () {
   const $ = (s) => document.querySelector(s);
-  const WALK = 67; // 직선거리 기준 도보 m/분 (골목 우회 감안)
+  // 걷는 시간: 실제 길(보행 경로) 거리 ÷ 보통 걸음(분당 75m, 시속 4.5km) × 신호·건널목 대기 보정
+  const SPEED = 75, SIGNAL = 1.08, DETOUR = 1.3; // DETOUR: 길 정보를 못 받았을 때 직선→실제 길 비율(실측 평균)
   const NEW_DAYS = 90;
   const DAY = 864e5;
   const COLORS = ['#E4473A', '#3E6BE0', '#1C9A55', '#F08A24', '#8A4FD0', '#149E9E', '#D64C8A', '#6B7A1E'];
@@ -23,7 +24,7 @@
   let visits = store.get('visits', []);         // [[id, name, time]]
   let fav = new Set(store.get('fav', []));
   let hidden = store.get('hidden', {});          // {id: [until(0=계속), name]}
-  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good', lowfx: false, basemap: true }, store.get('settings', {}));
+  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good', lowfx: false, basemap: true, route: true }, store.get('settings', {}));
   const saveSettings = () => store.set('settings', settings);
 
   // ------------------------------------------------------------ 상태
@@ -56,7 +57,7 @@
     const h = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
     return 2 * r * Math.asin(Math.min(1, Math.sqrt(h)));
   }
-  const walkMin = (m) => Math.max(1, Math.round(m / WALK));
+  const walkMin = (routeM) => Math.max(1, Math.round(routeM / SPEED * SIGNAL));
   const todayYmd = (() => { const d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); })();
   function ymdToTime(ymd) { return new Date(Math.floor(ymd / 10000), Math.floor(ymd / 100) % 100 - 1, ymd % 100).getTime(); }
   const isNew = (r) => r.open > 19000101 && r.open <= todayYmd && (Date.now() - ymdToTime(r.open)) / DAY <= NEW_DAYS;
@@ -96,8 +97,10 @@
   // 모범음식점 지정, 영업 연수(오래 살아남은 가게), 카카오맵 등록, 전화번호, 단골, 그리고 내가 준 별점.
   let ratings = store.get('ratings', {}); // {id: [별점 1~5, 시각, 이름]}
   const BAD_NAME = /구내식당|직원식당|급식|위탁|휴게소|푸드코트|기숙사|사내식당/;
-  const TIERS = [['top', '상', 50], ['good', '중상', 42], ['mid', '중', 25], ['all', '전체', -1e9]];
-  const tierMin = () => (TIERS.find((t) => t[0] === settings.tier) || TIERS[1])[2];
+  // 등급은 지금 주변 후보 안에서의 순위로 정한다: 상 = 위 30%, 중상 = 위 60%, 중 = 위 85%
+  const TIERS = [['top', '상', 0.3], ['good', '중상', 0.6], ['mid', '중', 0.85], ['all', '전체', 1]];
+  const tierQ = () => (TIERS.find((t) => t[0] === settings.tier) || TIERS[1])[2];
+  let cuts = { top: 50, good: 42, mid: 25 }; // 주변 후보가 없을 때 쓰는 기본값
   function myStars(id) { const x = ratings[id]; return x ? x[0] : 0; }
   function score(r) {
     const st = myStars(r.id);
@@ -110,12 +113,15 @@
     }
     if (r.kakao) s += 20;
     if (r.tel) s += 5;
+    // 블로그 후기 양(최근 2년, 협찬 글이 대부분이면 낮춤): 확인 안 됨(-1)은 0점
+    s += [-4, 4, 10, 18, 26, 32][r.blog] || 0;
     if (fav.has(r.id)) s += 30;
     if (BAD_NAME.test(r.name)) s -= 25;
     if (st === 3) s += 10;
     return s;
   }
-  const tierName = (s) => s >= 100 ? '★내 픽' : s >= 50 ? '상' : s >= 42 ? '중상' : s >= 25 ? '중' : '하';
+  const tierName = (s) => s >= 100 ? '★내 픽' : s >= cuts.top ? '상' : s >= cuts.good ? '중상' : s >= cuts.mid ? '중' : '하';
+  const BLOG_WORDS = ['거의 없음', '조금', '보통', '많음', '아주 많음', '아주 많음'];
   // 별점 1~2점은 30일 동안 후보에서 뺀다
   const dislikedNow = (id) => { const x = ratings[id]; return !!x && x[0] <= 2 && Date.now() - x[1] < 30 * DAY; };
   function rate(r, stars) {
@@ -135,27 +141,176 @@
     return false;
   }
   function computePool() {
-    const limit = S.minutes * WALK;
-    const dLat = limit / 111000, dLng = limit / (111000 * Math.max(0.2, Math.cos(S.center.lat * Math.PI / 180)));
-    const ex = new Set(), minScore = tierMin();
+    // 직선거리는 실제 길보다 길 수 없으니, 직선으로 이 안에 있는 곳만 따져 보면 된다.
+    const limit = S.minutes * SPEED / SIGNAL;
+    const cosLat = Math.max(0.2, Math.cos(S.center.lat * Math.PI / 180));
+    const dLat = limit / 110540, dLng = limit / (111320 * cosLat);
+    const ex = new Set();
     if (settings.exclude) for (const id of recentIds()) ex.add(id);
     S.journey.slice(0, S.round - 1).forEach((r) => ex.add(r.id));
-    const out = [], seen = new Set(), excluded = [];
+    const all = [], seen = new Set(), excluded = [], near = [];
     for (const r of S.all) {
       if (r.lat < S.center.lat - dLat || r.lat > S.center.lat + dLat || r.lng < S.center.lng - dLng || r.lng > S.center.lng + dLng) continue;
-      if (!kindOk(r.kind) || isHidden(r.id) || !catOk(r) || dislikedNow(r.id)) continue;
-      if (score(r) < minScore) continue;
       const m = dist(S.center, r.lat, r.lng);
       if (m > limit) continue;
-      if (ex.has(r.id)) { excluded.push({ r, m }); continue; }
+      near.push({ r, m });
+      if (!kindOk(r.kind) || isHidden(r.id) || !catOk(r) || dislikedNow(r.id)) continue;
+      const w = routeMeters(r, m), min = w / SPEED * SIGNAL;
+      if (min > S.minutes + 0.49) continue;
+      const c = { r, m, w, min, sc: score(r) };
+      if (ex.has(r.id)) { excluded.push(c); continue; }
       const key = r.name + '@' + Math.round(r.lat * 5000) + ',' + Math.round(r.lng * 5000);
       if (seen.has(key)) continue;
       seen.add(key);
-      out.push({ r, m });
+      all.push(c);
     }
-    out.sort((a, b) => a.m - b.m);
+    // 주변 후보 안에서 순위로 등급 기준점 계산
+    if (all.length) {
+      const sc = all.map((c) => c.sc).sort((a, b) => b - a);
+      const at = (q) => sc[Math.min(sc.length - 1, Math.max(0, Math.ceil(sc.length * q) - 1))];
+      cuts = { top: at(0.3), good: at(0.6), mid: at(0.85) };
+    }
+    const q = tierQ();
+    const minScore = q >= 1 || !all.length ? -1e9 : cuts[settings.tier] ?? cuts.good;
+    const out = all.filter((c) => c.sc >= minScore);
+    out.sort((a, b) => a.min - b.min);
+    S.near = near;
     S.pool = out;
     S.excluded = excluded;
+    scheduleWalk();
+  }
+
+  // ------------------------------------------------------------ 실제로 걷는 길 (OpenStreetMap 보행 경로)
+  // 중심에서 주변 가게까지의 '실제 걷는 길' 거리를 길찾기 서버(FOSSGIS)에서 한 번에 최대 99곳씩 받는다.
+  // 위치마다 최대 3번(1초 이상 간격)만 묻고, 나머지 가게는 가까운 실측값의 '돌아가는 비율'로 추정한다.
+  const ROUTER = 'https://routing.openstreetmap.de/routed-foot/';
+  const W = { key: '', exact: new Map(), samples: [], passes: 0, busy: false, last: 0, failUntil: 0, timer: 0, total: 0, route: null, bins: null };
+  function routeMeters(r, m) {
+    const ex = W.exact.get(r.id);
+    if (ex != null) return ex;
+    return m * ratioAt(r.lat, r.lng, m);
+  }
+  function ratioAt(lat, lng, m) {
+    if (!W.samples.length) return m < 60 ? 1.2 : DETOUR;
+    const cosLat = Math.cos(lat * Math.PI / 180);
+    let a = [1e12, 0], b = [1e12, 0], c = [1e12, 0], d = [1e12, 0];
+    for (const p of W.samples) {
+      const dd = Math.hypot((p.lat - lat) * 110540, (p.lng - lng) * 111320 * cosLat);
+      if (dd < d[0]) { d = [dd, p.ratio]; if (d[0] < c[0]) { [c, d] = [d, c]; if (c[0] < b[0]) { [b, c] = [c, b]; if (b[0] < a[0]) [a, b] = [b, a]; } } }
+    }
+    let sw = 0, sr = 0;
+    for (const [dd, ra] of [a, b, c, d]) { if (dd > 1e11) continue; const wt = 1 / (dd + 40); sw += wt; sr += ra * wt; }
+    const r = sw ? sr / sw : DETOUR;
+    return Math.max(1.02, Math.min(3, m < 60 ? Math.max(r, 1.2) : r));
+  }
+  const walkKey = () => S.center.lat.toFixed(4) + ',' + S.center.lng.toFixed(4);
+  function scheduleWalk() {
+    const key = walkKey();
+    if (key !== W.key) {
+      W.key = key; W.exact = new Map(); W.samples = []; W.passes = 0; W.bins = null; W.route = null;
+    }
+    if (!settings.route || W.busy || W.passes >= 3 || W.total >= 40 || !S.near || !S.near.length) return;
+    if (Date.now() < W.failUntil || !navigator.onLine) return;
+    clearTimeout(W.timer);
+    W.timer = setTimeout(walkPass, Math.max(500, 1100 - (Date.now() - W.last)));
+  }
+  function pickDests() {
+    const left = S.near.filter((c) => !W.exact.has(c.r.id) && c.m >= 25);
+    if (!W.samples.length) {
+      // 첫 번째: 방향 12칸 × 거리 3칸에 고르게 퍼진 표본
+      const cells = new Map();
+      const lim = S.minutes * SPEED / SIGNAL;
+      for (const c of left) {
+        const ang = Math.atan2(c.r.lat - S.center.lat, (c.r.lng - S.center.lng) * Math.cos(S.center.lat * Math.PI / 180));
+        const k = Math.floor((ang + Math.PI) / (Math.PI * 2) * 12) % 12 + ':' + Math.min(2, Math.floor(c.m / lim * 3));
+        if (!cells.has(k)) cells.set(k, []);
+        cells.get(k).push(c);
+      }
+      const lists = [...cells.values()].map((l) => l.sort(() => Math.random() - 0.5));
+      const out = [];
+      for (let i = 0; out.length < 99 && lists.some((l) => l.length > i); i++) for (const l of lists) if (l[i] && out.length < 99) out.push(l[i]);
+      return out;
+    }
+    // 그다음: 후보 중 아직 추정값인 곳, 특히 경계(정한 시간 ±2분)에 가까운 곳부터
+    const pool = new Set(S.pool.map((c) => c.r.id));
+    return left.map((c) => {
+      const est = c.m * ratioAt(c.r.lat, c.r.lng, c.m) / SPEED * SIGNAL;
+      return { c, k: (pool.has(c.r.id) ? 0 : 10) + Math.abs(est - S.minutes) };
+    }).filter((x) => x.k < 12.5).sort((a, b) => a.k - b.k).slice(0, 99).map((x) => x.c);
+  }
+  async function walkPass() {
+    if (W.busy) return;
+    const key = W.key, origin = { lat: S.center.lat, lng: S.center.lng };
+    const dests = pickDests();
+    if (!dests.length) { W.passes = 3; return; }
+    W.busy = true; W.last = Date.now(); W.total++;
+    const coords = [origin, ...dests.map((c) => c.r)].map((p) => p.lng.toFixed(5) + ',' + p.lat.toFixed(5)).join(';');
+    try {
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
+      const res = await fetch(ROUTER + 'table/v1/driving/' + coords + '?sources=0&annotations=distance',
+        { signal: ctl.signal, referrerPolicy: 'strict-origin-when-cross-origin', credentials: 'omit' });
+      clearTimeout(to);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      if (j.code !== 'Ok' || !j.distances || !j.distances[0]) throw new Error(j.code || 'bad');
+      if (key !== W.key) return;
+      const row = j.distances[0], snap0 = Math.min(150, (j.sources && j.sources[0] && j.sources[0].distance) || 0);
+      dests.forEach((c, i) => {
+        const dm = row[i + 1];
+        if (typeof dm !== 'number' || !(dm >= 0)) return;
+        const snap = Math.min(150, (j.destinations && j.destinations[i + 1] && j.destinations[i + 1].distance) || 0);
+        const total = dm + snap + snap0;
+        W.exact.set(c.r.id, Math.max(total, c.m));
+        if (c.m >= 60) W.samples.push({ lat: c.r.lat, lng: c.r.lng, ratio: Math.max(1, Math.min(3, total / c.m)), ang: Math.atan2(c.r.lat - origin.lat, (c.r.lng - origin.lng) * Math.cos(origin.lat * Math.PI / 180)) });
+      });
+      W.passes++; W.bins = null;
+    } catch (e) {
+      W.failUntil = Date.now() + 5 * 60e3; // 서버가 바쁘거나 막히면 5분 동안은 직선 추정으로
+    } finally {
+      W.busy = false;
+    }
+    if (key === W.key) render();
+  }
+  // 방향별로 '정한 시간 안에 걸어서 닿는 거리' (지도에 울퉁불퉁한 도달 범위로 그린다)
+  function reachBins() {
+    if (W.bins) return W.bins;
+    const N = 72, out = new Array(N), base = S.minutes * SPEED / SIGNAL;
+    const glob = W.samples.length ? W.samples.reduce((a, p) => a + p.ratio, 0) / W.samples.length : DETOUR;
+    for (let i = 0; i < N; i++) {
+      const ang = -Math.PI + (i + 0.5) / N * Math.PI * 2;
+      let sw = 0.6, sr = glob * 0.6;
+      for (const p of W.samples) {
+        let d = Math.abs(p.ang - ang); if (d > Math.PI) d = Math.PI * 2 - d;
+        if (d > 0.6) continue;
+        const wt = Math.cos(d / 0.6 * Math.PI / 2) ** 2;
+        sw += wt; sr += p.ratio * wt;
+      }
+      out[i] = base / (sr / sw);
+    }
+    // 부드럽게
+    const sm = out.map((_, i) => (out[(i + N - 2) % N] + 2 * out[(i + N - 1) % N] + 3 * out[i] + 2 * out[(i + 1) % N] + out[(i + 2) % N]) / 9);
+    W.bins = sm;
+    return sm;
+  }
+  // 정해진 곳까지 실제 걷는 길(선)을 받아 지도에 그린다
+  async function fetchRoute(r) {
+    W.route = null;
+    if (!settings.route || !navigator.onLine || Date.now() < W.failUntil) return;
+    const o = S.center;
+    try {
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
+      const res = await fetch(ROUTER + 'route/v1/driving/' + o.lng.toFixed(5) + ',' + o.lat.toFixed(5) + ';' + r.lng.toFixed(5) + ',' + r.lat.toFixed(5) +
+        '?overview=full&geometries=geojson', { signal: ctl.signal, referrerPolicy: 'strict-origin-when-cross-origin', credentials: 'omit' });
+      clearTimeout(to);
+      const j = await res.json();
+      const rt = j && j.routes && j.routes[0];
+      if (!rt || !rt.geometry || !Array.isArray(rt.geometry.coordinates)) return;
+      const pts = rt.geometry.coordinates.slice(0, 2000).filter((c) => Array.isArray(c) && isFinite(c[0]) && isFinite(c[1])).map((c) => [c[1], c[0]]);
+      pts.unshift([o.lat, o.lng]); pts.push([r.lat, r.lng]);
+      W.route = { id: r.id, pts, meters: rt.distance, t0: performance.now() };
+      W.exact.set(r.id, Math.max(rt.distance, dist(o, r.lat, r.lng)));
+      drawMap();
+    } catch (e) { /* 선을 못 그리면 그냥 넘어간다 */ }
   }
 
   // ------------------------------------------------------------ 데이터
@@ -189,6 +344,8 @@
         id: clip(f[0], 60), name, kind, cat: clip(f[3], 12) || '음식점', lat, lng, addr: clip(f[6], 90),
         tel: clip(f[7], 14).replace(/[^\d-]/g, ''), open: Number(f[8]) || 0, model: (Number(f[9]) & 1) === 1,
         kakao: clip(f[10], 20).replace(/\D/g, ''), food: clip(f[11], 20), region: region.name,
+        blog: Number.isInteger(f[12]) && f[12] >= 0 && f[12] <= 5 ? f[12] : -1,
+        menu: clip(f[13], 40).split('·').map((x) => x.trim()).filter(Boolean).slice(0, 3),
       });
     }
     return out;
@@ -387,11 +544,25 @@
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const radiusM = S.minutes * WALK, baseR = Math.min(w, h) / 2 * 0.84, mpp = radiusM / baseR / V.zoom;
+    const bins = reachBins(), NB = bins.length;
+    const radiusM = Math.max(...bins) * 1.04, baseR = Math.min(w, h) / 2 * 0.84, mpp = radiusM / baseR / V.zoom;
     const cosLat = Math.cos(S.center.lat * Math.PI / 180);
     const cx = w / 2 + V.px, cy = h / 2 + V.py, radiusPx = radiusM / mpp;
     const toPx = (lat, lng) => [cx + (lng - S.center.lng) * 111320 * cosLat / mpp, cy - (lat - S.center.lat) * 110540 / mpp];
     view = { toPx, mpp, cx, cy, cosLat, w, h, radiusPx };
+    // 걸어서 닿는 범위(방향마다 다름) 모양 — scale배 크기로
+    const blob = (scale) => {
+      const path = new Path2D();
+      for (let i = 0; i <= NB; i++) {
+        const k = i % NB, ang = -Math.PI + (k + 0.5) / NB * Math.PI * 2, rr = bins[k] * scale / mpp;
+        const x = cx + Math.cos(ang) * rr, y = cy - Math.sin(ang) * rr;
+        if (i === 0) path.moveTo(x, y); else path.lineTo(x, y);
+      }
+      path.closePath();
+      return path;
+    };
+    const reach = blob(1);
+    view.reach = reach;
     const P = { map: css('--map'), line: css('--line'), muted: css('--muted'), accent: css('--accent'), ring: css('--ring'), ink: css('--ink'),
       surface: css('--surface'), bg: css('--bg'), b: css('--meal'), s: css('--drink'), bs: css('--both'), c: css('--cafe') };
     const font = css('--font');
@@ -406,21 +577,26 @@
       for (let y = ((cy % grid) + grid) % grid; y < h; y += grid) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
       ctx.stroke(); ctx.globalAlpha = 1;
     }
-    // 반경 원 (안쪽은 은은한 빛)
+    // 걸어서 닿는 범위 (안쪽은 은은한 빛, 바깥은 살짝 어둡게)
+    ctx.save();
+    ctx.fillStyle = 'rgba(10,16,26,.10)'; ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'destination-out'; ctx.fill(reach); ctx.globalCompositeOperation = 'source-over';
+    ctx.restore();
     const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, radiusPx);
-    gr.addColorStop(0, 'rgba(255,194,26,.28)'); gr.addColorStop(0.75, 'rgba(255,194,26,.12)'); gr.addColorStop(1, 'rgba(255,194,26,.05)');
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(cx, cy, radiusPx, 0, Math.PI * 2); ctx.fill();
+    gr.addColorStop(0, 'rgba(255,194,26,.30)'); gr.addColorStop(0.7, 'rgba(255,194,26,.13)'); gr.addColorStop(1, 'rgba(255,194,26,.06)');
+    ctx.fillStyle = gr; ctx.fill(reach);
     ctx.font = '700 11px ' + font;
-    ctx.setLineDash([4, 4]); ctx.strokeStyle = P.muted; ctx.globalAlpha = 0.4; ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = P.muted; ctx.globalAlpha = 0.45; ctx.lineWidth = 1;
     for (const m of [5, 10, 15]) {
       if (m >= S.minutes) continue;
-      const rr = m * WALK / mpp;
-      ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = P.muted; ctx.globalAlpha = 0.8; ctx.textAlign = 'center'; ctx.fillText(m + '분', cx, cy - rr - 4); ctx.globalAlpha = 0.4;
+      ctx.stroke(blob(m / S.minutes));
+      const top = bins[Math.floor(NB * 0.75)] * m / S.minutes / mpp;
+      ctx.fillStyle = P.muted; ctx.globalAlpha = 0.85; ctx.textAlign = 'center'; ctx.fillText(m + '분', cx, cy - top - 4); ctx.globalAlpha = 0.45;
     }
     ctx.globalAlpha = 1; ctx.setLineDash([11, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = P.ring;
-    ctx.beginPath(); ctx.arc(cx, cy, radiusPx, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = P.ink; ctx.font = '800 12px ' + font; ctx.textAlign = 'center'; ctx.fillText('도보 ' + S.minutes + '분', cx, cy - radiusPx - 8);
+    ctx.stroke(reach); ctx.setLineDash([]);
+    const topR = bins[Math.floor(NB * 0.75)] / mpp;
+    const label = '도보 ' + S.minutes + '분' + (W.exact.size ? ' · 실제 길 기준' : '');
     // 크게 확대했을 때만 후보가 아닌 가게를 흐리게
     const poolIds = new Set(S.pool.map((c) => c.r.id));
     if (V.zoom >= 2) {
@@ -447,10 +623,12 @@
     const now = performance.now(), regs = regulars();
     const dotR = Math.min(9, 5.6 + (V.zoom - 1) * 0.9);
     let visible = 0, animating = false;
+    const dots = [];
     S.pool.forEach((c, i) => {
       const [x, y] = toPx(c.r.lat, c.r.lng);
       if (x < -12 || y < -12 || x > w + 12 || y > h + 12) return;
       visible++;
+      dots.push({ x, y, a: Math.atan2(y - cy, x - cx), id: c.r.id, col: P[c.r.kind] || P.b });
       let k = 1;
       if (popAnim && !reduce) {
         const t = (now - popAnim - Math.min(i, 120) * 4) / 260;
@@ -481,6 +659,14 @@
       ctx.fillStyle = P.bg; ctx.font = '900 13px ' + font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(String(i + 1), x, y + 1); ctx.textBaseline = 'alphabetic';
     });
+    // 범위 이름표 (점 위에 보이도록 나중에)
+    {
+      ctx.font = '800 12px ' + font; ctx.textAlign = 'center';
+      const tw = ctx.measureText(label).width + 16, ly = Math.max(16, cy - topR - 12);
+      ctx.fillStyle = P.surface; ctx.globalAlpha = 0.92;
+      ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(cx - tw / 2, ly - 13, tw, 20, 10); else ctx.rect(cx - tw / 2, ly - 13, tw, 20); ctx.fill();
+      ctx.globalAlpha = 1; ctx.fillStyle = P.ink; ctx.fillText(label, cx, ly + 1);
+    }
     // 내 위치
     if (S.myLoc && !S.mine) {
       const [x, y] = toPx(S.myLoc.lat, S.myLoc.lng);
@@ -493,14 +679,133 @@
     ctx.strokeStyle = P.ink; ctx.lineWidth = 3; ctx.stroke();
     ctx.fillStyle = P.ink; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
     canvas.setAttribute('aria-label', '도보 ' + S.minutes + '분 반경 지도, 후보 ' + S.pool.length + '곳');
-    // 레이더 빛줄기·맥박 위치 맞추기 (CSS 애니메이션)
-    const sw = $('#sweep');
-    if (sw) { sw.style.left = cx + 'px'; sw.style.top = cy + 'px'; sw.style.width = sw.style.height = (radiusPx * 2) + 'px'; }
-    const pu = $('#pulse');
-    if (pu) { pu.style.left = cx + 'px'; pu.style.top = cy + 'px'; }
+    view.dots = dots; view.dotR = dotR;
+    fxKick();
     $('#zoomLbl').textContent = '×' + (Math.round(V.zoom * 10) / 10);
     if (card) placeCard();
     if (animating) requestAnimationFrame(drawMap); else popAnim = 0;
+  }
+
+  // ------------------------------------------------------------ 지도 위 움직이는 연출
+  // 레이더 빛줄기(걸어서 닿는 범위 안만), 빛이 지나갈 때 반짝이는 가게 점, 게임 전 조준, 정한 곳까지 걷는 사람
+  const fxc = $('#mapfx'), fctx = fxc.getContext('2d');
+  const SWEEP_MS = 4200;
+  let fxRaf = 0, fxLast = 0, lock = null;
+  function fxKick() { if (!fxRaf) fxRaf = requestAnimationFrame(fxFrame); }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) fxKick(); });
+  function pathPts(pts) {
+    const out = [];
+    let len = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const [x, y] = view.toPx(pts[i][0], pts[i][1]);
+      if (i) len += Math.hypot(x - out[i - 1][0], y - out[i - 1][1]);
+      out.push([x, y, len]);
+    }
+    return out;
+  }
+  function fxFrame(t) {
+    fxRaf = 0;
+    if (!view || document.hidden) return;
+    const live = !reduce && $('#game').hidden;
+    if (live && t - fxLast < 30 && !lock) { fxRaf = requestAnimationFrame(fxFrame); return; } // 30fps면 충분 (배터리)
+    fxLast = t;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = view.w, h = view.h;
+    if (fxc.width !== Math.round(w * dpr) || fxc.height !== Math.round(h * dpr)) { fxc.width = Math.round(w * dpr); fxc.height = Math.round(h * dpr); }
+    const g = fctx;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+    const cx = view.cx, cy = view.cy, R = view.radiusPx * 1.05, acc = css('--accent');
+    if (!reduce && view.reach) {
+      // 1) 레이더 빛줄기
+      const a = (t % SWEEP_MS) / SWEEP_MS * Math.PI * 2 - Math.PI, tail = 1.15;
+      g.save(); g.clip(view.reach);
+      if (g.createConicGradient) {
+        const cg = g.createConicGradient(a - tail, cx, cy);
+        const f = tail / (Math.PI * 2);
+        cg.addColorStop(0, 'rgba(255,194,26,0)'); cg.addColorStop(f * 0.7, 'rgba(255,184,0,.22)');
+        cg.addColorStop(f, 'rgba(255,200,40,.55)'); cg.addColorStop(Math.min(1, f + 0.002), 'rgba(255,194,26,0)'); cg.addColorStop(1, 'rgba(255,194,26,0)');
+        g.fillStyle = cg; g.fillRect(0, 0, w, h);
+      } else {
+        for (let i = 0; i < 12; i++) {
+          g.fillStyle = 'rgba(255,194,26,' + (0.03 * (i + 1) / 2).toFixed(3) + ')';
+          g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, R, a - tail + i * tail / 12, a - tail + (i + 1) * tail / 12); g.closePath(); g.fill();
+        }
+      }
+      g.strokeStyle = 'rgba(255,214,90,.9)'; g.lineWidth = 2; g.shadowColor = acc; g.shadowBlur = 10;
+      g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); g.stroke();
+      g.restore();
+      // 2) 빛이 지나간 가게 점이 반짝
+      const dr = view.dotR || 6;
+      for (const d of view.dots || []) {
+        let k = a - d.a; while (k < 0) k += Math.PI * 2; while (k >= Math.PI * 2) k -= Math.PI * 2;
+        if (k > 1.0) continue;
+        const al = 1 - k;
+        g.globalAlpha = al * 0.9; g.strokeStyle = d.col; g.lineWidth = 2.4;
+        g.beginPath(); g.arc(d.x, d.y, dr + 2 + k * 11, 0, Math.PI * 2); g.stroke();
+        g.globalAlpha = al * 0.55; g.fillStyle = '#fff';
+        g.beginPath(); g.arc(d.x, d.y, dr * 0.55, 0, Math.PI * 2); g.fill();
+      }
+      g.globalAlpha = 1;
+      // 3) 가운데 물결
+      for (const off of [0, 1200]) {
+        const p = ((t + off) % 2400) / 2400;
+        g.globalAlpha = (1 - p) * 0.8; g.strokeStyle = acc; g.lineWidth = 3;
+        g.beginPath(); g.arc(cx, cy, 10 + p * 38, 0, Math.PI * 2); g.stroke();
+      }
+      g.globalAlpha = 1;
+    }
+    // 4) 정한 곳까지 실제 걷는 길 + 걷는 사람
+    if (W.route) {
+      const pp = pathPts(W.route.pts), total = pp[pp.length - 1][2];
+      const grow = reduce ? 1 : Math.min(1, (t - W.route.t0) / 900);
+      g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
+      g.beginPath(); pp.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+      g.setLineDash([total * grow, total + 10]);
+      g.strokeStyle = 'rgba(255,194,26,.45)'; g.lineWidth = 10; g.stroke();
+      g.strokeStyle = css('--ink'); g.lineWidth = 3.4; g.setLineDash(grow < 1 ? [total * grow, total + 10] : [8, 7]); g.lineDashOffset = reduce ? 0 : -t / 35; g.stroke();
+      g.restore();
+      if (grow >= 1 && total > 20) {
+        const p = reduce ? 0.5 : ((t - W.route.t0 - 900) % 7000) / 7000, at = p * total;
+        let i = 1; while (i < pp.length - 1 && pp[i][2] < at) i++;
+        const [x0, y0, l0] = pp[i - 1], [x1, y1, l1] = pp[i], q = l1 > l0 ? (at - l0) / (l1 - l0) : 0;
+        const x = x0 + (x1 - x0) * q, y = y0 + (y1 - y0) * q;
+        g.font = '22px system-ui,sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.save(); g.translate(x, y - 12 - (reduce ? 0 : Math.abs(Math.sin(t / 140)) * 3));
+        if (x1 < x0) g.scale(-1, 1);
+        g.fillText('🚶', 0, 0); g.restore(); g.textBaseline = 'alphabetic';
+      }
+    }
+    // 5) 게임 직전 조준
+    if (lock) {
+      const el = t - lock.t0;
+      lock.pts.forEach((pt, k) => {
+        const st = el - k * lock.step;
+        if (st < 0 || !pt) return;
+        if (!pt.beeped) { pt.beeped = true; sfx.beep(1 + k * 0.07); buzz(6); }
+        const q = Math.min(1, st / 200), sz = 30 - 16 * q, x = pt.x, y = pt.y;
+        g.strokeStyle = '#FF3B30'; g.lineWidth = 2.6; g.globalAlpha = 0.5 + 0.5 * q;
+        g.save(); g.translate(x, y); g.rotate((1 - q) * 1.2);
+        for (let s4 = 0; s4 < 4; s4++) {
+          g.rotate(Math.PI / 2);
+          g.beginPath(); g.moveTo(-sz, -sz + 7); g.lineTo(-sz, -sz); g.lineTo(-sz + 7, -sz); g.stroke();
+        }
+        g.restore();
+        g.globalAlpha = 0.35 * (1 - q * 0.6); g.lineWidth = 1.5; g.setLineDash([3, 4]);
+        g.beginPath(); g.moveTo(cx, cy); g.lineTo(x, y); g.stroke(); g.setLineDash([]);
+        g.globalAlpha = 1;
+      });
+      if (el > lock.step * lock.pts.length + 380) { const done = lock.done; lock = null; done(); }
+    }
+    if (live || lock || (W.route && !reduce)) fxRaf = requestAnimationFrame(fxFrame);
+  }
+  function lockOn(list, done) {
+    if (reduce || !view || !view.toPx) { done(); return; }
+    const pts = list.map((c) => {
+      const [x, y] = view.toPx(c.r.lat, c.r.lng);
+      return x < -20 || y < -20 || x > view.w + 20 || y > view.h + 20 ? null : { x, y };
+    });
+    if (!pts.some(Boolean)) { done(); return; }
+    lock = { t0: performance.now(), step: Math.max(70, Math.min(130, 900 / list.length)), pts, done };
+    fxKick();
   }
   function startPop() {
     const key = S.pool.length + ':' + (S.pool[0] && S.pool[0].r.id) + ':' + Math.round(S.center.lat * 1e4);
@@ -604,10 +909,10 @@
     const dot = document.createElement('i'); dot.style.background = css({ b: '--meal', s: '--drink', bs: '--both', c: '--cafe' }[r.kind]);
     head.append(dot, textEl('b', r.name));
     const x = btn('×', 'c-x', hideCard); x.setAttribute('aria-label', '닫기'); head.append(x);
-    const meta = textEl('div', r.cat + ' · 도보 ' + walkMin(c.m) + '분 · 추천 ' + tierName(sc), 'c-meta');
+    const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · 추천 ' + tierName(sc), 'c-meta');
     cardEl.append(head, meta);
     const bd = badges(r); if (st) bd.prepend(textEl('span', '★'.repeat(st) + ' 내 별점', 'bdg star')); if (bd.childElementCount) cardEl.append(bd);
-    if (r.food) cardEl.append(textEl('div', '대표 음식: ' + r.food, 'c-meta'));
+    if (menuOf(r).length) cardEl.append(menuEl(r));
     const acts = document.createElement('div'); acts.className = 'c-acts';
     acts.append(btn('자세히', '', () => { const cc = card; hideCard(); openDetail(cc.r); }), link('길찾기', kakaoRoute(r)), btn('여기로!', 'primary', () => { hideCard(); decide(r); }));
     cardEl.append(acts);
@@ -761,6 +1066,7 @@
     S.journey = S.journey.slice(0, S.round - 1);
     S.journey[S.round - 1] = r;
     closeGame(); closeSheet();
+    fetchRoute(r);
     toast(S.round + '차 「' + r.name + '」로 결정! 이번 주 기록에 남겼어요');
     render();
   }
@@ -820,15 +1126,19 @@
     let n = SIZE[type];
     if (type === 'ladder' && innerWidth > innerHeight && innerWidth >= 600) n = 6;
     if (type === 'cup') n = p.length >= 8 ? 8 : p.length >= 4 ? 4 : 2;
+    if (lock) return;
     curGame = type;
     cands = weightedPick(p, n);
+    lockOn(cands, () => openGame(type));
+  }
+  function openGame(type) {
     stopAll(); gameKey++;
     $('#game').hidden = false; result.hidden = true; stage.textContent = '';
     $('#gTitle').textContent = TITLES[type];
-    $('#gHead').textContent = S.round + '차 · ' + (S.meal === 'lunch' ? '점심' : '저녁') + ' · 후보 ' + cands.length + '곳 (전체 ' + p.length.toLocaleString('ko-KR') + '곳)';
+    $('#gHead').textContent = S.round + '차 · ' + (S.meal === 'lunch' ? '점심' : '저녁') + ' · 후보 ' + cands.length + '곳 (전체 ' + S.pool.length.toLocaleString('ko-KR') + '곳)';
     requestAnimationFrame(() => ({ roulette, ladder, pirate, race, cup, bomb, slot, shake: shakeGame })[type](cands));
   }
-  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; }
+  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; fxKick(); }
   $('#gClose').onclick = closeGame;
 
   const FX = window.MMFX || { sfx: new Proxy({}, { get: () => () => {} }), cannons() {}, burst() {}, sparkle() {}, smoke() {}, dust() {}, shake() {}, flash() {}, stamp() {}, countdown() {}, popText() {} };
@@ -1132,7 +1442,7 @@
       const mk = (x, col, from) => {
         const b = document.createElement('button'); b.className = 'cupcard'; b.style.background = col;
         const t = document.createElement('b'); t.textContent = x.r.name;
-        const s = document.createElement('small'); s.textContent = x.r.cat + ' · 도보 ' + walkMin(x.m) + '분';
+        const s = document.createElement('small'); s.textContent = (menuOf(x.r).slice(0, 2).join('·') || x.r.cat) + ' · 도보 ' + walkMin(x.w || x.m * DETOUR) + '분';
         b.append(t, s); b.onclick = () => pick(x, b);
         if (!reduce && b.animate) b.animate([{ transform: 'translateX(' + from + '%) rotate(' + (from / 10) + 'deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
         return b;
@@ -1296,7 +1606,19 @@
     if (r.model) add('모범음식점', 'model');
     if (regulars().has(r.id)) add('★ 단골', 'fav');
     if (myStars(r.id) >= 4) add('또 가고 싶은 곳', 'like');
+    if (r.blog >= 4) add('🔥 후기 많음', 'hot');
     return box;
+  }
+  // 추천 메뉴 (최대 3개): 블로그 후기에 자주 나온 메뉴 > 공공데이터 대표 음식 > 가게 이름
+  function menuOf(r) {
+    if (r.menu && r.menu.length) return r.menu;
+    return r.food ? r.food.split(/[,·/]/).map((x) => x.trim()).filter(Boolean).slice(0, 3) : [];
+  }
+  function menuEl(r, big) {
+    const d = document.createElement('div'); d.className = 'menu' + (big ? ' big' : '');
+    d.append(textEl('span', '추천 메뉴', 'mlabel'));
+    for (const m of menuOf(r)) d.append(textEl('span', m, 'mchip'));
+    return d;
   }
   function textEl(tag, text, cls) { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = text; return e; }
   function btn(label, cls, fn) { const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.textContent = label; b.onclick = fn; return b; }
@@ -1304,14 +1626,14 @@
   function note(t) { return textEl('p', t, 'note'); }
 
   function showResult(cand, fromEl) {
-    const r = cand.r, mins = walkMin(cand.m);
+    const r = cand.r, wm = routeMeters(r, cand.m), mins = walkMin(wm);
     result.textContent = ''; result.hidden = false;
     const title = textEl('h3', r.name);
     result.append(
       textEl('div', S.round + '차 당첨', 'eyebrow'), title,
-      textEl('div', r.cat + ' · 도보 약 ' + mins + '분 (' + Math.round(cand.m) + 'm)', 'meta'), badges(r),
+      textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm)', 'meta'), badges(r),
     );
-    if (r.food) result.append(textEl('div', '대표 음식: ' + r.food, 'meta'));
+    if (menuOf(r).length) result.append(menuEl(r, true));
     result.append(textEl('p', comment(r), 'comment'),
       row(btn('다시 하기', '', () => startGame(curGame)), btn('여기로 결정', 'primary', () => decide(r))),
       row(link('카카오맵', kakaoPlace(r), 'sm'), link('길찾기', kakaoRoute(r), 'sm'), btn('공유', 'sm', () => share(r, S.round, mins))),
@@ -1345,14 +1667,18 @@
   }
 
   function openDetail(r) {
-    const m = dist(S.center, r.lat, r.lng), mins = walkMin(m);
+    const m = dist(S.center, r.lat, r.lng), wm = routeMeters(r, m), mins = walkMin(wm);
     openSheet(r.cat || '식당', (b) => {
-      b.append(textEl('h3', r.name, 'detail'), textEl('div', '도보 약 ' + mins + '분 (' + Math.round(m) + 'm) · ' + ({ b: '밥', s: '술', bs: '밥+술', c: '카페' }[r.kind]) + ' · 추천 ' + tierName(score(r)), 'meta'), badges(r));
+      b.append(textEl('h3', r.name, 'detail'), textEl('div', '도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm) · ' + ({ b: '밥', s: '술', bs: '밥+술', c: '카페' }[r.kind]) + ' · 추천 ' + tierName(score(r)), 'meta'), badges(r));
       const myRow = document.createElement('div'); myRow.className = 'myrate';
       const w = textEl('span', myStars(r.id) ? STAR_WORDS[myStars(r.id)] : '내 별점', 'meta');
       myRow.append(starsEl(myStars(r.id), (n) => { rate(r, n); w.textContent = STAR_WORDS[n]; render(); }), w);
       b.append(myRow);
-      if (r.food) b.append(textEl('div', '대표 음식: ' + r.food, 'meta'));
+      if (menuOf(r).length) {
+        b.append(menuEl(r, true));
+        b.append(textEl('div', r.blog > 0 ? '추천 메뉴는 블로그 후기에 자주 나온 메뉴와 가게 이름·공공데이터 대표 음식으로 골랐어요' : '추천 메뉴는 가게 이름과 공공데이터 대표 음식으로 짐작한 거예요', 'fine'));
+      }
+      b.append(textEl('div', '블로그 후기: ' + (r.blog >= 0 ? BLOG_WORDS[r.blog] : '아직 확인 전'), 'meta'));
       const dl = document.createElement('dl'); dl.className = 'kv';
       const kv = (k, v) => dl.append(textEl('dt', k), textEl('dd', v));
       if (r.addr) kv('주소', r.addr);
@@ -1361,6 +1687,7 @@
       if (last) kv('최근 방문', Math.floor((Date.now() - last[2]) / DAY) === 0 ? '오늘' : Math.floor((Date.now() - last[2]) / DAY) + '일 전');
       b.append(dl);
       b.append(row(link('카카오맵에서 보기', kakaoPlace(r)), link('길찾기', kakaoRoute(r))));
+      b.append(row(link('블로그 후기 찾아보기', 'https://search.naver.com/search.naver?where=blog&query=' + encodeURIComponent(((r.region || '').split(' ').pop() || '') + ' ' + r.name), 'sm')));
       const r2 = row(btn(fav.has(r.id) ? '★ 단골 해제' : '☆ 단골 등록', '', () => {
         if (fav.has(r.id)) fav.delete(r.id); else fav.add(r.id);
         store.set('fav', [...fav]); toast(fav.has(r.id) ? '단골로 등록했어요' : '단골에서 뺐어요'); render(); openDetail(r);
@@ -1391,7 +1718,7 @@
         else base = S.all.map((r) => ({ r, m: dist(S.center, r.lat, r.lng) })).filter((x) => x.m < 3000 && (
           f === 'all' ? !isHidden(x.r.id) : f === 'new' ? isNew(x.r) : f === 'model' ? x.r.model : f === 'reg' ? regs.has(x.r.id) : isHidden(x.r.id)))
           .sort((a, b2) => a.m - b2.m);
-        const shown = (q ? base.filter((x) => x.r.name.toLowerCase().includes(q) || x.r.cat.includes(q) || x.r.food.includes(q)) : base).slice(0, 200);
+        const shown = (q ? base.filter((x) => x.r.name.toLowerCase().includes(q) || x.r.cat.includes(q) || x.r.food.includes(q) || x.r.menu.some((m) => m.includes(q))) : base).slice(0, 200);
         cnt.textContent = shown.length + '곳' + (shown.length === 200 ? ' (가까운 200곳)' : '');
         list.textContent = '';
         const P = { b: css('--meal'), s: css('--drink'), bs: css('--both'), c: css('--cafe') };
@@ -1400,10 +1727,10 @@
           const k = document.createElement('span'); k.className = 'k'; k.style.background = P[x.r.kind];
           const mid = document.createElement('span');
           const nm = textEl('div', x.r.name, 'nm'); const sub = document.createElement('div'); sub.className = 'sub';
-          sub.append(document.createTextNode(x.r.cat + (recent.has(x.r.id) ? ' · 이번 주 방문' : '')));
+          sub.append(document.createTextNode(x.r.cat + (menuOf(x.r).length ? ' · ' + menuOf(x.r).join('·') : '') + (recent.has(x.r.id) ? ' · 이번 주 방문' : '')));
           const bd = badges(x.r); if (bd.childElementCount) sub.append(bd);
           mid.append(nm, sub);
-          const rt = document.createElement('span'); rt.className = 'rt'; rt.append(textEl('b', walkMin(x.m) + '분'));
+          const rt = document.createElement('span'); rt.className = 'rt'; rt.append(textEl('b', walkMin(routeMeters(x.r, x.m)) + '분'));
           it.append(k, mid, rt);
           it.onclick = () => {
             if (f === 'hid') { delete hidden[x.r.id]; store.set('hidden', hidden); toast('다시 보이게 했어요'); draw(); render(); return; }
@@ -1460,11 +1787,12 @@
           saveSettings(); x.setAttribute('aria-pressed', settings[key]);
           if (key === 'lowfx') { location.reload(); return; }
           if (key === 'basemap') drawMap();
+          if (key === 'route') { W.key = ''; W.failUntil = 0; }
           render();
         };
         return x;
       };
-      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('지도에 길·건물 보이기', 'basemap'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
+      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('지도에 길·건물 보이기', 'basemap'), sw('실제 걷는 길로 시간 계산', 'route'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
       const snd = document.createElement('button'); snd.className = 'setrow';
       const paint = () => snd.setAttribute('aria-pressed', !(window.MMFX && MMFX.isMuted()));
       snd.append(textEl('span', '게임 효과음')); const si = document.createElement('i'); si.className = 'switch'; snd.append(si);
@@ -1487,7 +1815,7 @@
       b.append(note('홈 화면에 추가하면 앱처럼 쓸 수 있어요.\n· 아이폰(사파리): 공유 버튼 → "홈 화면에 추가"\n· 안드로이드(크롬): 메뉴(⋮) → "홈 화면에 추가" 또는 "앱 설치"'));
       b.lastChild.style.whiteSpace = 'pre-line';
       b.append(note('식당 정보: 행정안전부 지방행정 인허가 공공데이터(일반·휴게·모범음식점)를 매일 자동 갱신 · 마지막 갱신 ' + (S.generated || '-') +
-        '. 실제 영업 여부와 다를 수 있어요. 위치와 기록은 이 폰의 브라우저에만 저장돼요. 지도 그림: © OpenStreetMap 기여자.'));
+        '. 실제 영업 여부와 다를 수 있어요. 위치와 기록은 이 폰의 브라우저에만 저장돼요. 지도 그림·걷는 길: © OpenStreetMap 기여자, 길찾기 FOSSGIS. 블로그 후기 양: 다음 검색(카카오).'));
       const pv = link('개인정보처리방침', 'privacy.html'); b.append(pv);
     });
   }

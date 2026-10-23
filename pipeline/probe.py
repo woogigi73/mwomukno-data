@@ -141,7 +141,7 @@ def main() -> None:
             docs = data.get("documents") or []
             nn = blog.norm_name(r[1]) if hasattr(blog, "norm_name") else ""
             rel = sum(1 for d in docs if nn and nn in blog.norm_name(blog.strip(d.get("title")) + blog.strip(d.get("contents"))))
-            b, menu = blog.evaluate(r[1], r[6], data, today, False)
+            b, menu, _ = blog.evaluate(r[1], r[6], data, today, False)
             w(f"- 「{q}」 전체 {data.get('meta', {}).get('total_count')}건, 받은 {len(docs)}건 중 이 가게 {rel}건 → 단계 {b}, 메뉴 {'·'.join(menu) or '-'}")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")

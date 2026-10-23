@@ -187,13 +187,25 @@ class BlogTest(unittest.TestCase):
         docs = [{"title": "<b>해운대</b> <b>대패부대</b> 후기", "contents": "대패삼겹살 이랑 부대찌개 최고, 대패삼겹살 또 먹고 싶다",
                  "datetime": "2026-09-01T12:00:00.000+09:00"} for _ in range(8)]
         docs += [{"title": "다른 가게", "contents": "해운대 회", "datetime": "2026-09-01T12:00:00.000+09:00"}] * 2
-        b, menu = blog.evaluate("대패부대", "부산광역시 해운대구 우동 1", {"meta": {"total_count": 80}, "documents": docs},
+        b, menu, _ = blog.evaluate("대패부대", "부산광역시 해운대구 우동 1", {"meta": {"total_count": 80}, "documents": docs},
                                 dt.date(2026, 10, 24), False)
-        self.assertEqual(b, 4)  # 80 * 0.8 = 64
+        self.assertEqual(b, 3)  # 80 * 0.8 = 64
         self.assertEqual(menu[:2], ["대패삼겹살", "부대찌개"])
-        b2, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
+        b2, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
                               dt.date(2026, 10, 24), True)
-        self.assertEqual(b2, 3)  # 체인은 최대 20 → 3단계
-        b3, m3 = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
+        self.assertEqual(b2, 2)  # 체인은 최대 30 → 2단계
+        b3, m3, _ = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
                                dt.date(2026, 10, 24), False)
         self.assertEqual((b3, m3), (0, []))
+
+    def test_short_name(self):
+        import datetime as dt
+        from pipeline import blog
+        docs = [{"title": "해운대 맛집", "contents": "친구이와 같이 갔어요 해운대", "datetime": "2026-09-01T00:00:00"}] * 10
+        b, _, st = blog.evaluate("이와", "부산광역시 해운대구", {"meta": {"total_count": 2500000}, "documents": docs},
+                                 dt.date(2026, 10, 24), False)
+        self.assertEqual(st[1], 0)
+        self.assertEqual(b, 0)
+        self.assertEqual(blog.merge_menu("", ["우동", "오마카세"], "니은", "부산광역시 해운대구 우동 1"), "오마카세")
+        self.assertEqual(blog.pick_menu({"돼지국밥": 5, "국밥": 4, "순대국밥": 3, "포차": 9}, 2, blog.NOT_MENU),
+                         ["돼지국밥", "순대국밥"])

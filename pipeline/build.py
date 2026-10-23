@@ -367,7 +367,7 @@ def apply_blog(rows: list, bstate: dict) -> bool:
             r.append(-1 if len(r) == 12 else "")
             changed = True
         v = bstate.get(r[0])
-        b = int(v[0]) if v else -1
+        b = int(v[0]) if v and len(v) >= 4 and v[3] == blog.VERSION else -1
         menu = blog.merge_menu(r[11], (v[1].split("·") if v and v[1] else []), r[1], r[6])
         if r[12] != b or r[13] != menu:
             r[12], r[13] = b, menu
@@ -376,7 +376,7 @@ def apply_blog(rows: list, bstate: dict) -> bool:
 
 
 def blog_stale(v) -> bool:
-    if not v:
+    if not v or len(v) < 4 or v[3] != blog.VERSION:
         return True
     return (NOW - dt.datetime.strptime(v[2], "%Y%m%d").replace(tzinfo=KST)).days >= blog.REFRESH_DAYS
 
@@ -406,8 +406,8 @@ def blog_update(rows: list, bstate: dict, key: str) -> int:
                 BUDGET["blog"] = 0
                 break
             continue
-        b, menu = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
-        bstate[r[0]] = [b, "·".join(menu), TODAY]
+        b, menu, stats = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
+        bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats]
         n += 1
     return n
 

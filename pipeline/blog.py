@@ -14,6 +14,7 @@ from .classify import norm_name
 
 BLOG_URL = "https://dapi.kakao.com/v2/search/blog"
 REFRESH_DAYS = 45
+VERSION = 2  # 계산 방식이 바뀌면 올린다 (이전 결과는 다시 확인)
 
 # 메뉴 사전 (긴 이름이 먼저 잡히도록 길이순 정렬해서 쓴다)
 MENU_WORDS = """
@@ -34,7 +35,10 @@ MENU_WORDS = """
 커피 아메리카노 라떼 카페라떼 아인슈페너 핸드드립 콜드브루 바닐라라떼 플랫화이트 에스프레소 크로플 와플 케이크 치즈케이크 티라미수 마카롱 스콘 크루아상 소금빵 베이글 도넛 휘낭시에 쿠키 빵 빙수 팥빙수 젤라또 아이스크림 밀크티 버블티 생과일주스 스무디 에이드
 """.split()
 # 메뉴 단어를 품고 있지만 메뉴가 아닌 말(먼저 잡아서 지운다): 베이커리→커리, 회사→회 …
-NOT_MENU = {"베이커리", "카레라이스집", "우동역", "회사", "회관", "회식", "전국", "전화", "빵집", "커피숍"}
+NOT_MENU = {"베이커리", "카레라이스집", "우동역", "회사", "회관", "회식", "전국", "전화", "빵집", "커피숍",
+            "포차", "안주", "소주", "이자카야", "치맥", "해산물", "한우", "백반", "정식", "꼬치"}
+# 동네 이름과 겹치는 메뉴 (그 지역 글에서는 동네 이름일 가능성이 큼)
+PLACE_CLASH = {"해운대": {"우동"}}
 MENU = sorted(set(MENU_WORDS) | NOT_MENU, key=len, reverse=True)
 # 이름만 봐서는 메뉴라고 하기 어려운 말(가게 이름에 흔한 말)
 WEAK_IN_NAME = {"회", "전", "빵", "난", "카레", "커피", "안주", "포차", "소주", "와인", "한우"}
@@ -104,12 +108,13 @@ def menu_from_name(name: str, addr: str = "") -> list:
         words = words[:-1]  # 지점 이름(…우동벡스코점) 빼기
     c = menu_from_text(" ".join(words))
     bad = place_words(addr)
+    bad |= PLACE_CLASH.get(region_word(addr), set())
     return [w for w in sorted(c, key=lambda w: (-len(w), w)) if w not in WEAK_IN_NAME and w not in NOT_MENU and w not in bad][:2]
 
 
 def merge_menu(food: str, blog_menu: list, name: str, addr: str = "") -> str:
     out: list = []
-    bad = place_words(addr) | NOT_MENU
+    bad = place_words(addr) | NOT_MENU | PLACE_CLASH.get(region_word(addr), set())
     blog_menu = [w for w in blog_menu if w not in bad]
     for src in ([s.strip() for s in re.split(r"[,·/]", food or "") if s.strip()], blog_menu, menu_from_name(name, addr)):
         for w in src:
@@ -121,11 +126,37 @@ def merge_menu(food: str, blog_menu: list, name: str, addr: str = "") -> str:
 
 
 def bucket(est: float) -> int:
-    return 0 if est < 1 else 1 if est < 5 else 2 if est < 20 else 3 if est < 60 else 4 if est < 200 else 5
+    return 0 if est < 2 else 1 if est < 10 else 2 if est < 40 else 3 if est < 150 else 4 if est < 500 else 5
+
+
+def pick_menu(menu_counts: dict, need: int, bad: set) -> list:
+    out: list = []
+    for w, c in sorted(menu_counts.items(), key=lambda x: (-x[1], -len(x[0]), x[0])):
+        if c < need or w in bad or any(w in o or o in w for o in out):
+            continue
+        out.append(w)
+        if len(out) >= 3:
+            break
+    return out
+
+
+def score_stats(name: str, total: int, rel: int, ndocs: int, recent: int, ads: int, chain: bool) -> int:
+    """저장해 둔 숫자만으로 단계를 다시 계산할 수 있게 따로 둔다."""
+    est = total * (rel / ndocs) if ndocs else 0.0
+    if len(norm_name(name)) <= 2:
+        est = min(est, rel)  # 두 글자 이름은 다른 글에도 흔해서 직접 확인한 글 수만 인정
+    if chain:
+        est = min(est, 30)  # 체인 이름은 지점과 상관없이 글이 많아서 크게 쳐 주지 않는다
+    b = bucket(est)
+    if rel and not recent:
+        b = max(0, b - 1)  # 2년 넘은 글뿐이면 한 단계 낮춤
+    if rel >= 3 and ads / rel >= 0.6:
+        b = max(0, b - 1)  # 협찬·체험단 글이 대부분이면 한 단계 낮춤
+    return b
 
 
 def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -> tuple:
-    """검색 결과 → (단계 0~5, 메뉴 목록). 글 내용은 여기서만 보고 버린다."""
+    """검색 결과 → (단계 0~5, 메뉴 목록, 숫자들). 글 내용은 여기서만 보고 버린다."""
     docs = payload.get("documents") or []
     total = int((payload.get("meta") or {}).get("total_count") or 0)
     nn = norm_name(name)
@@ -134,10 +165,13 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
     rel = recent = ads = 0
     menu_counts: dict = {}
     for d in docs:
-        text = strip(d.get("title")) + " " + strip(d.get("contents"))
+        title, body = strip(d.get("title")), strip(d.get("contents"))
+        text = title + " " + body
         flat = norm_name(text)
         if not nn or nn not in flat:
             continue
+        if short and not re.search(r"(^|[^가-힣A-Za-z0-9])" + re.escape(name.strip()) + r"($|[^가-힣A-Za-z0-9]|에서|은|는|이|가|을|를|의|도)", title + " " + body):
+            continue  # 두 글자 이름은 낱말로 따로 쓰인 경우만
         if (short or chain) and region and region not in text:
             continue
         rel += 1
@@ -151,19 +185,11 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
             ads += 1
         for w, c in menu_from_text(text.replace(name, " ")).items():
             menu_counts[w] = menu_counts.get(w, 0) + min(c, 2)
-    est = total * (rel / len(docs)) if docs else 0.0
-    if chain:
-        est = min(est, 20)  # 체인 이름은 지점과 상관없이 글이 많아서 크게 쳐 주지 않는다
-    b = bucket(est)
-    if rel and not recent:
-        b = max(0, b - 1)  # 2년 넘은 글뿐이면 한 단계 낮춤
-    if rel >= 3 and ads / rel >= 0.6:
-        b = max(0, b - 1)  # 협찬·체험단 글이 대부분이면 한 단계 낮춤
+    b = score_stats(name, total, rel, len(docs), recent, ads, chain)
     need = 2 if rel >= 4 else 1
-    bad = place_words(addr) | NOT_MENU | {region}
-    menu = [w for w, c in sorted(menu_counts.items(), key=lambda x: (-x[1], -len(x[0]), x[0]))
-            if c >= need and w not in bad][:3]
-    return b, menu
+    bad = place_words(addr) | NOT_MENU | {region} | PLACE_CLASH.get(region, set())
+    menu = pick_menu(menu_counts, need, bad)
+    return b, menu, [total, rel, len(docs), recent, ads]
 
 
 def query(name: str, addr: str) -> str:

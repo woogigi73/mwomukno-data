@@ -439,3 +439,17 @@ html.lowfx .brand b,html.lowfx .games .game{animation:none}
 .osm{position:absolute;right:10px;bottom:72px;z-index:3;font-size:10.5px;font-weight:700;color:var(--muted);background:color-mix(in srgb,var(--surface) 80%,transparent);
   border-radius:6px;padding:2px 6px;text-decoration:none}
 @media (orientation:landscape) and (min-width:600px){.osm{bottom:58px}}
+
+/* ===================== v6: 움직이는 지도 층·추천 메뉴 ===================== */
+.mapfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.mapwrap .zoom,.mapwrap .locbtn,.mapwrap .recbtn,.mapwrap .mapbot,.mapwrap .maptop,.mapwrap .status{z-index:4}
+.menu{display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px}
+.menu .mlabel{font-size:11px;font-weight:800;color:var(--muted);margin-right:2px}
+.menu .mchip{font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px;background:color-mix(in srgb,var(--accent) 22%,var(--surface));
+  color:var(--ink);border:1px solid color-mix(in srgb,var(--accent) 55%,transparent)}
+.menu.big .mchip{font-size:14px;padding:5px 12px}
+.menu.big .mlabel{font-size:12px}
+.result .menu{justify-content:center}
+.bdg.hot{background:linear-gradient(90deg,#FF6A3D,#FF3B6B);color:#fff}
+.cupcard small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.osm a{color:inherit;text-decoration:none}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://routing.openstreetmap.de; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="description" content="걸어갈 수 있는 진짜 식당을 룰렛·사다리·해적 룰렛·경마로 골라 주는 친구·동료용 식당 고르기">
 <meta name="theme-color" content="#FFC21A">
@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=5">
+<link rel="stylesheet" href="app.css?v=6">
 <title>뭐 먹노?</title>
 </head>
 <body>
@@ -28,8 +28,7 @@
 
   <section class="mapwrap" id="mapwrap">
     <canvas id="map" role="img" aria-label="도보 반경 지도"></canvas>
-    <div class="sweep" id="sweep" aria-hidden="true"></div>
-    <div class="pulse" id="pulse" aria-hidden="true"></div>
+    <canvas class="mapfx" id="mapfx" aria-hidden="true"></canvas>
     <div class="maptop" id="journey"></div>
     <button class="locbtn" id="locBtn" aria-label="내 위치로">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
@@ -40,7 +39,7 @@
       <button id="zoomOut" aria-label="축소">−</button>
     </div>
     <button class="recbtn" id="recBtn"><span aria-hidden="true">🍽</span>먹은 곳</button>
-    <a class="osm" id="osmAttr" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" hidden>© OpenStreetMap</a>
+    <div class="osm" id="osmAttr" hidden><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a> · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">지도 고치기</a></div>
     <div class="mcard" id="card" role="dialog" aria-label="식당 정보" hidden></div>
     <div class="status" id="status" hidden></div>
     <div class="mapbot">
@@ -99,7 +98,7 @@
 </div>
 
 <noscript><p>자바스크립트를 켜야 쓸 수 있어요.</p></noscript>
-<script src="fx.js?v=5" defer></script>
-<script src="app.js?v=5" defer></script>
+<script src="fx.js?v=6" defer></script>
+<script src="app.js?v=6" defer></script>
 </body>
 </html>
