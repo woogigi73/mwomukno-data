@@ -162,3 +162,38 @@ class MainFlowTest(unittest.TestCase):
         finally:
             os.chdir(cwd)
             tmp.cleanup()
+
+
+class BlogTest(unittest.TestCase):
+    def test_region_word(self):
+        from pipeline import blog
+        self.assertEqual(blog.region_word("부산광역시 해운대구 해운대로 1"), "해운대")
+        self.assertEqual(blog.region_word("경상남도 양산시 중앙로 1"), "양산")
+        self.assertEqual(blog.region_word("서울특별시 중구 세종대로 1"), "중구")
+
+    def test_menu(self):
+        from pipeline import blog
+        c = blog.menu_from_text("돼지국밥 맛집! 돼지국밥이랑 수육 먹었어요. 회사 근처")
+        self.assertEqual(c.get("돼지국밥"), 2)
+        self.assertNotIn("국밥", c)
+        self.assertNotIn("회", c)
+        self.assertEqual(blog.menu_from_name("할매국밥"), ["국밥"])
+        self.assertEqual(blog.merge_menu("", ["돼지국밥", "수육"], "할매국밥"), "돼지국밥·수육")
+        self.assertEqual(blog.merge_menu("밀면", [], "가야밀면"), "밀면")
+
+    def test_evaluate(self):
+        import datetime as dt
+        from pipeline import blog
+        docs = [{"title": "<b>해운대</b> <b>대패부대</b> 후기", "contents": "대패삼겹살 이랑 부대찌개 최고, 대패삼겹살 또 먹고 싶다",
+                 "datetime": "2026-09-01T12:00:00.000+09:00"} for _ in range(8)]
+        docs += [{"title": "다른 가게", "contents": "해운대 회", "datetime": "2026-09-01T12:00:00.000+09:00"}] * 2
+        b, menu = blog.evaluate("대패부대", "부산광역시 해운대구 우동 1", {"meta": {"total_count": 80}, "documents": docs},
+                                dt.date(2026, 10, 24), False)
+        self.assertEqual(b, 4)  # 80 * 0.8 = 64
+        self.assertEqual(menu[:2], ["대패삼겹살", "부대찌개"])
+        b2, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
+                              dt.date(2026, 10, 24), True)
+        self.assertEqual(b2, 3)  # 체인은 최대 20 → 3단계
+        b3, m3 = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
+                               dt.date(2026, 10, 24), False)
+        self.assertEqual((b3, m3), (0, []))

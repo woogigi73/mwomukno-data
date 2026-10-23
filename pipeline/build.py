@@ -15,9 +15,10 @@ import json
 import math
 import os
 import pathlib
+import re
 import time
 
-from . import sources
+from . import blog, sources
 from .classify import clean_text, classify, name_similarity, norm_name
 from .geo import distance_m, tm5174_to_wgs84
 from .safehttp import HttpError, get_json, log, redact, secret
@@ -37,6 +38,7 @@ BUDGET = {
     "rest": int(os.environ.get("BUDGET_REST", "8500")),
     "model": int(os.environ.get("BUDGET_MODEL", "900")),
     "kakao": int(os.environ.get("BUDGET_KAKAO", "60000")),
+    "blog": int(os.environ.get("BUDGET_BLOG", "30000")),
 }
 TIME_LIMIT_S = int(os.environ.get("TIME_LIMIT_S", str(5 * 3600)))
 REFRESH_DAYS = 6
@@ -333,6 +335,94 @@ def kakao_match(records: list, kakao_state: dict, key: str) -> int:
     return matched
 
 
+# ---------------------------------------------------------------- 블로그 언급량·추천 메뉴
+
+COLS = ["id", "name", "kind", "cat", "lat6", "lng6", "addr", "tel", "open", "flags", "kakao", "food", "blog", "menu"]
+_CHAIN: dict = {}
+
+
+def base_name(name: str) -> str:
+    n = norm_name(name)
+    return re.sub(r"[가-힣a-z0-9]{1,8}점$", "", n) if len(n) > 4 else n
+
+
+def chain_names() -> dict:
+    """전국에서 같은 이름(지점명 뺀)이 5곳 이상이면 체인으로 본다."""
+    if not _CHAIN:
+        cnt: dict = {}
+        for path in REGION_DIR.glob("*.json"):
+            for r in load(path, {}).get("r", []):
+                b = base_name(r[1])
+                cnt[b] = cnt.get(b, 0) + 1
+        _CHAIN.update({k: v for k, v in cnt.items() if v >= 5})
+        _CHAIN.setdefault("", 0)
+    return _CHAIN
+
+
+def apply_blog(rows: list, bstate: dict) -> bool:
+    """지역 파일 행에 블로그 단계(12)와 추천 메뉴(13)를 채운다. 바뀐 게 있으면 True."""
+    changed = False
+    for r in rows:
+        while len(r) < len(COLS):
+            r.append(-1 if len(r) == 12 else "")
+            changed = True
+        v = bstate.get(r[0])
+        b = int(v[0]) if v else -1
+        menu = blog.merge_menu(r[11], (v[1].split("·") if v and v[1] else []), r[1], r[6])
+        if r[12] != b or r[13] != menu:
+            r[12], r[13] = b, menu
+            changed = True
+    return changed
+
+
+def blog_stale(v) -> bool:
+    if not v:
+        return True
+    return (NOW - dt.datetime.strptime(v[2], "%Y%m%d").replace(tzinfo=KST)).days >= blog.REFRESH_DAYS
+
+
+def blog_update(rows: list, bstate: dict, key: str) -> int:
+    """카카오 매칭된 식당만(진짜 있는 가게) 블로그 검색. 반환: 새로 확인한 수."""
+    headers = {"Authorization": f"KakaoAK {key}"}
+    chains = chain_names()
+    today = NOW.date()
+    n = 0
+    for r in rows:
+        if not r[10] or not blog_stale(bstate.get(r[0])):
+            continue
+        if used["blog"] >= BUDGET["blog"] or time_left() < 420:
+            break
+        used["blog"] += 1
+        try:
+            _, data = get_json(blog.BLOG_URL, {"query": blog.query(r[1], r[6]), "size": "20", "sort": "accuracy"},
+                               headers=headers, retries=3, pause=0.02)
+        except HttpError as e:
+            if e.status in (401, 403):
+                note(f"⚠️ 블로그 검색 권한 오류(HTTP {e.status}) — 카카오 앱 설정에서 '다음 검색'이 꺼져 있을 수 있어요. 오늘은 멈춥니다.")
+                BUDGET["blog"] = 0
+                break
+            if e.status == 429 or "limit" in e.body.lower():
+                note("⚠️ 블로그 검색 하루 한도 도달 — 내일 이어서 합니다.")
+                BUDGET["blog"] = 0
+                break
+            continue
+        b, menu = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
+        bstate[r[0]] = [b, "·".join(menu), TODAY]
+        n += 1
+    return n
+
+
+def blog_left(regions: dict) -> bool:
+    for code in [c for c in regions if not c.startswith("_")]:
+        path = REGION_DIR / f"{code}.json"
+        if not path.exists():
+            continue
+        bstate = load(STATE / "blog" / f"{code}.json", {})
+        if any(r[10] and blog_stale(bstate.get(r[0])) for r in load(path, {}).get("r", [])):
+            return True
+    return False
+
+
 # ---------------------------------------------------------------- 지역 처리
 
 def build_region(code: str, info: dict, keys: dict) -> bool:
@@ -373,7 +463,8 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
         kid = (kstate.get(r["id"]) or [""])[0]
         flags = 1 if r.get("model") else 0
         rows.append([r["id"], r["name"], r["kind"], r["cat"], int(round(r["lat"] * 1e6)), int(round(r["lng"] * 1e6)),
-                     r["addr"], r["tel"], r["open"], flags, kid, r.get("food", "")])
+                     r["addr"], r["tel"], r["open"], flags, kid, r.get("food", ""), -1, ""])
+    apply_blog(rows, load(STATE / "blog" / f"{code}.json", {}))
     rows.sort(key=lambda x: x[0])
     if not rows:
         note(f"  · {code} 결과 0건 — 파일을 바꾸지 않음")
@@ -387,8 +478,7 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
     lats = [x[4] for x in rows]
     lngs = [x[5] for x in rows]
     data = {"v": 1, "c": code, "n": info.get("name", ""), "u": TODAY,
-            "cols": ["id", "name", "kind", "cat", "lat6", "lng6", "addr", "tel", "open", "flags", "kakao", "food"],
-            "r": rows}
+            "cols": COLS, "r": rows}
     save(path, data, compact_lines=True)
     blob = path.read_bytes()
     if code in MODEL_OK:
@@ -459,6 +549,7 @@ def main() -> None:
         regions.setdefault(c, {"last": "00000000"})["busan"] = True
     done = 0
     kakao_new = 0
+    blog_new = 0
     cursor_start = regions.get("_meta", {}).get("cursor", 0)
 
     def checkpoint() -> None:
@@ -528,18 +619,46 @@ def main() -> None:
                     regions[code].update({"sha": hashlib.sha256(blob).hexdigest(), "size": len(blob)})
                     note(f"  · {code} 카카오 추가 매칭 {n}곳")
                 checkpoint()
+
+        # 블로그 언급량·추천 메뉴: 부산부터. 처음에는 기존 파일에 새 칸(blog, menu)을 붙이는 것만 해도 이름 기반 메뉴가 생긴다.
+        for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
+            if time_left() < 420:
+                break
+            path = REGION_DIR / f"{code}.json"
+            if not path.exists():
+                continue
+            bpath = STATE / "blog" / f"{code}.json"
+            bstate = load(bpath, {})
+            data = load(path, {})
+            got = 0
+            if keys["kakao"] and used["blog"] < BUDGET["blog"]:
+                got = blog_update(data.get("r", []), bstate, keys["kakao"])
+                blog_new += got
+                if got:
+                    save(bpath, bstate)
+            changed = apply_blog(data.get("r", []), bstate)
+            if changed or data.get("cols") != COLS:
+                data["cols"] = COLS
+                save(path, data, compact_lines=True)
+                blob_ = path.read_bytes()
+                regions[code].update({"sha": hashlib.sha256(blob_).hexdigest(), "size": len(blob_)})
+                if got:
+                    note(f"  · {code} 블로그 확인 {got}곳")
+                checkpoint()
     finally:
         codes = [c for c in regions if not c.startswith("_")]
         fresh = sum(1 for c in codes if regions[c].get("count"))
         note(f"\n## 요약\n- 이번 실행에서 갱신한 지역: {done}\n- 데이터가 있는 지역: {fresh}/{len(codes)}")
         note(f"- 오늘 호출 수: 일반 {used['general']}/{BUDGET['general']}, 휴게 {used['rest']}/{BUDGET['rest']}, "
-             f"모범 {used['model']}/{BUDGET['model']}, 카카오 {used['kakao']}/{BUDGET['kakao']}")
+             f"모범 {used['model']}/{BUDGET['model']}, 카카오 {used['kakao']}/{BUDGET['kakao']}, 블로그 {used['blog']}/{BUDGET['blog']}")
         checkpoint()
         # 남은 일이 있고 오늘 한도가 남았으면 다음 실행을 바로 이어 붙인다.
         pending_regions = any(is_stale(regions[c]) for c in codes) or regions.get("_meta", {}).get("cursor", 0) != 0
         pending_kakao = keys["kakao"] and used["kakao"] < BUDGET["kakao"] - 100
-        progressed = done > 0 or kakao_new > 0 or regions.get("_meta", {}).get("cursor", 0) != cursor_start
-        more = progressed and (pending_regions and used["general"] < BUDGET["general"] - 50) or (pending_kakao and kakao_left(regions))
+        pending_blog = keys["kakao"] and used["blog"] < BUDGET["blog"] - 100
+        progressed = done > 0 or kakao_new > 0 or blog_new > 0 or regions.get("_meta", {}).get("cursor", 0) != cursor_start
+        more = progressed and (pending_regions and used["general"] < BUDGET["general"] - 50) or (pending_kakao and kakao_left(regions)) \
+            or (pending_blog and blog_new > 0 and blog_left(regions))
         pathlib.Path("reports").mkdir(exist_ok=True)
         (pathlib.Path("reports") / "continue.txt").write_text("yes\n" if more else "no\n", encoding="utf-8")
 

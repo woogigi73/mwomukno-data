@@ -120,6 +120,29 @@ def main() -> None:
                 w(f"  - 필드: {', '.join(sorted(docs[0].keys()))}")
         except HttpError as e:
             w(f"- 키워드 검색 실패: HTTP {e.status} {e.body[:200]}")
+    w("\n## 블로그 검색 (집계 숫자·메뉴 단어만 기록)")
+    if kk:
+        import json as _json
+        from . import blog
+        try:
+            rows = _json.loads(pathlib.Path("docs/v1/r/3330000.json").read_text(encoding="utf-8"))["r"]
+        except Exception:  # noqa: BLE001
+            rows = []
+        picks = [r for r in rows if r[10]][::max(1, len([r for r in rows if r[10]]) // 14)][:14]
+        today = dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).date()
+        for r in picks:
+            q = blog.query(r[1], r[6])
+            try:
+                st, data = get_json(blog.BLOG_URL, {"query": q, "size": "20", "sort": "accuracy"},
+                                    headers={"Authorization": f"KakaoAK {kk}"}, retries=2)
+            except HttpError as e:
+                w(f"- 블로그 검색 실패: HTTP {e.status} {e.body[:200]}")
+                break
+            docs = data.get("documents") or []
+            nn = blog.norm_name(r[1]) if hasattr(blog, "norm_name") else ""
+            rel = sum(1 for d in docs if nn and nn in blog.norm_name(blog.strip(d.get("title")) + blog.strip(d.get("contents"))))
+            b, menu = blog.evaluate(r[1], r[6], data, today, False)
+            w(f"- 「{q}」 전체 {data.get('meta', {}).get('total_count')}건, 받은 {len(docs)}건 중 이 가게 {rel}건 → 단계 {b}, 메뉴 {'·'.join(menu) or '-'}")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
