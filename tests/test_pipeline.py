@@ -220,4 +220,8 @@ class BlogTest(unittest.TestCase):
         self.assertEqual(blog.parse_hours("정기휴무 : 매주 일요일")["off"], "7")
         self.assertEqual(blog.parse_hours("주차 가능"), {})
         self.assertEqual(blog.vote_hours([{"open": (660, 1260)}, {"open": (660, 1260), "off": "1"}, {"open": (600, 1200)}]),
-                         "1100-2100||1")
+                         "1100-2100||")
+        self.assertEqual(blog.vote_hours([{"off": "1"}, {"open": (660, 1260), "off": "1"}]), "1100-2100||1")
+        self.assertNotIn("off", blog.parse_hours("공휴일 휴무"))
+        self.assertNotIn("off", blog.parse_hours("둘째, 넷째주 일요일 휴무"))
+        self.assertNotIn("off", blog.parse_hours("명절 당일 휴무"))

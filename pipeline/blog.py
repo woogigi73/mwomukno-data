@@ -14,7 +14,7 @@ from .classify import norm_name
 
 BLOG_URL = "https://dapi.kakao.com/v2/search/blog"
 REFRESH_DAYS = 45
-VERSION = 3  # 계산 방식이 바뀌면 올린다 (이전 결과는 다시 확인)
+VERSION = 4  # 계산 방식이 바뀌면 올린다 (이전 결과는 다시 확인)
 
 # 메뉴 사전 (긴 이름이 먼저 잡히도록 길이순 정렬해서 쓴다)
 MENU_WORDS = """
@@ -207,8 +207,9 @@ _RANGE = re.compile(r"(영업\s*시간|운영\s*시간|영업|오픈|OPEN|open)\
                     + _T + r"\s*[~\-–]\s*(?:익일\s*)?" + _T)
 _BREAK = re.compile(r"(브레이크\s*타임|브레이크|휴게\s*시간|break\s*time)\s*[:：]?\s*" + _T + r"\s*[~\-–]\s*" + _T, re.I)
 _DAYS = "월화수목금토일"
-_OFF = re.compile(r"(?:매주\s*)?([월화수목금토일])(?:요일)?\s*(?:,\s*([월화수목금토일])(?:요일)?\s*)?(?:은\s*|정기\s*)?휴무|"
-                  r"(?:정기\s*)?휴무\s*(?:일)?\s*[:：]?\s*(?:매주\s*)?([월화수목금토일])(?:요일)?")
+_OFF = re.compile(r"(?<![가-힣])(?:매주\s*)?([월화수목금토일])요일\s*(?:[,·/]\s*([월화수목금토일])요일\s*)?(?:은\s*|정기\s*)?휴무|"
+                  r"(?:정기\s*)?휴무\s*일?\s*[:：]?\s*(?:매주\s*)?([월화수목금토일])요일")
+_BIWEEK = re.compile(r"(째|번째|격주|첫|마지막)\s*주?\s*$")
 _ALWAYS = re.compile(r"24\s*시간\s*(영업|운영)|연중무휴\s*24")
 _NOOFF = re.compile(r"연중\s*무휴|휴무\s*없")
 
@@ -253,6 +254,8 @@ def parse_hours(text: str) -> dict:
         out["off"] = ""
     else:
         m = _OFF.search(text)
+        if m and _BIWEEK.search(text[max(0, m.start() - 10):m.start()]):
+            m = None  # 둘째·넷째 주, 격주 휴무는 매주가 아니라서 쓰지 않는다
         if m:
             days = "".join(str(_DAYS.index(d) + 1) for d in (m.group(1), m.group(2), m.group(3)) if d)
             if days:
@@ -262,7 +265,7 @@ def parse_hours(text: str) -> dict:
 
 def vote_hours(found: list) -> str:
     """여러 글에서 찾은 값 중 가장 많이(같으면 최근 글 먼저) 나온 값. 형식: 'HHMM-HHMM|HHMM-HHMM|요일숫자'."""
-    def top(key):
+    def top(key, need):
         cnt: dict = {}
         for i, f in enumerate(found):
             if key in f:
@@ -271,8 +274,12 @@ def vote_hours(found: list) -> str:
                 c[0] += 1
         if not cnt:
             return None
-        return max(cnt.items(), key=lambda x: (x[1][0], x[1][1]))[0]
-    op, br, off = top("open"), top("break"), top("off")
+        v, (n, _) = max(cnt.items(), key=lambda x: (x[1][0], x[1][1]))
+        # 한 글에만 나오면 다른 값과 다투지 않을 때만 쓴다. 휴무 요일은 틀리면 하루 종일 빠지니 2개 글 이상 일치해야.
+        if n >= need or (need == 1 and len(cnt) == 1):
+            return v
+        return None
+    op, br, off = top("open", 1), top("break", 1), top("off", 2)
     if op is None and off is None:
         return ""
     f = lambda t: f"{t[0] // 60:02d}{t[0] % 60:02d}-{t[1] // 60:02d}{t[1] % 60:02d}" if t else ""
