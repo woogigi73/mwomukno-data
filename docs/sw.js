@@ -1,7 +1,7 @@
 /* 뭐 먹노? 오프라인·빠른 실행용 서비스 워커. 같은 사이트 파일만 다룬다. */
-const SHELL = 'mm-shell-v7';
+const SHELL = 'mm-shell-v8';
 const DATA = 'mm-data-v1';
-const SHELL_FILES = ['./', 'index.html', 'app.css?v=7', 'fx.js?v=7', 'app.js?v=7', 'manifest.webmanifest', 'icons/icon-192.png', 'privacy.html'];
+const SHELL_FILES = ['./', 'index.html', 'app.css?v=8', 'fx.js?v=8', 'app.js?v=8', 'manifest.webmanifest', 'icons/icon-192.png', 'privacy.html'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(SHELL).then((c) => c.addAll(SHELL_FILES)).then(() => self.skipWaiting()));

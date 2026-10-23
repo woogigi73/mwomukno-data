@@ -34,6 +34,7 @@
     round: 1,
     kinds: new Set(),
     cats: new Set(),
+    food: '',
     minutes: settings.minutes,
     center: store.get('center', { lat: 35.1577, lng: 129.0592 }),
     myLoc: null,
@@ -192,6 +193,47 @@
     store.set('closedSeen', closedSeen);
   }
 
+
+  // ------------------------------------------------------------ 먹고 싶은 음식으로 찾기
+  // 가게 이름·추천 메뉴·대표 음식·업종(+업종별 흔한 메뉴)에서 찾는다. 묶음 말(고기·회·면·해장·매운…)은 여러 메뉴로 넓혀 찾는다.
+  const TYPICAL = {
+    중식: ['짜장면', '짬뽕', '탕수육'], 일식: ['초밥', '돈까스', '우동'], 양식: ['파스타', '스테이크', '피자'], 분식: ['떡볶이', '김밥', '순대'],
+    호프: ['맥주', '치킨'], 치킨: ['치킨'], 고기구이: ['삼겹살', '갈비'], 횟집: ['회', '매운탕'], 김밥: ['김밥', '라면'],
+    냉면: ['냉면', '수육'], 복어: ['복국'], 탕: ['삼계탕'], 카페: ['커피', '디저트'], 베이커리: ['빵', '케이크'], 아이스크림: ['아이스크림'],
+    찻집: ['전통차'], 떡카페: ['떡', '차'], 패스트푸드: ['버거', '감자튀김'], 세계음식: ['쌀국수', '커리'], 레스토랑: ['스테이크', '파스타'],
+    뷔페: ['뷔페'], 주점: ['안주', '소주'],
+  };
+  const FOOD_GROUPS = {
+    고기: ['고기', '삼겹', '목살', '항정', '갈비', '숯불', '한우', '차돌', '등심', '곱창', '막창', '대창', '대패', '주물럭', '고기구이'],
+    회: ['회', '횟집', '물회', '사시미', '광어', '방어', '모둠회', '횟'], 해산물: ['회', '조개', '해물', '대게', '장어', '꼼장어', '곰장어', '낙지', '쭈꾸미', '주꾸미', '아구', '전복', '굴'],
+    국밥: ['국밥', '순대국', '해장국'], 국물: ['국밥', '탕', '찌개', '국', '전골'], 면: ['국수', '칼국수', '냉면', '밀면', '라멘', '우동', '짬뽕', '짜장', '쌀국수', '파스타', '소바', '면'],
+    해장: ['해장국', '국밥', '콩나물국밥', '복국', '재첩', '짬뽕', '라멘', '선지', '북엇국', '해장'], 매운: ['짬뽕', '마라', '닭발', '떡볶이', '쭈꾸미', '주꾸미', '낙지', '불족발', '아구찜', '매운'],
+    중식: ['중식', '짜장', '짬뽕', '탕수육', '마라', '양꼬치'], 일식: ['일식', '초밥', '스시', '돈까스', '돈카츠', '라멘', '우동', '오마카세', '덮밥'],
+    양식: ['양식', '파스타', '피자', '스테이크', '버거', '브런치', '리조또'], 분식: ['분식', '떡볶이', '김밥', '순대', '튀김', '라볶이'],
+    치킨: ['치킨', '통닭', '닭강정'], 커피: ['카페', '커피', '아메리카노', '라떼'], 디저트: ['베이커리', '케이크', '빵', '디저트', '빙수', '마카롱', '도넛', '와플', '크로플'],
+    술: ['호프', '주점', '포차', '이자카야', '맥주', '하이볼', '와인', '술집'], 밥: ['백반', '정식', '한정식', '비빔밥', '덮밥', '쌈밥', '기사식당', '밥'],
+  };
+  const FOOD_CHIPS = ['고기', '국밥', '면', '회', '중식', '일식', '해장', '매운', '치킨', '분식', '디저트'];
+  const normQ = (q) => String(q || '').toLowerCase().replace(/\s+/g, '');
+  function foodTerms(q) {
+    const out = [];
+    for (const part of String(q || '').split(/[,·/]|\s+/).map(normQ).filter(Boolean)) {
+      out.push(...(FOOD_GROUPS[part] || [part]));
+    }
+    return [...new Set(out)];
+  }
+  // 0: 안 맞음, 2: 이름·메뉴에 딱 있음, 1: 업종으로 짐작
+  function foodMatch(r, terms) {
+    if (!terms.length) return 2;
+    const name = normQ(r.name), menu = (r.menu || []).join('|') + '|' + (r.food || '');
+    for (const t of terms) {
+      if (t.length === 1 ? name.endsWith(t) || (r.menu || []).includes(t) : name.includes(t) || menu.includes(t)) return 2;
+    }
+    if (r.menu && r.menu.length) return 0; // 메뉴를 아는 가게인데 없으면 아닌 걸로 (업종이 잘못 적힌 경우 대비)
+    const typ = (TYPICAL[r.cat] || []).join('|') + '|' + r.cat;
+    for (const t of terms) if (t.length > 1 ? typ.includes(t) : (TYPICAL[r.cat] || []).includes(t)) return 1;
+    return 0;
+  }
   function computePool() {
     // 직선거리는 실제 길보다 길 수 없으니, 직선으로 이 안에 있는 곳만 따져 보면 된다.
     const limit = S.minutes * SPEED / SIGNAL;
@@ -202,17 +244,21 @@
     S.journey.slice(0, S.round - 1).forEach((r) => ex.add(r.id));
     const all = [], seen = new Set(), excluded = [], near = [];
     const ct = checkTime();
+    const terms = foodTerms(S.food);
     let shut = 0;
     for (const r of S.all) {
       if (r.lat < S.center.lat - dLat || r.lat > S.center.lat + dLat || r.lng < S.center.lng - dLng || r.lng > S.center.lng + dLng) continue;
       const m = dist(S.center, r.lat, r.lng);
       if (m > limit) continue;
       near.push({ r, m });
-      if (!kindOk(r.kind) || isHidden(r.id) || !catOk(r) || dislikedNow(r.id)) continue;
+      if (isHidden(r.id) || dislikedNow(r.id)) continue;
+      if (!terms.length && (!kindOk(r.kind) || !catOk(r))) continue; // 음식을 넣으면 밥·술·카페 구분 없이 찾는다
+      const fm = terms.length ? foodMatch(r, terms) : 2;
+      if (!fm) continue;
       if (settings.openNow && openState(r, ct.d).closed) { shut++; continue; }
       const w = routeMeters(r, m), min = w / SPEED * SIGNAL;
       if (min > S.minutes + 0.49) continue;
-      const c = { r, m, w, min, sc: score(r) };
+      const c = { r, m, w, min, sc: score(r) + (fm === 2 ? 0 : -15), fm };
       if (ex.has(r.id)) { excluded.push(c); continue; }
       const key = r.name + '@' + Math.round(r.lat * 5000) + ',' + Math.round(r.lng * 5000);
       if (seen.has(key)) continue;
@@ -228,7 +274,7 @@
     const q = tierQ();
     const minScore = q >= 1 || !all.length ? -1e9 : cuts[settings.tier] ?? cuts.good;
     const out = all.filter((c) => c.sc >= minScore);
-    out.sort((a, b) => a.min - b.min);
+    out.sort((a, b) => (b.fm || 2) - (a.fm || 2) || a.min - b.min); // 음식을 넣었으면 그 메뉴가 확실한 곳 먼저
     S.near = near;
     S.check = ct; S.shut = shut;
     S.pool = out;
@@ -661,7 +707,7 @@
     ctx.globalAlpha = 1; ctx.setLineDash([11, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = P.ring;
     ctx.stroke(reach); ctx.setLineDash([]);
     const topR = bins[Math.floor(NB * 0.75)] / mpp;
-    const label = '도보 ' + S.minutes + '분' + (W.exact.size ? ' · 실제 길' : '') +
+    const label = (S.food ? '「' + S.food.slice(0, 8) + '」 ' : '') + '도보 ' + S.minutes + '분' + (W.exact.size ? ' · 실제 길' : '') +
       (settings.openNow && S.check ? (S.check.now ? ' · 지금 연 곳' : ' · ' + hhmm(S.check.d.getHours() * 60 + S.check.d.getMinutes()) + '에 연 곳') : '');
     // 크게 확대했을 때만 후보가 아닌 가게를 흐리게
     const poolIds = new Set(S.pool.map((c) => c.r.id));
@@ -978,7 +1024,7 @@
     const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · 추천 ' + tierName(sc), 'c-meta');
     cardEl.append(head, meta);
     const bd = badges(r); if (st) bd.prepend(textEl('span', '★'.repeat(st) + ' 내 별점', 'bdg star')); if (bd.childElementCount) cardEl.append(bd);
-    if (menuOf(r).length) cardEl.append(menuEl(r));
+    if (hasMenu(r)) cardEl.append(menuEl(r));
     if (r.hours) { const os = openState(r, new Date()); if (os.why) cardEl.append(textEl('div', (os.closed ? '⛔ 지금 ' : '✅ 지금 ') + os.why, 'c-meta')); }
     const acts = document.createElement('div'); acts.className = 'c-acts';
     acts.append(btn('자세히', '', () => { const cc = card; hideCard(); openDetail(cc.r); }), link('길찾기', kakaoRoute(r)), btn('여기로!', 'primary', () => { hideCard(); decide(r); }));
@@ -1026,14 +1072,16 @@
       cats.append(b);
     }
   }
-  let shownCount = 0, rollT = 0;
+  let shownCount = 0, rollT = 0, rollFood = '';
   function rollCount(n) {
     const el = $('#count'), from = shownCount, t0 = performance.now();
+    if (S.food !== rollFood) { rollFood = S.food; shownCount = -1; }
     shownCount = n; cancelAnimationFrame(rollT);
-    if (reduce || from === n) { el.textContent = '후보 ' + n.toLocaleString('ko-KR') + '곳'; return; }
+    const pre = S.food ? '「' + S.food.slice(0, 8) + '」 ' : '후보 ';
+    if (reduce || from === n) { el.textContent = pre + n.toLocaleString('ko-KR') + '곳'; return; }
     (function f(t) {
       const p = Math.min(1, (t - t0) / 450), v = Math.round(from + (n - from) * (1 - Math.pow(1 - p, 3)));
-      el.textContent = '후보 ' + v.toLocaleString('ko-KR') + '곳';
+      el.textContent = pre + v.toLocaleString('ko-KR') + '곳';
       if (p < 1) rollT = requestAnimationFrame(f);
     })(t0);
     if (el.animate) el.animate([{ transform: 'scale(1.12)' }, { transform: 'none' }], { duration: 300 });
@@ -1065,6 +1113,7 @@
       b.setAttribute('aria-pressed', on);
     }
     rollCount(S.pool.length);
+    paintFood();
     startPop();
     $('#areaBtn').textContent = (S.mine ? '내 위치 · ' : '') + (S.area || '지역 선택');
     $('#locBtn').classList.toggle('mine', S.mine);
@@ -1112,6 +1161,53 @@
     else if (t.id === 'searchBtn') openSearch();
     else if (t.id === 'setBtn') openSettings();
   });
+
+
+  // 먹고 싶은 음식 입력칸
+  const foodIn = $('#foodIn'), foodX = $('#foodX'), foodSug = $('#foodSug'), foodHint = $('#foodHint');
+  let foodT = 0;
+  function setFood(v, fromChip) {
+    S.food = String(v || '').trim().slice(0, 20);
+    if (foodIn.value !== S.food) foodIn.value = S.food;
+    hideCard(); resetView(); render();
+    if (fromChip) { foodIn.blur(); foodSug.hidden = true; }
+    if (S.food && S.pool.length && !reduce) { sfx.pop(); }
+  }
+  function nearbyMenus() {
+    const cnt = new Map();
+    for (const c of S.near || []) for (const m of c.r.menu || []) cnt.set(m, (cnt.get(m) || 0) + 1);
+    return [...cnt.entries()].filter(([m]) => !FOOD_CHIPS.includes(m)).sort((a, b) => b[1] - a[1]).slice(0, 8).map((x) => x[0]);
+  }
+  function paintSug() {
+    foodSug.textContent = '';
+    const add = (label, cls) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fchip ' + (cls || ''); b.textContent = label;
+      b.setAttribute('aria-pressed', S.food === label); b.onmousedown = (e) => e.preventDefault(); b.onclick = () => setFood(S.food === label ? '' : label, true); foodSug.append(b); };
+    for (const g of FOOD_CHIPS) add(g, 'grp');
+    const near = nearbyMenus();
+    if (near.length) { foodSug.append(textEl('span', '이 근처 많은 메뉴', 'flabel')); for (const m of near) add(m, ''); }
+  }
+  function paintFood() {
+    foodX.hidden = !S.food;
+    document.body.classList.toggle('foodon', !!S.food);
+    foodHint.textContent = '';
+    if (!S.food) { foodHint.hidden = true; return; }
+    foodHint.hidden = false;
+    if (S.pool.length) {
+      const c = S.pool[0];
+      foodHint.append(textEl('span', '가장 가까운 곳 '), textEl('b', c.r.name), textEl('span', ' 도보 ' + (W.exact.has(c.r.id) ? '' : '약 ') + walkMin(c.w) + '분'));
+      const b = btn('보기', 'sm ink', () => { const cc = S.pool.find((x) => x.r.id === c.r.id); if (cc) showCard(cc); });
+      foodHint.append(b);
+    } else {
+      foodHint.append(textEl('span', '도보 ' + S.minutes + '분 안에 「' + S.food + '」 가게가 없어요'));
+      if (S.minutes < 20) foodHint.append(btn('20분으로 넓히기', 'sm ink', () => { S.minutes = 20; settings.minutes = 20; saveSettings(); render(); }));
+      else if (settings.tier !== 'all') foodHint.append(btn('등급 전체로', 'sm ink', () => { settings.tier = 'all'; saveSettings(); render(); }));
+    }
+  }
+  foodIn.addEventListener('input', () => { clearTimeout(foodT); foodT = setTimeout(() => setFood(foodIn.value), 300); });
+  foodIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { clearTimeout(foodT); setFood(foodIn.value, true); } });
+  foodIn.addEventListener('focus', () => { paintSug(); foodSug.hidden = false; });
+  foodIn.addEventListener('blur', () => setTimeout(() => { foodSug.hidden = true; }, 150));
+  foodX.addEventListener('click', () => setFood('', true));
 
   function nextRound() {
     const last = S.journey[S.round - 1];
@@ -1202,7 +1298,7 @@
     stopAll(); gameKey++;
     $('#game').hidden = false; result.hidden = true; stage.textContent = '';
     $('#gTitle').textContent = TITLES[type];
-    $('#gHead').textContent = S.round + '차 · ' + (S.meal === 'lunch' ? '점심' : '저녁') + ' · 후보 ' + cands.length + '곳 (전체 ' + S.pool.length.toLocaleString('ko-KR') + '곳)';
+    $('#gHead').textContent = S.round + '차 · ' + (S.food ? '「' + S.food.slice(0, 8) + '」 · ' : (S.meal === 'lunch' ? '점심' : '저녁') + ' · ') + '후보 ' + cands.length + '곳 (전체 ' + S.pool.length.toLocaleString('ko-KR') + '곳)';
     requestAnimationFrame(() => ({ roulette, ladder, pirate, race, cup, bomb, slot, shake: shakeGame })[type](cands));
   }
   function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; fxKick(); }
@@ -1689,11 +1785,19 @@
     return r.food ? r.food.split(/[,·/]/).map((x) => x.trim()).filter(Boolean).slice(0, 3) : [];
   }
   function menuEl(r, big) {
-    const d = document.createElement('div'); d.className = 'menu' + (big ? ' big' : '');
-    d.append(textEl('span', '추천 메뉴', 'mlabel'));
-    for (const m of menuOf(r)) d.append(textEl('span', m, 'mchip'));
+    const d = document.createElement('div');
+    const real = menuOf(r), guess = !real.length;
+    const list = guess ? (TYPICAL[r.cat] || []) : real;
+    d.className = 'menu' + (big ? ' big' : '') + (guess ? ' guess' : '');
+    d.append(textEl('span', guess ? '보통 이런 메뉴' : '추천 메뉴', 'mlabel'));
+    const terms = foodTerms(S.food);
+    for (const m of list) {
+      const hit = terms.some((t) => t.length > 1 && (m.includes(t) || t.includes(m)));
+      d.append(textEl('span', m, 'mchip' + (hit ? ' hit' : '')));
+    }
     return d;
   }
+  const hasMenu = (r) => menuOf(r).length > 0 || (TYPICAL[r.cat] || []).length > 0;
   function textEl(tag, text, cls) { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = text; return e; }
   function btn(label, cls, fn) { const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.textContent = label; b.onclick = fn; return b; }
   function row(...kids) { const d = document.createElement('div'); d.className = 'actions'; d.append(...kids); return d; }
@@ -1707,7 +1811,7 @@
       textEl('div', S.round + '차 당첨', 'eyebrow'), title,
       textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm)', 'meta'), badges(r),
     );
-    if (menuOf(r).length) result.append(menuEl(r, true));
+    if (hasMenu(r)) result.append(menuEl(r, true));
     result.append(textEl('p', comment(r), 'comment'),
       row(btn('다시 하기', '', () => startGame(curGame)), btn('여기로 결정', 'primary', () => decide(r))),
       row(link('카카오맵', kakaoPlace(r), 'sm'), link('길찾기', kakaoRoute(r), 'sm'), btn('공유', 'sm', () => share(r, S.round, mins))),
@@ -1748,7 +1852,7 @@
       const w = textEl('span', myStars(r.id) ? STAR_WORDS[myStars(r.id)] : '내 별점', 'meta');
       myRow.append(starsEl(myStars(r.id), (n) => { rate(r, n); w.textContent = STAR_WORDS[n]; render(); }), w);
       b.append(myRow);
-      if (menuOf(r).length) {
+      if (hasMenu(r)) {
         b.append(menuEl(r, true));
         b.append(textEl('div', r.blog > 0 ? '추천 메뉴는 블로그 후기에 자주 나온 메뉴와 가게 이름·공공데이터 대표 음식으로 골랐어요' : '추천 메뉴는 가게 이름과 공공데이터 대표 음식으로 짐작한 거예요', 'fine'));
       }

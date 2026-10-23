@@ -455,3 +455,29 @@ html.lowfx .brand b,html.lowfx .games .game{animation:none}
 .osm a{color:inherit;text-decoration:none}
 .openst{font-size:14px;font-weight:800;color:var(--ok)}
 .openst.shut{color:var(--bad)}
+
+/* ===================== v8: 먹고 싶은 음식 ===================== */
+.foodq{position:relative;display:flex;align-items:center;gap:6px;background:var(--chip);border-radius:13px;padding:2px 6px 2px 10px;
+  border:1.5px solid transparent;transition:border-color .15s,box-shadow .15s}
+.foodq:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 25%,transparent);background:var(--surface)}
+.ficon{font-size:17px}
+#foodIn{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font-size:15px;font-weight:700;padding:9px 2px;outline:none}
+#foodIn::placeholder{color:var(--muted);font-weight:600}
+#foodIn::-webkit-search-cancel-button{display:none}
+#foodX{width:30px;height:30px;border-radius:9px;background:var(--line);font-weight:900;font-size:13px}
+.fsug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);
+  padding:10px;display:flex;flex-wrap:wrap;gap:6px;max-height:40vh;overflow:auto;border:1px solid var(--line);animation:sugin .16s ease-out}
+@keyframes sugin{from{transform:translateY(-6px);opacity:0}}
+.fchip{border:1.5px solid var(--line);border-radius:99px;padding:6px 11px;font-size:13px;font-weight:800;background:var(--surface)}
+.fchip.grp{background:color-mix(in srgb,var(--accent) 18%,var(--surface));border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.flabel{width:100%;font-size:11px;font-weight:800;color:var(--muted);margin-top:4px}
+.fhint{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap;font-size:13px;background:color-mix(in srgb,var(--accent) 16%,var(--surface));
+  border-radius:12px;padding:6px 6px 6px 12px;animation:sugin .2s ease-out}
+.fhint b{font-weight:900}
+.fhint .btn{margin-left:auto;padding:6px 10px;font-size:13px}
+body.foodon .tog,body.foodon .cats{opacity:.45}
+.menu.guess .mchip{background:transparent;border-style:dashed;color:var(--muted)}
+.menu.guess .mlabel{font-style:normal}
+.menu .mchip.hit{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.panel{z-index:7}

@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=7">
+<link rel="stylesheet" href="app.css?v=8">
 <title>뭐 먹노?</title>
 </head>
 <body>
@@ -59,6 +59,13 @@
       <div class="seg" role="group" aria-label="차수" id="rounds"></div>
       <div class="tierwrap"><span class="tlabel">추천</span><div class="seg tiers" role="group" aria-label="추천 등급" id="tiers"></div></div>
     </div>
+    <div class="foodq">
+      <span class="ficon" aria-hidden="true">🍽</span>
+      <input id="foodIn" type="search" placeholder="먹고 싶은 음식 (예: 국밥, 짬뽕, 고기)" maxlength="20" enterkeyhint="search" autocomplete="off" aria-label="먹고 싶은 음식">
+      <button type="button" id="foodX" aria-label="지우기" hidden>✕</button>
+      <div class="fsug" id="foodSug" hidden></div>
+    </div>
+    <div class="fhint" id="foodHint" hidden></div>
     <div class="cats" id="cats" role="group" aria-label="종류"></div>
     <div class="next" id="next" hidden></div>
     <div class="games" id="games"></div>
@@ -98,7 +105,7 @@
 </div>
 
 <noscript><p>자바스크립트를 켜야 쓸 수 있어요.</p></noscript>
-<script src="fx.js?v=7" defer></script>
-<script src="app.js?v=7" defer></script>
+<script src="fx.js?v=8" defer></script>
+<script src="app.js?v=8" defer></script>
 </body>
 </html>
