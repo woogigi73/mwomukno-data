@@ -187,14 +187,14 @@ class BlogTest(unittest.TestCase):
         docs = [{"title": "<b>해운대</b> <b>대패부대</b> 후기", "contents": "대패삼겹살 이랑 부대찌개 최고, 대패삼겹살 또 먹고 싶다",
                  "datetime": "2026-09-01T12:00:00.000+09:00"} for _ in range(8)]
         docs += [{"title": "다른 가게", "contents": "해운대 회", "datetime": "2026-09-01T12:00:00.000+09:00"}] * 2
-        b, menu, _ = blog.evaluate("대패부대", "부산광역시 해운대구 우동 1", {"meta": {"total_count": 80}, "documents": docs},
+        b, menu, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구 우동 1", {"meta": {"total_count": 80}, "documents": docs},
                                 dt.date(2026, 10, 24), False)
         self.assertEqual(b, 3)  # 80 * 0.8 = 64
         self.assertEqual(menu[:2], ["대패삼겹살", "부대찌개"])
-        b2, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
+        b2, _, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
                               dt.date(2026, 10, 24), True)
         self.assertEqual(b2, 2)  # 체인은 최대 30 → 2단계
-        b3, m3, _ = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
+        b3, m3, _, _ = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
                                dt.date(2026, 10, 24), False)
         self.assertEqual((b3, m3), (0, []))
 
@@ -202,10 +202,22 @@ class BlogTest(unittest.TestCase):
         import datetime as dt
         from pipeline import blog
         docs = [{"title": "해운대 맛집", "contents": "친구이와 같이 갔어요 해운대", "datetime": "2026-09-01T00:00:00"}] * 10
-        b, _, st = blog.evaluate("이와", "부산광역시 해운대구", {"meta": {"total_count": 2500000}, "documents": docs},
+        b, _, st, _ = blog.evaluate("이와", "부산광역시 해운대구", {"meta": {"total_count": 2500000}, "documents": docs},
                                  dt.date(2026, 10, 24), False)
         self.assertEqual(st[1], 0)
         self.assertEqual(b, 0)
         self.assertEqual(blog.merge_menu("", ["우동", "오마카세"], "니은", "부산광역시 해운대구 우동 1"), "오마카세")
         self.assertEqual(blog.pick_menu({"돼지국밥": 5, "국밥": 4, "순대국밥": 3, "포차": 9}, 2, blog.NOT_MENU),
                          ["돼지국밥", "순대국밥"])
+
+    def test_hours(self):
+        from pipeline import blog
+        h = blog.parse_hours("영업시간 : 11:00 ~ 21:30 브레이크타임 15:00~17:00 매주 월요일 휴무")
+        self.assertEqual(h, {"open": (660, 1290), "break": (900, 1020), "off": "1"})
+        self.assertEqual(blog.parse_hours("영업시간 오전 11시~오후 9시, 연중무휴")["open"], (660, 1260))
+        self.assertEqual(blog.parse_hours("영업시간 17:00 - 02:00")["open"], (1020, 1560))
+        self.assertEqual(blog.parse_hours("24시간 영업")["open"], (0, 1440))
+        self.assertEqual(blog.parse_hours("정기휴무 : 매주 일요일")["off"], "7")
+        self.assertEqual(blog.parse_hours("주차 가능"), {})
+        self.assertEqual(blog.vote_hours([{"open": (660, 1260)}, {"open": (660, 1260), "off": "1"}, {"open": (600, 1200)}]),
+                         "1100-2100||1")

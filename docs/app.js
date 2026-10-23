@@ -24,7 +24,7 @@
   let visits = store.get('visits', []);         // [[id, name, time]]
   let fav = new Set(store.get('fav', []));
   let hidden = store.get('hidden', {});          // {id: [until(0=계속), name]}
-  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good', lowfx: false, basemap: true, route: true }, store.get('settings', {}));
+  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good', lowfx: false, basemap: true, route: true, openNow: true }, store.get('settings', {}));
   const saveSettings = () => store.set('settings', settings);
 
   // ------------------------------------------------------------ 상태
@@ -140,6 +140,58 @@
     for (const c of S.cats) if (catFn.get(c)(r)) return true;
     return false;
   }
+  // ------------------------------------------------------------ 영업 중인가?
+  // 1) 블로그 글에 적힌 영업시간·브레이크타임·정기휴무, 2) 내가 '문 닫혀 있었어요'를 누른 요일·시간,
+  // 3) 둘 다 없으면 업종별로 '거의 확실히 닫은' 시간대(술집 아침, 밥집 새벽 등)만 뺀다.
+  let closedSeen = store.get('closedSeen', {}); // {id: [[요일 0~6, 분, 시각], ...]}
+  const DAYN = ['일', '월', '화', '수', '목', '금', '토'];
+  const hhmm = (t) => String(Math.floor(t / 60) % 24).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  // 검사 시각: 지금 고른 끼니 시간대면 '지금', 아니면 그 끼니의 대표 시각(점심 12:30, 저녁 19:00, 2·3차는 더 늦게)
+  function checkTime() {
+    const now = new Date(), h = now.getHours() + now.getMinutes() / 60;
+    const isNow = S.meal === 'lunch' ? h >= 10 && h < 15.5 : h >= 15.5 || h < 4;
+    const start = S.meal === 'lunch' ? 11.5 : 18; // 끼니 시작 전이면 그 시각 기준 (오후 4시에 저녁 고르면 18:00)
+    const early = isNow && h >= 4 && h < start;
+    if (isNow && !early && S.round === 1) return { d: now, now: true };
+    const d = new Date(now);
+    if (early) d.setHours(Math.floor(start), (start % 1) * 60 + (S.round - 1) * 90, 0, 0);
+    else if (isNow) d.setMinutes(d.getMinutes() + (S.round - 1) * 90);
+    if (early) return { d, now: false };
+    if (isNow) return { d, now: S.round === 1 };
+    { const base = S.meal === 'lunch' ? 12.5 : 19 + (S.round - 1) * 1.5; d.setHours(Math.floor(base), Math.round((base % 1) * 60), 0, 0); }
+    return { d, now: isNow };
+  }
+  const NIGHT_OK = /24|국밥|해장|순대|감자탕|편의|김밥천국/;
+  function openState(r, d) {
+    let dow = d.getDay(), t = d.getHours() * 60 + d.getMinutes();
+    const seen = closedSeen[r.id];
+    if (seen && seen.some((x) => x[0] === dow && Math.abs(x[1] - t) <= 90 && Date.now() - x[2] < 60 * DAY)) return { closed: true, why: '전에 이 요일·시간에 닫혀 있었음' };
+    const h = r.hours;
+    if (h) {
+      if (h.open && t < 300 && h.open[1] > 1440) { t += 1440; dow = (dow + 6) % 7; } // 새벽은 전날 영업의 연장
+      const dIdx = String(dow === 0 ? 7 : dow);
+      if (h.off && h.off.includes(dIdx)) return { closed: true, why: DAYN[dow] + '요일 정기휴무' };
+      if (h.open) {
+        if (t < h.open[0] || t >= h.open[1]) return { closed: true, why: t < h.open[0] ? '영업 전 (' + hhmm(h.open[0]) + ' 오픈)' : '영업 끝 (' + hhmm(h.open[1]) + '까지)' };
+        if (h.brk && t >= h.brk[0] && t < h.brk[1]) return { closed: true, why: '브레이크타임 (' + hhmm(h.brk[1]) + '부터)' };
+        return { closed: false, why: '영업 중' };
+      }
+      return { closed: false, why: '' };
+    }
+    if (r.kind === 's' && t >= 360 && t < 900) return { closed: true, why: '술집은 보통 오후 늦게 열어요' };
+    if (r.kind === 'c' && (t < 390 || t >= 1410) && !/24/.test(r.name)) return { closed: true, why: '카페가 보통 닫는 시간' };
+    if (r.kind === 'b' && t >= 30 && t < 330 && !NIGHT_OK.test(r.name)) return { closed: true, why: '밥집이 보통 닫는 시간' };
+    if (r.kind === 'bs' && t >= 120 && t < 540 && !NIGHT_OK.test(r.name)) return { closed: true, why: '보통 닫는 시간' };
+    return { closed: false, why: '' };
+  }
+  function reportClosed(r) {
+    const d = new Date();
+    const list = (closedSeen[r.id] || []).filter((x) => Date.now() - x[2] < 60 * DAY);
+    list.push([d.getDay(), d.getHours() * 60 + d.getMinutes(), Date.now()]);
+    closedSeen[r.id] = list.slice(-6);
+    store.set('closedSeen', closedSeen);
+  }
+
   function computePool() {
     // 직선거리는 실제 길보다 길 수 없으니, 직선으로 이 안에 있는 곳만 따져 보면 된다.
     const limit = S.minutes * SPEED / SIGNAL;
@@ -149,12 +201,15 @@
     if (settings.exclude) for (const id of recentIds()) ex.add(id);
     S.journey.slice(0, S.round - 1).forEach((r) => ex.add(r.id));
     const all = [], seen = new Set(), excluded = [], near = [];
+    const ct = checkTime();
+    let shut = 0;
     for (const r of S.all) {
       if (r.lat < S.center.lat - dLat || r.lat > S.center.lat + dLat || r.lng < S.center.lng - dLng || r.lng > S.center.lng + dLng) continue;
       const m = dist(S.center, r.lat, r.lng);
       if (m > limit) continue;
       near.push({ r, m });
       if (!kindOk(r.kind) || isHidden(r.id) || !catOk(r) || dislikedNow(r.id)) continue;
+      if (settings.openNow && openState(r, ct.d).closed) { shut++; continue; }
       const w = routeMeters(r, m), min = w / SPEED * SIGNAL;
       if (min > S.minutes + 0.49) continue;
       const c = { r, m, w, min, sc: score(r) };
@@ -175,6 +230,7 @@
     const out = all.filter((c) => c.sc >= minScore);
     out.sort((a, b) => a.min - b.min);
     S.near = near;
+    S.check = ct; S.shut = shut;
     S.pool = out;
     S.excluded = excluded;
     scheduleWalk();
@@ -330,6 +386,14 @@
     return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
   }
   const clip = (s, n) => String(s ?? '').replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\ufeff]/g, '').trim().slice(0, n);
+  // 'HHMM-HHMM|HHMM-HHMM|요일숫자(월=1)' → {open:[분,분], brk:[분,분], off:'1'}
+  function parseHours(v) {
+    const m = /^(?:(\d{4})-(\d{4}))?\|(?:(\d{4})-(\d{4}))?\|([1-7]{0,7})$/.exec(String(v || ''));
+    if (!m) return null;
+    const t = (x) => +x.slice(0, 2) * 60 + +x.slice(2);
+    const h = { open: m[1] ? [t(m[1]), t(m[2])] : null, brk: m[3] ? [t(m[3]), t(m[4])] : null, off: m[5] };
+    return h.open || h.off ? h : null;
+  }
   function parseRegion(data, region) {
     const out = [];
     for (const f of data.r || []) {
@@ -346,6 +410,7 @@
         kakao: clip(f[10], 20).replace(/\D/g, ''), food: clip(f[11], 20), region: region.name,
         blog: Number.isInteger(f[12]) && f[12] >= 0 && f[12] <= 5 ? f[12] : -1,
         menu: clip(f[13], 40).split('·').map((x) => x.trim()).filter(Boolean).slice(0, 3),
+        hours: parseHours(f[14]),
       });
     }
     return out;
@@ -596,7 +661,8 @@
     ctx.globalAlpha = 1; ctx.setLineDash([11, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = P.ring;
     ctx.stroke(reach); ctx.setLineDash([]);
     const topR = bins[Math.floor(NB * 0.75)] / mpp;
-    const label = '도보 ' + S.minutes + '분' + (W.exact.size ? ' · 실제 길 기준' : '');
+    const label = '도보 ' + S.minutes + '분' + (W.exact.size ? ' · 실제 길' : '') +
+      (settings.openNow && S.check ? (S.check.now ? ' · 지금 연 곳' : ' · ' + hhmm(S.check.d.getHours() * 60 + S.check.d.getMinutes()) + '에 연 곳') : '');
     // 크게 확대했을 때만 후보가 아닌 가게를 흐리게
     const poolIds = new Set(S.pool.map((c) => c.r.id));
     if (V.zoom >= 2) {
@@ -913,6 +979,7 @@
     cardEl.append(head, meta);
     const bd = badges(r); if (st) bd.prepend(textEl('span', '★'.repeat(st) + ' 내 별점', 'bdg star')); if (bd.childElementCount) cardEl.append(bd);
     if (menuOf(r).length) cardEl.append(menuEl(r));
+    if (r.hours) { const os = openState(r, new Date()); if (os.why) cardEl.append(textEl('div', (os.closed ? '⛔ 지금 ' : '✅ 지금 ') + os.why, 'c-meta')); }
     const acts = document.createElement('div'); acts.className = 'c-acts';
     acts.append(btn('자세히', '', () => { const cc = card; hideCard(); openDetail(cc.r); }), link('길찾기', kakaoRoute(r)), btn('여기로!', 'primary', () => { hideCard(); decide(r); }));
     cardEl.append(acts);
@@ -1610,6 +1677,13 @@
     return box;
   }
   // 추천 메뉴 (최대 3개): 블로그 후기에 자주 나온 메뉴 > 공공데이터 대표 음식 > 가게 이름
+  function hoursText(h) {
+    const parts = [];
+    if (h.open) parts.push(h.open[0] === 0 && h.open[1] === 1440 ? '24시간' : hhmm(h.open[0]) + '~' + hhmm(h.open[1]));
+    if (h.brk) parts.push('브레이크 ' + hhmm(h.brk[0]) + '~' + hhmm(h.brk[1]));
+    if (h.off) parts.push([...h.off].map((d) => DAYN[+d % 7]).join('·') + '요일 휴무');
+    return parts.join(' · ');
+  }
   function menuOf(r) {
     if (r.menu && r.menu.length) return r.menu;
     return r.food ? r.food.split(/[,·/]/).map((x) => x.trim()).filter(Boolean).slice(0, 3) : [];
@@ -1679,6 +1753,9 @@
         b.append(textEl('div', r.blog > 0 ? '추천 메뉴는 블로그 후기에 자주 나온 메뉴와 가게 이름·공공데이터 대표 음식으로 골랐어요' : '추천 메뉴는 가게 이름과 공공데이터 대표 음식으로 짐작한 거예요', 'fine'));
       }
       b.append(textEl('div', '블로그 후기: ' + (r.blog >= 0 ? BLOG_WORDS[r.blog] : '아직 확인 전'), 'meta'));
+      if (r.hours) b.append(textEl('div', '영업시간(블로그 글 기준): ' + hoursText(r.hours), 'meta'));
+      const os = openState(r, new Date());
+      if (os.why) b.append(textEl('div', (os.closed ? '⛔ 지금 ' : '✅ 지금 ') + os.why + (r.hours ? '' : ' (추정)'), 'openst' + (os.closed ? ' shut' : '')));
       const dl = document.createElement('dl'); dl.className = 'kv';
       const kv = (k, v) => dl.append(textEl('dt', k), textEl('dd', v));
       if (r.addr) kv('주소', r.addr);
@@ -1695,7 +1772,7 @@
       if (r.tel.length >= 9) r2.append(link('전화', 'tel:' + r.tel));
       r2.append(btn('공유', '', () => share(r, S.round, mins)));
       b.append(r2);
-      b.append(row(btn('🍽 여기서 먹었어요', 'sm', () => recordForm(r)), btn('문 닫혀 있었어요', 'sm', () => { hide(r, 30); closeSheet(); }), btn('다시 안 보기', 'sm', () => { hide(r, 0); closeSheet(); })));
+      b.append(row(btn('🍽 여기서 먹었어요', 'sm', () => recordForm(r)), btn('문 닫혀 있었어요', 'sm', () => { reportClosed(r); hide(r, 3); closeSheet(); toast('3일 동안 빼고, 앞으로 이 요일·시간대에는 빼 둘게요'); }), btn('다시 안 보기', 'sm', () => { hide(r, 0); closeSheet(); })));
       b.append(btn(S.round + '차로 결정', 'primary', () => decide(r)));
       b.append(note('영업시간·메뉴·가격은 카카오맵에서 최신 정보를 확인해 주세요. 식당 정보: 행정안전부 인허가 공공데이터'));
     });
@@ -1792,7 +1869,7 @@
         };
         return x;
       };
-      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('지도에 길·건물 보이기', 'basemap'), sw('실제 걷는 길로 시간 계산', 'route'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
+      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('지도에 길·건물 보이기', 'basemap'), sw('실제 걷는 길로 시간 계산', 'route'), sw('그 시간에 문 닫은 곳 빼기', 'openNow'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
       const snd = document.createElement('button'); snd.className = 'setrow';
       const paint = () => snd.setAttribute('aria-pressed', !(window.MMFX && MMFX.isMuted()));
       snd.append(textEl('span', '게임 효과음')); const si = document.createElement('i'); si.className = 'switch'; snd.append(si);

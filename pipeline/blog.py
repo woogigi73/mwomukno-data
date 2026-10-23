@@ -14,7 +14,7 @@ from .classify import norm_name
 
 BLOG_URL = "https://dapi.kakao.com/v2/search/blog"
 REFRESH_DAYS = 45
-VERSION = 2  # 계산 방식이 바뀌면 올린다 (이전 결과는 다시 확인)
+VERSION = 3  # 계산 방식이 바뀌면 올린다 (이전 결과는 다시 확인)
 
 # 메뉴 사전 (긴 이름이 먼저 잡히도록 길이순 정렬해서 쓴다)
 MENU_WORDS = """
@@ -164,6 +164,8 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
     short = len(nn) <= 2
     rel = recent = ads = 0
     menu_counts: dict = {}
+    hours_found: list = []
+    docs = sorted(docs, key=lambda d: str(d.get("datetime") or ""), reverse=True)
     for d in docs:
         title, body = strip(d.get("title")), strip(d.get("contents"))
         text = title + " " + body
@@ -183,13 +185,98 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
             pass
         if any(a in text for a in AD_WORDS):
             ads += 1
+        try:
+            if (today - dt.date.fromisoformat(when)).days <= 1095:
+                h = parse_hours(text)
+                if h:
+                    hours_found.append(h)
+        except ValueError:
+            pass
         for w, c in menu_from_text(text.replace(name, " ")).items():
             menu_counts[w] = menu_counts.get(w, 0) + min(c, 2)
     b = score_stats(name, total, rel, len(docs), recent, ads, chain)
     need = 2 if rel >= 4 else 1
     bad = place_words(addr) | NOT_MENU | {region} | PLACE_CLASH.get(region, set())
     menu = pick_menu(menu_counts, need, bad)
-    return b, menu, [total, rel, len(docs), recent, ads]
+    return b, menu, [total, rel, len(docs), recent, ads], vote_hours(hours_found)
+
+
+# ---------------------------------------------------------------- 영업시간 (글에 적힌 것만)
+_T = r"(오전|오후|낮|밤|저녁)?\s*(\d{1,2})\s*(?:[:시]\s*(\d{2})?\s*분?|시)"
+_RANGE = re.compile(r"(영업\s*시간|운영\s*시간|영업|오픈|OPEN|open)\s*[:：]?\s*(?:매일|평일|월\s*[~-]\s*[금토일]요?일?)?\s*"
+                    + _T + r"\s*[~\-–]\s*(?:익일\s*)?" + _T)
+_BREAK = re.compile(r"(브레이크\s*타임|브레이크|휴게\s*시간|break\s*time)\s*[:：]?\s*" + _T + r"\s*[~\-–]\s*" + _T, re.I)
+_DAYS = "월화수목금토일"
+_OFF = re.compile(r"(?:매주\s*)?([월화수목금토일])(?:요일)?\s*(?:,\s*([월화수목금토일])(?:요일)?\s*)?(?:은\s*|정기\s*)?휴무|"
+                  r"(?:정기\s*)?휴무\s*(?:일)?\s*[:：]?\s*(?:매주\s*)?([월화수목금토일])(?:요일)?")
+_ALWAYS = re.compile(r"24\s*시간\s*(영업|운영)|연중무휴\s*24")
+_NOOFF = re.compile(r"연중\s*무휴|휴무\s*없")
+
+
+def _hm(ampm, h, m) -> int | None:
+    try:
+        h = int(h)
+        m = int(m) if m else 0
+    except (TypeError, ValueError):
+        return None
+    if h > 30 or m > 59:
+        return None
+    if ampm in ("오후", "밤", "저녁") and h < 12:
+        h += 12
+    return h * 60 + m
+
+
+def parse_hours(text: str) -> dict:
+    """글 한 편에서 영업시간·브레이크·휴무 요일 찾기. 못 찾은 항목은 빠진다."""
+    out: dict = {}
+    if _ALWAYS.search(text):
+        out["open"] = (0, 1440)
+    else:
+        m = _RANGE.search(text)
+        if m:
+            a = _hm(m.group(2), m.group(3), m.group(4))
+            b = _hm(m.group(5), m.group(6), m.group(7))
+            if a is not None and b is not None:
+                if b <= a and b < 12 * 60 and not m.group(5):
+                    b += 12 * 60 if b + 12 * 60 > a else 24 * 60  # "11:00~9:30" → 21:30
+                if b <= a:
+                    b += 24 * 60  # 새벽까지
+                if 5 * 60 <= a <= 23 * 60 and 60 <= b - a <= 22 * 60:
+                    out["open"] = (a, b)
+    m = _BREAK.search(text)
+    if m:
+        a = _hm(m.group(2) or "오후", m.group(3), m.group(4))
+        b = _hm(m.group(5) or "오후", m.group(6), m.group(7))
+        if a is not None and b is not None and 0 < b - a <= 4 * 60 and 13 * 60 <= a <= 18 * 60:
+            out["break"] = (a, b)
+    if _NOOFF.search(text):
+        out["off"] = ""
+    else:
+        m = _OFF.search(text)
+        if m:
+            days = "".join(str(_DAYS.index(d) + 1) for d in (m.group(1), m.group(2), m.group(3)) if d)
+            if days:
+                out["off"] = days
+    return out
+
+
+def vote_hours(found: list) -> str:
+    """여러 글에서 찾은 값 중 가장 많이(같으면 최근 글 먼저) 나온 값. 형식: 'HHMM-HHMM|HHMM-HHMM|요일숫자'."""
+    def top(key):
+        cnt: dict = {}
+        for i, f in enumerate(found):
+            if key in f:
+                v = f[key]
+                c = cnt.setdefault(v, [0, -i])
+                c[0] += 1
+        if not cnt:
+            return None
+        return max(cnt.items(), key=lambda x: (x[1][0], x[1][1]))[0]
+    op, br, off = top("open"), top("break"), top("off")
+    if op is None and off is None:
+        return ""
+    f = lambda t: f"{t[0] // 60:02d}{t[0] % 60:02d}-{t[1] // 60:02d}{t[1] % 60:02d}" if t else ""
+    return f"{f(op)}|{f(br)}|{off or ''}"
 
 
 def query(name: str, addr: str) -> str:

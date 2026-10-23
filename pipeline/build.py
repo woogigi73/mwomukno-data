@@ -337,7 +337,7 @@ def kakao_match(records: list, kakao_state: dict, key: str) -> int:
 
 # ---------------------------------------------------------------- 블로그 언급량·추천 메뉴
 
-COLS = ["id", "name", "kind", "cat", "lat6", "lng6", "addr", "tel", "open", "flags", "kakao", "food", "blog", "menu"]
+COLS = ["id", "name", "kind", "cat", "lat6", "lng6", "addr", "tel", "open", "flags", "kakao", "food", "blog", "menu", "hours"]
 _CHAIN: dict = {}
 
 
@@ -369,8 +369,9 @@ def apply_blog(rows: list, bstate: dict) -> bool:
         v = bstate.get(r[0])
         b = int(v[0]) if v and len(v) >= 4 and v[3] == blog.VERSION else -1
         menu = blog.merge_menu(r[11], (v[1].split("·") if v and v[1] else []), r[1], r[6])
-        if r[12] != b or r[13] != menu:
-            r[12], r[13] = b, menu
+        hours = v[9] if v and len(v) >= 10 and v[3] == blog.VERSION else ""
+        if r[12] != b or r[13] != menu or r[14] != hours:
+            r[12], r[13], r[14] = b, menu, hours
             changed = True
     return changed
 
@@ -406,8 +407,8 @@ def blog_update(rows: list, bstate: dict, key: str) -> int:
                 BUDGET["blog"] = 0
                 break
             continue
-        b, menu, stats = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
-        bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats]
+        b, menu, stats, hours = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
+        bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats, hours]
         n += 1
     return n
 
@@ -463,7 +464,7 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
         kid = (kstate.get(r["id"]) or [""])[0]
         flags = 1 if r.get("model") else 0
         rows.append([r["id"], r["name"], r["kind"], r["cat"], int(round(r["lat"] * 1e6)), int(round(r["lng"] * 1e6)),
-                     r["addr"], r["tel"], r["open"], flags, kid, r.get("food", ""), -1, ""])
+                     r["addr"], r["tel"], r["open"], flags, kid, r.get("food", ""), -1, "", ""])
     apply_blog(rows, load(STATE / "blog" / f"{code}.json", {}))
     rows.sort(key=lambda x: x[0])
     if not rows:
