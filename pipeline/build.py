@@ -38,7 +38,7 @@ BUDGET = {
     "rest": int(os.environ.get("BUDGET_REST", "8500")),
     "model": int(os.environ.get("BUDGET_MODEL", "900")),
     "kakao": int(os.environ.get("BUDGET_KAKAO", "60000")),
-    "blog": int(os.environ.get("BUDGET_BLOG", "30000")),
+    "blog": int(os.environ.get("BUDGET_BLOG", "60000")),
 }
 TIME_LIMIT_S = int(os.environ.get("TIME_LIMIT_S", str(5 * 3600)))
 REFRESH_DAYS = 6
@@ -383,33 +383,47 @@ def blog_stale(v) -> bool:
 
 
 def blog_update(rows: list, bstate: dict, key: str) -> int:
-    """카카오 매칭된 식당만(진짜 있는 가게) 블로그 검색. 반환: 새로 확인한 수."""
+    """카카오 매칭된 식당만(진짜 있는 가게) 블로그 검색. 6곳씩 동시에 물어 빠르게. 반환: 새로 확인한 수."""
+    from concurrent.futures import ThreadPoolExecutor
     headers = {"Authorization": f"KakaoAK {key}"}
     chains = chain_names()
     today = NOW.date()
+    todo = [r for r in rows if r[10] and blog_stale(bstate.get(r[0]))]
     n = 0
-    for r in rows:
-        if not r[10] or not blog_stale(bstate.get(r[0])):
-            continue
-        if used["blog"] >= BUDGET["blog"] or time_left() < 420:
-            break
-        used["blog"] += 1
+
+    def ask(r):
         try:
             _, data = get_json(blog.BLOG_URL, {"query": blog.query(r[1], r[6]), "size": "20", "sort": "accuracy"},
-                               headers=headers, retries=3, pause=0.02)
+                               headers=headers, retries=3)
+            return r, data, None
         except HttpError as e:
-            if e.status in (401, 403):
-                note(f"⚠️ 블로그 검색 권한 오류(HTTP {e.status}) — 카카오 앱 설정에서 '다음 검색'이 꺼져 있을 수 있어요. 오늘은 멈춥니다.")
+            return r, None, e
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for i in range(0, len(todo), 60):
+            room = BUDGET["blog"] - used["blog"]
+            if room <= 0 or time_left() < 420:
+                break
+            chunk = todo[i:i + min(60, room)]
+            used["blog"] += len(chunk)
+            stop = False
+            for r, data, err in pool.map(ask, chunk):
+                if err is not None:
+                    if err.status in (401, 403):
+                        if not stop:
+                            note(f"⚠️ 블로그 검색 권한 오류(HTTP {err.status}) — 카카오 앱 설정에서 '다음 검색'이 꺼져 있을 수 있어요. 오늘은 멈춥니다.")
+                        stop = True
+                    elif err.status == 429 or "limit" in (err.body or "").lower():
+                        if not stop:
+                            note("⚠️ 블로그 검색 하루 한도 도달 — 내일 이어서 합니다.")
+                        stop = True
+                    continue
+                b, menu, stats, hours = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
+                bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats, hours]
+                n += 1
+            if stop:
                 BUDGET["blog"] = 0
                 break
-            if e.status == 429 or "limit" in e.body.lower():
-                note("⚠️ 블로그 검색 하루 한도 도달 — 내일 이어서 합니다.")
-                BUDGET["blog"] = 0
-                break
-            continue
-        b, menu, stats, hours = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
-        bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats, hours]
-        n += 1
     return n
 
 
@@ -620,6 +634,19 @@ def main() -> None:
                     regions[code].update({"sha": hashlib.sha256(blob).hexdigest(), "size": len(blob)})
                     note(f"  · {code} 카카오 추가 매칭 {n}곳")
                 checkpoint()
+
+        # 새 칸(blog, menu, hours)을 모든 지역 파일에 먼저 붙인다 (호출 없음, 이름 기반 메뉴가 바로 생김)
+        for code in [c for c in regions if not c.startswith("_")]:
+            path = REGION_DIR / f"{code}.json"
+            if not path.exists() or time_left() < 600:
+                continue
+            data = load(path, {})
+            if apply_blog(data.get("r", []), load(STATE / "blog" / f"{code}.json", {})) or data.get("cols") != COLS:
+                data["cols"] = COLS
+                save(path, data, compact_lines=True)
+                blob_ = path.read_bytes()
+                regions[code].update({"sha": hashlib.sha256(blob_).hexdigest(), "size": len(blob_)})
+        checkpoint()
 
         # 블로그 언급량·추천 메뉴: 부산부터. 처음에는 기존 파일에 새 칸(blog, menu)을 붙이는 것만 해도 이름 기반 메뉴가 생긴다.
         for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
