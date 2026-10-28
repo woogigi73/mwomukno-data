@@ -66,13 +66,13 @@
    37571643,
    127111293
   ],
-  "count": 4731,
+  "count": 4735,
   "estimate": 4271,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 광진구",
-  "sha": "48c4d4d6be3cc886ca5bad49a809cc3ecc62e74e585c989d906c155ddd5087f5",
-  "size": 993348
+  "sha": "0a47465be9f85ac776248658ecb3ab3fa298e7f9b1e76a50a5bbdbdb84fc5b78",
+  "size": 994026
  },
  "3050000": {
   "bbox": [
@@ -83,11 +83,11 @@
   ],
   "count": 4337,
   "estimate": 3896,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 동대문구",
-  "sha": "a94476033fed8cbca97335776984f57cb95acae6ccae96412969516fa428e10d",
-  "size": 922052
+  "sha": "d1ebe3aee99b3acf3c2e8a6b055c7c2e1f9b22494aaed3833dc8ec6c1c9f0321",
+  "size": 921940
  },
  "3060000": {
   "bbox": [
@@ -96,13 +96,13 @@
    37620015,
    127114609
   ],
-  "count": 3807,
+  "count": 3809,
   "estimate": 3450,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 중랑구",
-  "sha": "df99dc29c95b04cb8cf565bc265407c82e832e3a9920502ad25bef780a39f609",
-  "size": 795983
+  "sha": "d0fdad296b53edd7dac9cdf82e03ab1dadec20f8116a67a7e44c94b0f70beb62",
+  "size": 796154
  },
  "3070000": {
   "bbox": [
@@ -111,13 +111,13 @@
    37652404,
    127068581
   ],
-  "count": 4342,
+  "count": 4335,
   "estimate": 3731,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 성북구",
-  "sha": "e1ad2559b3a6c0716343069de8a85c7ed4610e41cd52b50a53dc4aa71bb8e72c",
-  "size": 919027
+  "sha": "7ff7f7c7a4e455ad93954e0b6c84096fcc441bda6f15bc69c805eb37d933dc0b",
+  "size": 917482
  },
  "3080000": {
   "bbox": [
@@ -126,13 +126,13 @@
    37674523,
    127046916
   ],
-  "count": 3464,
+  "count": 3447,
   "estimate": 3220,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 강북구",
-  "sha": "94c47ceb8da47a58e5a50391109176b945db30ca63ffeee45ba294edd18dfc17",
-  "size": 707329
+  "sha": "b99baa8739e2cff12ae7b668946ee6f2477b20c592904e7448e823c787d41906",
+  "size": 703846
  },
  "3090000": {
   "bbox": [
@@ -141,13 +141,13 @@
    37691190,
    127053718
   ],
-  "count": 2447,
+  "count": 2445,
   "estimate": 2179,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 도봉구",
-  "sha": "f01ada4b3469b9478337c87be4eb2987de8192af9ce1eedf2d71fd954b6c7b2e",
-  "size": 520515
+  "sha": "a9ba64bcd0f721c675af0ec1526ed2805ceb7343703c4423a6d38b6c97b12821",
+  "size": 520208
  },
  "3100000": {
   "bbox": [
@@ -156,13 +156,13 @@
    37687198,
    127105904
   ],
-  "count": 4103,
+  "count": 4100,
   "estimate": 3535,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 노원구",
-  "sha": "7fe1d795f943725c47c38fce653e60ce8d48739efeaa05d2750a73148890e7ec",
-  "size": 886510
+  "sha": "40f2b4f99285d7f6496107507a3a3c83f03573510ddb54a73222343e232fc140",
+  "size": 885805
  },
  "3110000": {
   "bbox": [
@@ -171,13 +171,13 @@
    37658177,
    126950587
   ],
-  "count": 3928,
+  "count": 3931,
   "estimate": 3658,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 은평구",
-  "sha": "6c1664450995c3464f3ac11110f3af0945e1c0789a385037f9ea5ab2dd35c5c9",
-  "size": 812525
+  "sha": "f6439fbe3e4217f3fd52e12cf2f07162cd3cf32eeba0caa5bc3bed3355783334",
+  "size": 813080
  },
  "3120000": {
   "bbox": [
@@ -186,13 +186,13 @@
    37602721,
    126968378
   ],
-  "count": 4054,
+  "count": 4044,
   "estimate": 3553,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 서대문구",
-  "sha": "c0127f42442bd6b2db95b314c74114416a223d68fe0f80099ad0abc21533907e",
-  "size": 864628
+  "sha": "5a37efb1eb74ffe3fbdfface04e7f71364774d613bc1bf326801f9016ded8725",
+  "size": 862652
  },
  "3130000": {
   "bbox": [
@@ -201,13 +201,13 @@
    37585526,
    126963582
   ],
-  "count": 8702,
+  "count": 8708,
   "estimate": 7815,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 마포구",
-  "sha": "e8398f65ab39062041e98ec7174755494de365feb6456d4238c7e4df199acd8b",
-  "size": 1854476
+  "sha": "ca9abf12745b944851281c3a7ab46bad69ef55abc5527442afb812581f6e6cbd",
+  "size": 1855432
  },
  "3140000": {
   "bbox": [
@@ -216,13 +216,13 @@
    37550888,
    126886147
   ],
-  "count": 3465,
+  "count": 3454,
   "estimate": 3012,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 양천구",
-  "sha": "86d3c9c3e51b72e940cda13311359527bc6f8256be222057dfb75c9d7bc8f907",
-  "size": 746423
+  "sha": "3158e939d37f4c1fb5f6856a769a95efdda7b01c1eedca0e44785abbe62b150b",
+  "size": 744224
  },
  "3150000": {
   "bbox": [
@@ -231,13 +231,13 @@
    37587148,
    126878452
   ],
-  "count": 6447,
+  "count": 6454,
   "estimate": 5487,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 강서구",
-  "sha": "35f38677eaee09d38ccd23770d14c5ea0a0c483e4106c9137a068142f4e943ce",
-  "size": 1464365
+  "sha": "dde2ce2a49adf9433d57cce15bfc7910915cb49c52a107f15f1458b584f66ed3",
+  "size": 1465543
  },
  "3160000": {
   "bbox": [
@@ -246,13 +246,13 @@
    37513859,
    126902084
   ],
-  "count": 4480,
+  "count": 4481,
   "estimate": 3982,
-  "last": "20261023",
+  "last": "20261029",
   "model": 0,
   "name": "서울특별시 구로구",
-  "sha": "a5ccec4b3d0a41bd1a4e08e5ff11dcfa01d91abc63c73c63cacfa8084a92c937",
-  "size": 965132
+  "sha": "a3bde64aa87f2b771ba34b427d4ef99b15a681cc4560751cd9bb4ad2061d744e",
+  "size": 965207
  },
  "3170000": {
   "bbox": [
