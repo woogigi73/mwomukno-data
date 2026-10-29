@@ -1,4 +1,4 @@
-# 연결 점검 결과 (2026-10-30 06:13 KST)
+# 연결 점검 결과 (2026-10-30 06:48 KST)
 
 ## 키 형태 (값은 기록하지 않음)
 - DATA_GO_KR_KEY: 64자, 16진수
@@ -93,9 +93,3 @@
 ## 카카오
 - 키워드 검색: HTTP 200, 결과 3건, 전체 27
   - 필드: address_name, category_group_code, category_group_name, category_name, distance, id, phone, place_name, place_url, road_address_name, x, y
-
-## 위치 정확도: 공공데이터 좌표 vs 카카오 장소 좌표 (부산 표본)
-- 표본 300곳 중 같은 장소 확인 296곳 (못 찾음 4)
-- 차이: 중간값 20m, 75% 23m, 90% 34m, 95% 66m, 최대 131m
-- 30m 넘게 차이: 37곳, 100m 넘게: 2곳, 300m 넘게: 0곳
-- 좌표 변환 고친 뒤: 중간값 3m, 75% 8m, 90% 29m, 95% 55m
