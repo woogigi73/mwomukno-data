@@ -286,14 +286,10 @@ def kakao_match(records: list, kakao_state: dict, key: str) -> int:
             kid, when = prev[0], prev[1]
             if kid or (NOW - dt.datetime.strptime(when, "%Y%m%d").replace(tzinfo=KST)).days < 60:
                 continue
-        need_pos = r["lat"] is None
-        params = {"query": r["name"], "size": "5"}
-        if not need_pos:
-            params.update({"x": f"{r['lng']:.6f}", "y": f"{r['lat']:.6f}", "radius": "200", "sort": "distance"})
-        else:
-            if not r["addr"]:
-                continue
-            params["query"] = f"{' '.join(r['addr'].split(' ')[:3])} {r['name']}"
+        if r["lat"] is None:
+            continue  # 공공데이터 좌표가 없는 곳은 카카오로 좌표를 채우지 않는다(카카오 정책상 좌표 저장 불가)
+        params = {"query": r["name"], "size": "5",
+                  "x": f"{r['lng']:.6f}", "y": f"{r['lat']:.6f}", "radius": "200", "sort": "distance"}
         used["kakao"] += 1
         try:
             _, data = get_json(sources.KAKAO_KEYWORD, params, headers=headers, retries=3, pause=0.02)
@@ -316,22 +312,15 @@ def kakao_match(records: list, kakao_state: dict, key: str) -> int:
                 dx, dy = float(d.get("x")), float(d.get("y"))
             except (TypeError, ValueError):
                 continue
-            if not need_pos:
-                if distance_m(r["lat"], r["lng"], dy, dx) > 150:
-                    continue
-            elif r["addr"] and not str(d.get("road_address_name") or d.get("address_name")).startswith(
-                    " ".join(r["addr"].split(" ")[:2])):
+            if distance_m(r["lat"], r["lng"], dy, dx) > 150:  # 같은 가게인지 확인하는 데만 쓰고 저장하지 않는다
                 continue
             if score > best_score:
                 best, best_score = d, score
         kid = ""
         if best is not None and best_score >= 0.6 and str(best.get("id", "")).isdigit():
             kid = str(best["id"])
-            if need_pos:
-                r["lat"], r["lng"] = round(float(best["y"]), 6), round(float(best["x"]), 6)
-                r["pos_from_kakao"] = 1
             matched += 1
-        kakao_state[r["id"]] = [kid, TODAY]
+        kakao_state[r["id"]] = [kid, TODAY]  # 저장하는 건 카카오 장소 ID뿐(카카오 정책상 허용)
     return matched
 
 
@@ -467,69 +456,27 @@ def blog_left(regions: dict) -> bool:
     return False
 
 
-# ---------------------------------------------------------------- 위치 보정 (카카오 장소 좌표)
+# ---------------------------------------------------------------- 카카오 정책 지키기
+# 카카오 로컬 API 응답의 좌표·장소명·주소는 저장할 수 없다(실시간 호출로만 사용). 저장 가능한 건 장소 ID뿐.
+# 예전에 잠깐 좌표를 저장했던 기록이 있으면 지우고, 그 지역은 공공데이터 좌표로 다시 만든다.
 
-def apply_kakao_pos(rows: list, kstate: dict) -> bool:
-    """카카오에서 확인한 장소 좌표(가게 입구 기준)가 있으면 그걸 쓴다. 400m 넘게 다르면 다른 곳일 수 있어 쓰지 않는다."""
-    changed = False
-    for r in rows:
-        v = kstate.get(r[0])
-        if not v or len(v) < 5 or v[4] != "p" or not v[2]:
+def purge_kakao_coords(regions: dict) -> int:
+    fixed = 0
+    for code in [c for c in regions if not c.startswith("_")]:
+        kpath = STATE / "kakao" / f"{code}.json"
+        if not kpath.exists():
             continue
-        lat6, lng6 = int(round(v[2] * 1e6)), int(round(v[3] * 1e6))
-        if (lat6, lng6) == (r[4], r[5]):
+        kstate = load(kpath, {})
+        bad = [k for k, v in kstate.items() if isinstance(v, list) and len(v) > 2]
+        if not bad:
             continue
-        if distance_m(r[4] / 1e6, r[5] / 1e6, v[2], v[3]) > 400:
-            continue
-        r[4], r[5] = lat6, lng6
-        changed = True
-    return changed
-
-
-def kakao_refine(rows: list, kstate: dict, key: str) -> int:
-    """카카오 매칭된 식당의 카카오 장소 좌표를 받아 둔다(6곳씩 동시에). 반환: 확인한 수."""
-    from concurrent.futures import ThreadPoolExecutor
-    headers = {"Authorization": f"KakaoAK {key}"}
-    todo = [r for r in rows if r[10] and (lambda v: v and v[0] and (len(v) < 5 or (v[4] == "x" and (NOW - dt.datetime.strptime(v[1], "%Y%m%d").replace(tzinfo=KST)).days >= 60)))(kstate.get(r[0]))]
-    n = 0
-
-    def ask(r):
-        try:
-            _, data = get_json(sources.KAKAO_KEYWORD, {"query": r[1], "x": f"{r[5] / 1e6:.6f}", "y": f"{r[4] / 1e6:.6f}",
-                                                       "radius": "1000", "sort": "distance", "size": "15"},
-                               headers=headers, retries=3)
-            return r, data, None
-        except HttpError as e:
-            return r, None, e
-
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        for i in range(0, len(todo), 60):
-            room = BUDGET["kakao"] - used["kakao"]
-            if room <= 0 or time_left() < 480:
-                break
-            chunk = todo[i:i + min(60, room)]
-            used["kakao"] += len(chunk)
-            stop = False
-            for r, data, err in pool.map(ask, chunk):
-                if err is not None:
-                    if err.status in (401, 403, 429) or "limit" in (err.body or "").lower():
-                        stop = True
-                    continue
-                kid = kstate[r[0]][0]
-                hit = next((d for d in data.get("documents") or [] if str(d.get("id")) == str(kid)), None)
-                try:
-                    if hit:
-                        kstate[r[0]] = [kid, TODAY, round(float(hit["y"]), 6), round(float(hit["x"]), 6), "p"]
-                    else:
-                        kstate[r[0]] = [kid, TODAY, "", "", "x"]
-                except (TypeError, ValueError, KeyError):
-                    continue
-                n += 1
-            if stop:
-                note("⚠️ 카카오 장소 검색 한도 도달 — 위치 보정은 내일 이어서 합니다.")
-                BUDGET["kakao"] = 0
-                break
-    return n
+        for k in bad:
+            v = kstate[k]
+            kstate[k] = [v[0] if v[0] else "", v[1]]
+        save(kpath, kstate)
+        regions[code]["last"] = "00000000"  # 이번 실행에서 공공데이터 좌표로 다시 만든다
+        fixed += len(bad)
+    return fixed
 
 
 def finalize_region(code: str, data: dict, info: dict) -> None:
@@ -572,10 +519,6 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
 
     kstate_path = STATE / "kakao" / f"{code}.json"
     kstate = load(kstate_path, {})
-    for r in records:  # 이전에 카카오로 보완한 좌표 재사용
-        v = kstate.get(r["id"])
-        if r["lat"] is None and v and len(v) >= 4:
-            r["lat"], r["lng"] = v[2], v[3]
     kmatched = 0  # 새 카카오 매칭은 모든 지역 데이터를 먼저 만든 뒤 따로 진행한다.
 
     rows = []
@@ -586,7 +529,6 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
         flags = 1 if r.get("model") else 0
         rows.append([r["id"], r["name"], r["kind"], r["cat"], int(round(r["lat"] * 1e6)), int(round(r["lng"] * 1e6)),
                      r["addr"], r["tel"], r["open"], flags, kid, r.get("food", ""), -1, "", "", ""])
-    apply_kakao_pos(rows, kstate)
     apply_blog(rows, load(STATE / "blog" / f"{code}.json", {}))
     rows.sort(key=lambda x: x[0])
     info["geo"] = 2  # 새 좌표 변환으로 만든 파일
@@ -674,10 +616,12 @@ def main() -> None:
     regions = load(STATE / "regions.json", {})
     for c in BUSAN_SEED:
         regions.setdefault(c, {"last": "00000000"})["busan"] = True
+    purged = purge_kakao_coords(regions)
+    if purged:
+        note(f"- 카카오 좌표 기록 {purged}건 삭제(카카오 정책: 좌표 저장 불가) — 해당 지역은 공공데이터 좌표로 다시 만듭니다.")
     done = 0
     kakao_new = 0
     blog_new = 0
-    pos_new = [0]
     cursor_start = regions.get("_meta", {}).get("cursor", 0)
 
     def checkpoint() -> None:
@@ -762,29 +706,10 @@ def main() -> None:
                     r[4], r[5] = int(round(la * 1e6)), int(round(ln * 1e6))
                 regions[code]["geo"] = 2
                 changed = True
-            changed |= apply_kakao_pos(rows_, load(STATE / "kakao" / f"{code}.json", {}))
             changed |= apply_blog(rows_, load(STATE / "blog" / f"{code}.json", {}))
             if changed or data.get("cols") != COLS:
                 finalize_region(code, data, regions[code])
         checkpoint()
-
-        # 위치 보정: 카카오 매칭된 식당의 카카오 장소 좌표 받기 (부산부터, 카카오 장소 검색 한도 안에서)
-        if keys["kakao"] and used["kakao"] < BUDGET["kakao"] and time_left() > 900:
-            for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
-                path = REGION_DIR / f"{code}.json"
-                if not path.exists() or used["kakao"] >= BUDGET["kakao"] or time_left() < 900:
-                    continue
-                kpath = STATE / "kakao" / f"{code}.json"
-                kstate = load(kpath, {})
-                data = load(path, {})
-                got = kakao_refine(data.get("r", []), kstate, keys["kakao"])
-                if got:
-                    save(kpath, kstate)
-                    if apply_kakao_pos(data["r"], kstate):
-                        finalize_region(code, data, regions[code])
-                    note(f"  · {code} 위치 보정 확인 {got}곳")
-                    pos_new[0] += got
-                    checkpoint()
 
         # 블로그 언급량·추천 메뉴: 부산부터. 처음에는 기존 파일에 새 칸(blog, menu)을 붙이는 것만 해도 이름 기반 메뉴가 생긴다.
         for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
@@ -822,9 +747,9 @@ def main() -> None:
         pending_regions = any(is_stale(regions[c]) for c in codes) or regions.get("_meta", {}).get("cursor", 0) != 0
         pending_kakao = keys["kakao"] and used["kakao"] < BUDGET["kakao"] - 100
         pending_blog = keys["kakao"] and used["blog"] < BUDGET["blog"] - 100
-        progressed = done > 0 or kakao_new > 0 or blog_new > 0 or pos_new[0] > 0 or regions.get("_meta", {}).get("cursor", 0) != cursor_start
+        progressed = done > 0 or kakao_new > 0 or blog_new > 0 or regions.get("_meta", {}).get("cursor", 0) != cursor_start
         more = progressed and (pending_regions and used["general"] < BUDGET["general"] - 50) or (pending_kakao and kakao_left(regions)) \
-            or (pending_blog and blog_new > 0 and blog_left(regions)) or (pending_kakao and pos_new[0] > 0)
+            or (pending_blog and blog_new > 0 and blog_left(regions))
         pathlib.Path("reports").mkdir(exist_ok=True)
         (pathlib.Path("reports") / "continue.txt").write_text("yes\n" if more else "no\n", encoding="utf-8")
 

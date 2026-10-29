@@ -261,3 +261,40 @@ class BlogTest(unittest.TestCase):
         self.assertLessEqual(good, 49)
         self.assertEqual(blog.review_eval([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 3), "")
         self.assertEqual(blog.review_eval([0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 20], 5).split("|")[5], "8")  # 웨이팅 16/20
+
+
+class KakaoPolicyTest(unittest.TestCase):
+    """카카오 정책: 로컬 API 응답 좌표는 저장하지 않는다(장소 ID만 저장)."""
+
+    def test_purge_and_no_coords(self):
+        import json
+        import pathlib
+        import tempfile
+        from pipeline import build
+        with tempfile.TemporaryDirectory() as d:
+            old = build.STATE
+            build.STATE = pathlib.Path(d)
+            try:
+                (build.STATE / "kakao").mkdir()
+                (build.STATE / "kakao" / "3330000.json").write_text(json.dumps(
+                    {"g1": ["123", "20261030", 35.1, 129.1, "p"], "g2": ["456", "20261001"]}), encoding="utf-8")
+                regions = {"3330000": {"last": "20261029"}}
+                self.assertEqual(build.purge_kakao_coords(regions), 1)
+                st = json.loads((build.STATE / "kakao" / "3330000.json").read_text(encoding="utf-8"))
+                self.assertEqual(st["g1"], ["123", "20261030"])
+                self.assertEqual(regions["3330000"]["last"], "00000000")
+            finally:
+                build.STATE = old
+
+    def test_match_skips_rows_without_public_coords(self):
+        from pipeline import build
+        st = {}
+        n = build.kakao_match([{"id": "g9", "name": "가게", "lat": None, "lng": None, "addr": "부산광역시 해운대구"}], st, "x")
+        self.assertEqual(n, 0)
+        self.assertNotIn("g9", st)
+
+    def test_no_kakao_coord_code(self):
+        import pathlib
+        src = pathlib.Path("pipeline/build.py").read_text(encoding="utf-8")
+        for bad in ("pos_from_kakao", "kakao_refine", "apply_kakao_pos"):
+            self.assertNotIn(bad, src)

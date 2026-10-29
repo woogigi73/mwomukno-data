@@ -1305,7 +1305,7 @@
       b.append(textEl('div', (from === S.myLoc ? '내 위치' : '지도 중심') + '에서 걸어서 약 ' + walkMin(wm) + '분 (길 ' + Math.round(wm) + 'm)', 'meta'));
       b.append(btn('🚶 이 앱에서 걷는 길 보며 가기', 'primary', () => { closeSheet(); startWalkGuide(r); }));
       b.append(row(btn('카카오맵 도보 길찾기', '', () => openWalkApp(kakaoWalkUrls(r))), btn('네이버지도 도보 길찾기', '', () => openWalkApp(naverWalkUrls(r)))));
-      b.append(note('지도 앱도 처음부터 "도보" 경로로 열려요. 앱이 없으면 웹 지도로 열려요. 위치는 가게 이름과 카카오맵 장소 좌표 기준이에요.'));
+      b.append(note('지도 앱도 처음부터 "도보" 경로로 열려요. 앱이 없으면 웹 지도로 열려요. 가게 위치는 공공데이터(영업 인허가) 좌표라 실제 입구와 수십 m 다를 수 있어요. 도착 무렵엔 간판을 확인해 주세요.'));
     });
   }
   // 앱 안 걷기 안내: 실제 걷는 길을 그리고, 내 위치가 움직이면 남은 거리를 알려 준다

@@ -120,52 +120,6 @@ def main() -> None:
                 w(f"  - 필드: {', '.join(sorted(docs[0].keys()))}")
         except HttpError as e:
             w(f"- 키워드 검색 실패: HTTP {e.status} {e.body[:200]}")
-    w("\n## 위치 정확도: 공공데이터 좌표 vs 카카오 장소 좌표 (부산 표본)")
-    if kk:
-        import glob as _glob
-        import json as _json
-        import random as _random
-        from .geo import distance_m
-        rows = []
-        for f in sorted(_glob.glob("docs/v1/r/3[23]*.json")):
-            try:
-                rows += [r for r in _json.loads(pathlib.Path(f).read_text(encoding="utf-8"))["r"] if r[10]]
-            except Exception:  # noqa: BLE001
-                pass
-        _random.seed(3)
-        sample = _random.sample(rows, min(300, len(rows)))
-        dists, miss, fixed = [], 0, []
-        from .geo import legacy_fix
-        regions_geo2 = all(v.get("geo") == 2 for k, v in _json.loads(pathlib.Path("state/regions.json").read_text(encoding="utf-8")).items()
-                           if k.startswith("32") or k.startswith("33"))
-        for r in sample:
-            lat, lng = r[4] / 1e6, r[5] / 1e6
-            try:
-                _, data = get_json(sources.KAKAO_KEYWORD, {"query": r[1], "x": f"{lng:.6f}", "y": f"{lat:.6f}", "radius": "1000",
-                                                         "sort": "distance", "size": "15"},
-                                   headers={"Authorization": f"KakaoAK {kk}"}, retries=2)
-            except HttpError as e:
-                w(f"- 카카오 검색 실패 HTTP {e.status}")
-                break
-            hit = next((d for d in data.get("documents", []) if str(d.get("id")) == str(r[10])), None)
-            if not hit:
-                miss += 1
-                continue
-            dists.append(distance_m(lat, lng, float(hit["y"]), float(hit["x"])))
-            if not regions_geo2:
-                fl, fg = legacy_fix(lat, lng)
-                fixed.append(distance_m(fl, fg, float(hit["y"]), float(hit["x"])))
-        if dists:
-            dists.sort()
-            q = lambda p: round(dists[min(len(dists) - 1, int(len(dists) * p))])
-            w(f"- 표본 {len(sample)}곳 중 같은 장소 확인 {len(dists)}곳 (못 찾음 {miss})")
-            w(f"- 차이: 중간값 {q(.5)}m, 75% {q(.75)}m, 90% {q(.9)}m, 95% {q(.95)}m, 최대 {round(dists[-1])}m")
-            w(f"- 30m 넘게 차이: {sum(d > 30 for d in dists)}곳, 100m 넘게: {sum(d > 100 for d in dists)}곳, 300m 넘게: {sum(d > 300 for d in dists)}곳")
-            if fixed:
-                fixed.sort()
-                fq = lambda p: round(fixed[min(len(fixed) - 1, int(len(fixed) * p))])
-                w(f"- 좌표 변환 고친 뒤: 중간값 {fq(.5)}m, 75% {fq(.75)}m, 90% {fq(.9)}m, 95% {fq(.95)}m")
-
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
