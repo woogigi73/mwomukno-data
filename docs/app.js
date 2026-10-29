@@ -116,6 +116,8 @@
     if (r.tel) s += 5;
     // 블로그 후기 양(최근 2년, 협찬 글이 대부분이면 낮춤): 확인 안 됨(-1)은 0점
     s += [-4, 4, 10, 18, 26, 32][r.blog] || 0;
+    // 후기 분석 별점(맛 60%·친절·가성비·분위기): 3.5점 기준으로 ±. 4.5점이면 +24, 2.5점이면 -24
+    if (r.ev) s += Math.round((r.ev.stars - 3.5) * 24);
     if (fav.has(r.id)) s += 30;
     if (BAD_NAME.test(r.name)) s -= 25;
     if (st === 3) s += 10;
@@ -398,7 +400,7 @@
   async function fetchRoute(r) {
     W.route = null;
     if (!settings.route || !navigator.onLine || Date.now() < W.failUntil) return;
-    const o = S.center;
+    const o = walkFrom();
     try {
       const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
       const res = await fetch(ROUTER + 'route/v1/driving/' + o.lng.toFixed(5) + ',' + o.lat.toFixed(5) + ';' + r.lng.toFixed(5) + ',' + r.lat.toFixed(5) +
@@ -410,7 +412,8 @@
       const pts = rt.geometry.coordinates.slice(0, 2000).filter((c) => Array.isArray(c) && isFinite(c[0]) && isFinite(c[1])).map((c) => [c[1], c[0]]);
       pts.unshift([o.lat, o.lng]); pts.push([r.lat, r.lng]);
       W.route = { id: r.id, pts, meters: rt.distance, t0: performance.now() };
-      W.exact.set(r.id, Math.max(rt.distance, dist(o, r.lat, r.lng)));
+      if (guide && guide.upd) guide.upd();
+      if (dist(o, S.center.lat, S.center.lng) < 30) W.exact.set(r.id, Math.max(rt.distance, dist(o, r.lat, r.lng)));
       drawMap();
     } catch (e) { /* 선을 못 그리면 그냥 넘어간다 */ }
   }
@@ -440,6 +443,15 @@
     const h = { open: m[1] ? [t(m[1]), t(m[2])] : null, brk: m[3] ? [t(m[3]), t(m[4])] : null, off: m[5] };
     return h.open || h.off ? h : null;
   }
+  // '43|8|7|6|9|2|3|14' → 후기 별점 4.3, 맛·친절·가성비·분위기(0~9, 모르면 null), 웨이팅·재방문(0~9), 분석한 글 수
+  function parseEval(v) {
+    const m = /^(\d{2})\|([0-9-])\|([0-9-])\|([0-9-])\|([0-9-])\|(\d)\|(\d)\|(\d{1,2})$/.exec(String(v || ''));
+    if (!m) return null;
+    const g = (x) => (x === '-' ? null : +x);
+    const stars = +m[1] / 10;
+    if (!(stars >= 1 && stars <= 5)) return null;
+    return { stars, t: g(m[2]), s: g(m[3]), p: g(m[4]), m: g(m[5]), wait: +m[6], rev: +m[7], n: +m[8] };
+  }
   function parseRegion(data, region) {
     const out = [];
     for (const f of data.r || []) {
@@ -457,6 +469,7 @@
         blog: Number.isInteger(f[12]) && f[12] >= 0 && f[12] <= 5 ? f[12] : -1,
         menu: clip(f[13], 40).split('·').map((x) => x.trim()).filter(Boolean).slice(0, 3),
         hours: parseHours(f[14]),
+        ev: parseEval(f[15]),
       });
     }
     return out;
@@ -527,7 +540,7 @@
         if (ask) openRegions();
       } else toast('위치를 찾지 못했어요. 지역을 골라 주세요.');
       loadAround();
-    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 });
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }); // 걷는 거리 계산이라 정확한 위치(GPS)를 쓴다
   }
   function moveCenter(c, announce) {
     resetView();
@@ -1022,13 +1035,13 @@
     const dot = document.createElement('i'); dot.style.background = css({ b: '--meal', s: '--drink', bs: '--both', c: '--cafe' }[r.kind]);
     head.append(dot, textEl('b', r.name));
     const x = btn('×', 'c-x', hideCard); x.setAttribute('aria-label', '닫기'); head.append(x);
-    const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · 추천 ' + tierName(sc), 'c-meta');
+    const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · 추천 ' + tierName(sc) + (r.ev ? ' · ★' + r.ev.stars.toFixed(1) : ''), 'c-meta');
     cardEl.append(head, meta);
     const bd = badges(r); if (st) bd.prepend(textEl('span', '★'.repeat(st) + ' 내 별점', 'bdg star')); if (bd.childElementCount) cardEl.append(bd);
     if (hasMenu(r)) cardEl.append(menuEl(r));
     if (r.hours) { const os = openState(r, new Date()); if (os.why) cardEl.append(textEl('div', (os.closed ? '⛔ 지금 ' : '✅ 지금 ') + os.why, 'c-meta')); }
     const acts = document.createElement('div'); acts.className = 'c-acts';
-    acts.append(btn('자세히', '', () => { const cc = card; hideCard(); openDetail(cc.r); }), link('길찾기', kakaoRoute(r)), btn('여기로!', 'primary', () => { hideCard(); decide(r); }));
+    acts.append(btn('자세히', '', () => { const cc = card; hideCard(); openDetail(cc.r); }), btn('🚶 길찾기', '', () => { const cc = card; hideCard(); openWalk(cc.r); }), btn('여기로!', 'primary', () => { hideCard(); decide(r); }));
     cardEl.append(acts);
     cardEl.hidden = false;
     if (!reduce && cardEl.animate) cardEl.animate([{ transform: 'translate(-50%,-100%) translateY(10px) scale(.9)', opacity: 0 }, { transform: 'translate(-50%,-100%)', opacity: 1 }], { duration: 180, easing: 'ease-out' });
@@ -1243,7 +1256,98 @@
 
   // ------------------------------------------------------------ 바깥 연결
   const kakaoPlace = (r) => r.kakao ? 'https://place.map.kakao.com/' + r.kakao : 'https://map.kakao.com/link/search/' + encodeURIComponent(r.name);
-  const kakaoRoute = (r) => 'https://map.kakao.com/link/to/' + encodeURIComponent(r.name.replace(/,/g, ' ')) + ',' + r.lat.toFixed(6) + ',' + r.lng.toFixed(6);
+
+  // ------------------------------------------------------------ 걸어서 찾아가기 (차량 경로로 열리지 않게)
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const walkFrom = () => (S.myLoc && dist(S.myLoc, S.center.lat, S.center.lng) < 1500 ? S.myLoc : S.center);
+  // 카카오 웹 지도 좌표(WCONGNAMUL = EPSG:5181 TM 좌표 × 2.5)
+  function wcong(lat, lng) {
+    const a = 6378137, f = 1 / 298.257222101, e2 = f * (2 - f), ep2 = e2 / (1 - e2), k0 = 1;
+    const rad = Math.PI / 180, phi = lat * rad, lam = lng * rad, phi0 = 38 * rad, lam0 = 127 * rad;
+    const M = (p) => a * ((1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 ** 3 / 256) * p - (3 * e2 / 8 + 3 * e2 * e2 / 32 + 45 * e2 ** 3 / 1024) * Math.sin(2 * p)
+      + (15 * e2 * e2 / 256 + 45 * e2 ** 3 / 1024) * Math.sin(4 * p) - (35 * e2 ** 3 / 3072) * Math.sin(6 * p));
+    const N = a / Math.sqrt(1 - e2 * Math.sin(phi) ** 2), T = Math.tan(phi) ** 2, C = ep2 * Math.cos(phi) ** 2, A = (lam - lam0) * Math.cos(phi);
+    const x = 200000 + k0 * N * (A + (1 - T + C) * A ** 3 / 6 + (5 - 18 * T + T * T + 72 * C - 58 * ep2) * A ** 5 / 120);
+    const y = 500000 + k0 * (M(phi) - M(phi0) + N * Math.tan(phi) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A ** 4 / 24 + (61 - 58 * T + T * T + 600 * C - 330 * ep2) * A ** 6 / 720));
+    return [Math.round(x * 2.5), Math.round(y * 2.5)];
+  }
+  const merc = (lat, lng) => [lng * 20037508.34 / 180, Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180];
+  const cleanName = (t) => String(t).replace(/[,/|]/g, ' ').slice(0, 30);
+  function kakaoWalkUrls(r) {
+    const o = walkFrom(), [sx, sy] = wcong(o.lat, o.lng), [ex, ey] = wcong(r.lat, r.lng);
+    return {
+      app: 'kakaomap://route?sp=' + o.lat.toFixed(6) + ',' + o.lng.toFixed(6) + '&ep=' + r.lat.toFixed(6) + ',' + r.lng.toFixed(6) + '&by=FOOT',
+      web: 'https://map.kakao.com/?map_type=TYPE_MAP&target=walk&rt=' + [sx, sy, ex, ey].join(',') + '&rt1=' + encodeURIComponent('출발') + '&rt2=' + encodeURIComponent(cleanName(r.name)),
+    };
+  }
+  function naverWalkUrls(r) {
+    const o = walkFrom(), [sx, sy] = merc(o.lat, o.lng), [ex, ey] = merc(r.lat, r.lng);
+    return {
+      app: 'nmap://route/walk?slat=' + o.lat.toFixed(6) + '&slng=' + o.lng.toFixed(6) + '&sname=' + encodeURIComponent('출발') + '&dlat=' + r.lat.toFixed(6) +
+        '&dlng=' + r.lng.toFixed(6) + '&dname=' + encodeURIComponent(cleanName(r.name)) + '&appname=' + encodeURIComponent(location.hostname || 'mwomukno'),
+      web: 'https://map.naver.com/p/directions/' + sx.toFixed(4) + ',' + sy.toFixed(4) + ',' + encodeURIComponent('출발') + ',,/' + ex.toFixed(4) + ',' + ey.toFixed(4) + ',' +
+        encodeURIComponent(cleanName(r.name)) + ',,/-/walk',
+    };
+  }
+  // 폰: 지도 앱을 도보 모드로 열고, 앱이 없으면(1.6초 뒤에도 이 화면이면) 웹 지도 도보 길찾기로
+  function openWalkApp(u) {
+    if (!isMobile) { window.open(u.web, '_blank', 'noopener'); return; }
+    let left = false;
+    const onHide = () => { left = true; };
+    document.addEventListener('visibilitychange', onHide, { once: true });
+    window.location.href = u.app;
+    setTimeout(() => { document.removeEventListener('visibilitychange', onHide); if (!left && !document.hidden) window.location.href = u.web; }, 1600);
+  }
+  function openWalk(r) {
+    openSheet('걸어서 찾아가기', (b) => {
+      b.append(textEl('h3', r.name, 'detail'));
+      const from = walkFrom(), m = dist(from, r.lat, r.lng), wm = W.exact.has(r.id) ? W.exact.get(r.id) : m * ratioAt(r.lat, r.lng, m);
+      b.append(textEl('div', (from === S.myLoc ? '내 위치' : '지도 중심') + '에서 걸어서 약 ' + walkMin(wm) + '분 (길 ' + Math.round(wm) + 'm)', 'meta'));
+      b.append(btn('🚶 이 앱에서 걷는 길 보며 가기', 'primary', () => { closeSheet(); startWalkGuide(r); }));
+      b.append(row(btn('카카오맵 도보 길찾기', '', () => openWalkApp(kakaoWalkUrls(r))), btn('네이버지도 도보 길찾기', '', () => openWalkApp(naverWalkUrls(r)))));
+      b.append(note('지도 앱도 처음부터 "도보" 경로로 열려요. 앱이 없으면 웹 지도로 열려요. 위치는 가게 이름과 카카오맵 장소 좌표 기준이에요.'));
+    });
+  }
+  // 앱 안 걷기 안내: 실제 걷는 길을 그리고, 내 위치가 움직이면 남은 거리를 알려 준다
+  let guide = null;
+  function startWalkGuide(r) {
+    stopWalkGuide();
+    if (S.myLoc) { const d = dist(S.myLoc, S.center.lat, S.center.lng); if (d > 30 && d < 1500) moveCenter(S.myLoc, false); }
+    fetchRoute(r);
+    const bar = document.createElement('div'); bar.className = 'banner walkbar'; bar.setAttribute('role', 'status');
+    const txt = textEl('b', '「' + r.name + '」까지 걷는 길을 찾는 중…');
+    bar.append(textEl('div', '🚶 걸어서 가는 중', 'eyebrow'), txt, row(btn('카카오맵 도보', 'sm', () => openWalkApp(kakaoWalkUrls(r))), btn('끝내기', 'sm', stopWalkGuide)));
+    $('#bannerRoot').textContent = ''; $('#bannerRoot').append(bar);
+    guide = { r, txt, watch: null };
+    const upd = () => {
+      if (!guide) return;
+      const from = S.myLoc || S.center, m = dist(from, r.lat, r.lng);
+      const wm = W.route && W.route.id === r.id ? remainingOnRoute(from) : m * DETOUR;
+      txt.textContent = m < 25 ? '도착했어요! 「' + r.name + '」' : '「' + r.name + '」까지 ' + Math.round(wm) + 'm · 약 ' + walkMin(wm) + '분';
+      if (m < 25) { buzz(30); sfx.fanfare && sfx.fanfare(); setTimeout(stopWalkGuide, 4000); }
+    };
+    guide.upd = upd;
+    setTimeout(upd, 1200);
+    if ('geolocation' in navigator) {
+      guide.watch = navigator.geolocation.watchPosition((p) => {
+        S.myLoc = { lat: p.coords.latitude, lng: p.coords.longitude }; drawMap(); upd();
+      }, () => {}, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+    }
+  }
+  function remainingOnRoute(from) {
+    const pts = W.route.pts;
+    let best = 0, bd = 1e12;
+    pts.forEach((p, i) => { const d = dist(from, p[0], p[1]); if (d < bd) { bd = d; best = i; } });
+    let rem = bd;
+    for (let i = best; i < pts.length - 1; i++) rem += dist({ lat: pts[i][0], lng: pts[i][1] }, pts[i + 1][0], pts[i + 1][1]);
+    return rem;
+  }
+  function stopWalkGuide() {
+    if (!guide) return;
+    if (guide.watch != null) navigator.geolocation.clearWatch(guide.watch);
+    guide = null;
+    const bar = document.querySelector('.walkbar'); if (bar) bar.remove();
+  }
   function shareUrl(r, round) {
     const u = new URL(location.href.split('?')[0].split('#')[0]);
     u.searchParams.set('eat', r.id); u.searchParams.set('n', String(round));
@@ -1775,6 +1879,30 @@
     return box;
   }
   // 추천 메뉴 (최대 3개): 블로그 후기에 자주 나온 메뉴 > 공공데이터 대표 음식 > 가게 이름
+  // 후기 분석 표: 별점 + 항목 막대
+  function evalEl(e) {
+    const box = document.createElement('div'); box.className = 'evalbox';
+    const head = document.createElement('div'); head.className = 'evhead';
+    const big = textEl('b', e.stars.toFixed(1), 'evstar');
+    const st = textEl('span', '★'.repeat(Math.round(e.stars)) + '☆'.repeat(5 - Math.round(e.stars)), 'evstars');
+    head.append(big, st, textEl('small', '블로그 후기 ' + e.n + '개 분석'));
+    box.append(head);
+    const items = [['맛', e.t], ['친절', e.s], ['가성비', e.p], ['분위기', e.m]];
+    for (const [k, v] of items) {
+      const rowEl = document.createElement('div'); rowEl.className = 'evrow';
+      const bar = document.createElement('i'); const fill = document.createElement('u');
+      if (v == null) { rowEl.classList.add('na'); fill.style.width = '0'; } else fill.style.width = (10 + v * 10) + '%';
+      bar.append(fill);
+      rowEl.append(textEl('span', k), bar, textEl('em', v == null ? '언급 적음' : v >= 8 ? '아주 좋음' : v >= 6 ? '좋음' : v >= 4 ? '보통' : '아쉬움'));
+      box.append(rowEl);
+    }
+    const tags = [];
+    if (e.wait >= 3) tags.push(e.wait >= 6 ? '⏳ 웨이팅 잦음' : '⏳ 웨이팅 있을 수 있음');
+    if (e.rev >= 3) tags.push('🔁 재방문 언급 많음');
+    if (tags.length) box.append(textEl('div', tags.join(' · '), 'evtags'));
+    box.append(textEl('div', '블로그 글에 나온 칭찬·아쉬움 표현을 세어 계산한 점수예요(카카오·네이버 별점 아님). 협찬 글이 많으면 실제보다 높을 수 있어요.', 'fine'));
+    return box;
+  }
   function hoursText(h) {
     const parts = [];
     if (h.open) parts.push(h.open[0] === 0 && h.open[1] === 1440 ? '24시간' : hhmm(h.open[0]) + '~' + hhmm(h.open[1]));
@@ -1791,7 +1919,7 @@
     const real = menuOf(r), guess = !real.length;
     const list = guess ? (TYPICAL[r.cat] || []) : real;
     d.className = 'menu' + (big ? ' big' : '') + (guess ? ' guess' : '');
-    d.append(textEl('span', guess ? '보통 이런 메뉴' : '추천 메뉴', 'mlabel'));
+    d.append(textEl('span', guess ? (list.length ? '보통 이런 메뉴' : '메뉴 정보가 아직 없어요 · 카카오맵에서 확인해 주세요') : '추천 메뉴', 'mlabel'));
     const terms = foodTerms(S.food);
     for (const m of list) {
       const hit = terms.some((t) => t.length > 1 && (m.includes(t) || t.includes(m)));
@@ -1799,7 +1927,7 @@
     }
     return d;
   }
-  const hasMenu = (r) => menuOf(r).length > 0 || (TYPICAL[r.cat] || []).length > 0;
+  const hasMenu = () => true; // 메뉴를 모르는 곳도 '정보 없음'을 보여 준다
   function textEl(tag, text, cls) { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = text; return e; }
   function btn(label, cls, fn) { const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.textContent = label; b.onclick = fn; return b; }
   function row(...kids) { const d = document.createElement('div'); d.className = 'actions'; d.append(...kids); return d; }
@@ -1813,12 +1941,12 @@
     const title = textEl('h3', r.name);
     result.append(
       textEl('div', S.round + '차 당첨', 'eyebrow'), title,
-      textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm)', 'meta'), badges(r),
+      textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm)' + (r.ev ? ' · 후기 ★' + r.ev.stars.toFixed(1) : ''), 'meta'), badges(r),
     );
     if (hasMenu(r)) result.append(menuEl(r, true));
     result.append(textEl('p', comment(r), 'comment'),
       row(btn('다시 하기', '', () => startGame(curGame)), btn('여기로 결정', 'primary', () => decide(r))),
-      row(link('카카오맵', kakaoPlace(r), 'sm'), link('길찾기', kakaoRoute(r), 'sm'), btn('공유', 'sm', () => share(r, S.round, mins))),
+      row(link('카카오맵', kakaoPlace(r), 'sm'), btn('🚶 길찾기', 'sm', () => openWalk(r)), btn('공유', 'sm', () => share(r, S.round, mins))),
       row(btn('이번엔 빼기 (30일)', 'sm', () => { hide(r, 30); startGame(curGame); })),
       textEl('p', '영업시간·메뉴는 카카오맵에서 확인해 주세요.', 'fine'));
     if (CONFIG.donate) {
@@ -1860,6 +1988,7 @@
         b.append(menuEl(r, true));
         b.append(textEl('div', r.blog > 0 ? '추천 메뉴는 블로그 후기에 자주 나온 메뉴와 가게 이름·공공데이터 대표 음식으로 골랐어요' : '추천 메뉴는 가게 이름과 공공데이터 대표 음식으로 짐작한 거예요', 'fine'));
       }
+      if (r.ev) b.append(evalEl(r.ev));
       b.append(textEl('div', '블로그 후기: ' + (r.blog >= 0 ? BLOG_WORDS[r.blog] : '아직 확인 전'), 'meta'));
       if (r.hours) b.append(textEl('div', '영업시간(블로그 글 기준): ' + hoursText(r.hours), 'meta'));
       const os = openState(r, new Date());
@@ -1871,7 +2000,7 @@
       const last = visits.filter((v) => v[0] === r.id).pop();
       if (last) kv('최근 방문', Math.floor((Date.now() - last[2]) / DAY) === 0 ? '오늘' : Math.floor((Date.now() - last[2]) / DAY) + '일 전');
       b.append(dl);
-      b.append(row(link('카카오맵에서 보기', kakaoPlace(r)), link('길찾기', kakaoRoute(r))));
+      b.append(row(link('카카오맵에서 보기', kakaoPlace(r)), btn('🚶 걸어서 찾아가기', '', () => { closeSheet(); openWalk(r); })));
       b.append(row(link('블로그 후기 찾아보기', 'https://search.naver.com/search.naver?where=blog&query=' + encodeURIComponent(((r.region || '').split(' ').pop() || '') + ' ' + r.name), 'sm')));
       const r2 = row(btn(fav.has(r.id) ? '★ 단골 해제' : '☆ 단골 등록', '', () => {
         if (fav.has(r.id)) fav.delete(r.id); else fav.add(r.id);
@@ -1903,8 +2032,13 @@
         else base = S.all.map((r) => ({ r, m: dist(S.center, r.lat, r.lng) })).filter((x) => x.m < 3000 && (
           f === 'all' ? !isHidden(x.r.id) : f === 'new' ? isNew(x.r) : f === 'model' ? x.r.model : f === 'reg' ? regs.has(x.r.id) : isHidden(x.r.id)))
           .sort((a, b2) => a.m - b2.m);
-        const shown = (q ? base.filter((x) => x.r.name.toLowerCase().includes(q) || x.r.cat.includes(q) || x.r.food.includes(q) || x.r.menu.some((m) => m.includes(q))) : base).slice(0, 200);
-        cnt.textContent = shown.length + '곳' + (shown.length === 200 ? ' (가까운 200곳)' : '');
+        const hit = (x) => x.r.name.toLowerCase().includes(q) || x.r.cat.includes(q) || x.r.food.includes(q) || x.r.menu.some((m) => m.includes(q));
+        let shown = (q ? base.filter(hit) : base).slice(0, 200), wide = false;
+        if (q && !shown.length && f === 'near') { // 지금 후보(반경·종류) 안에 없으면 주변 3km 전체에서 찾아 준다
+          shown = S.all.map((r) => ({ r, m: dist(S.center, r.lat, r.lng) })).filter((x) => x.m < 3000 && !isHidden(x.r.id) && hit(x)).sort((a, b2) => a.m - b2.m).slice(0, 200);
+          wide = shown.length > 0;
+        }
+        cnt.textContent = (wide ? '지금 후보 안에는 없어서 주변 3km에서 찾았어요 · ' : '') + shown.length + '곳' + (shown.length === 200 ? ' (가까운 200곳)' : '');
         list.textContent = '';
         const P = { b: css('--meal'), s: css('--drink'), bs: css('--both'), c: css('--cafe') };
         for (const x of shown) {

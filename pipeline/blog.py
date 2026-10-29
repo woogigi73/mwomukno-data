@@ -269,32 +269,31 @@ def aspect_counts(texts: list) -> list:
     return out
 
 
-def review_eval(c: list) -> str:
+def review_eval(c: list, level: int = -1) -> str:
     """항목별 점수 문자열. 형식 '종합별점x10|맛|친절|가성비|분위기|웨이팅|재방문|글수' (항목 0~9, 모르면 -)
-    블로그 글은 대부분 칭찬이라 '긍정 비율'을 그대로 별점으로 쓰면 다 4.8점이 된다.
-    그래서 부정 언급에 무게를 두고(1건 = 칭찬 3건), 글이 적으면 보통(3.5점) 쪽으로 당긴다."""
+    - 블로그 글은 대부분 칭찬이라 긍정 비율만으로는 다 4.8점이 된다.
+    - 그래서 '후기 양(인기, level 0~5)'을 바탕으로 2.6~3.8점을 깔고, 맛·친절·가성비·분위기 평가로 ±0.7점 조정한다.
+    - 부정 표현 1건은 칭찬 1.5건만큼, 언급이 적으면 보통(0.75) 쪽으로 당긴다. 저장된 숫자만으로 언제든 다시 계산할 수 있다."""
     if not c or c[10] < 2:
         return ""
-    def part(p, n, prior=2.0):
+    def part(p, n):
         if p + n == 0:
             return None
-        s = (p + 0.7 * prior) / (p + 3 * n + prior)  # 0~1, 부정 1건은 긍정 3건만큼
-        return max(0.0, min(1.0, s))
+        return (p + 3.0) / (p + 1.5 * n + 4.0)  # 아무 말 없으면 0.75
     t, sv, pr, md = part(c[0], c[1]), part(c[2], c[3]), part(c[4], c[5]), part(c[6], c[7])
     n = c[10]
     rv = c[9] / n
-    # 종합: 맛 60%, 친절 15%, 가성비 15%, 분위기 10% (없는 항목은 빼고 비율 다시 맞춤) + 재방문 언급 가산
     ws = [(t, .6), (sv, .15), (pr, .15), (md, .1)]
     tw = sum(w for v, w in ws if v is not None)
-    base = sum(v * w for v, w in ws if v is not None) / tw if tw else 0.55
-    base = min(1.0, base + min(0.08, rv * 0.25))
-    conf = min(1.0, n / 10)  # 글이 10개 미만이면 3.5점 쪽으로 당김
-    stars = 3.5 + (1.0 + 4.0 * base - 3.5) * conf
-    g = lambda v: "-" if v is None else str(min(9, int(v * 10)))
+    base = sum(v * w for v, w in ws if v is not None) / tw if tw else 0.75
+    base = min(1.0, base + min(0.06, rv * 0.2))
+    lv = level if 0 <= level <= 5 else 1
+    stars = 2.6 + 0.24 * lv + 1.4 * (base - 0.5)
+    stars = max(1.5, min(4.9, stars))
+    g = lambda v: "-" if v is None else str(min(9, max(0, round(v * 10) - 1)))
     wait = min(9, round(c[8] / n * 10))
     rev = min(9, round(rv * 10))
     return f"{round(stars * 10)}|{g(t)}|{g(sv)}|{g(pr)}|{g(md)}|{wait}|{rev}|{n}"
-
 
 # ---------------------------------------------------------------- 영업시간 (글에 적힌 것만)
 _T = r"(오전|오후|낮|밤|저녁)?\s*(\d{1,2})\s*(?:[:시]\s*(\d{2})?\s*분?|시)"

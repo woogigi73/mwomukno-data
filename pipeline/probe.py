@@ -134,7 +134,10 @@ def main() -> None:
                 pass
         _random.seed(3)
         sample = _random.sample(rows, min(300, len(rows)))
-        dists, miss = [], 0
+        dists, miss, fixed = [], 0, []
+        from .geo import legacy_fix
+        regions_geo2 = all(v.get("geo") == 2 for k, v in _json.loads(pathlib.Path("state/regions.json").read_text(encoding="utf-8")).items()
+                           if k.startswith("32") or k.startswith("33"))
         for r in sample:
             lat, lng = r[4] / 1e6, r[5] / 1e6
             try:
@@ -149,30 +152,20 @@ def main() -> None:
                 miss += 1
                 continue
             dists.append(distance_m(lat, lng, float(hit["y"]), float(hit["x"])))
+            if not regions_geo2:
+                fl, fg = legacy_fix(lat, lng)
+                fixed.append(distance_m(fl, fg, float(hit["y"]), float(hit["x"])))
         if dists:
             dists.sort()
             q = lambda p: round(dists[min(len(dists) - 1, int(len(dists) * p))])
             w(f"- 표본 {len(sample)}곳 중 같은 장소 확인 {len(dists)}곳 (못 찾음 {miss})")
             w(f"- 차이: 중간값 {q(.5)}m, 75% {q(.75)}m, 90% {q(.9)}m, 95% {q(.95)}m, 최대 {round(dists[-1])}m")
             w(f"- 30m 넘게 차이: {sum(d > 30 for d in dists)}곳, 100m 넘게: {sum(d > 100 for d in dists)}곳, 300m 넘게: {sum(d > 300 for d in dists)}곳")
+            if fixed:
+                fixed.sort()
+                fq = lambda p: round(fixed[min(len(fixed) - 1, int(len(fixed) * p))])
+                w(f"- 좌표 변환 고친 뒤: 중간값 {fq(.5)}m, 75% {fq(.75)}m, 90% {fq(.9)}m, 95% {fq(.95)}m")
 
-    w("\n## 후기 분석 점검 (집계 숫자만 기록)")
-    if kk:
-        famous = ["합천국밥집", "부다면옥", "담미옥", "해운대암소갈비집", "쌍둥이돼지국밥", "비비비당", "초량밀면", "신발원", "거대갈비", "본전돼지국밥"]
-        picks = [r for r in rows if any(r[1].replace(" ", "") == f for f in famous)][:10]
-        picks += _random.sample([r for r in rows if r not in picks], 30)
-        today = dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).date()
-        for r in picks:
-            q = blog.query(r[1], r[6])
-            try:
-                st, data = get_json(blog.BLOG_URL, {"query": q, "size": "20", "sort": "accuracy"},
-                                    headers={"Authorization": f"KakaoAK {kk}"}, retries=2)
-            except HttpError as e:
-                w(f"- 블로그 검색 실패: HTTP {e.status} (하루 한도일 수 있음)")
-                break
-            res = blog.evaluate(r[1], r[6], data, today, False)
-            c = res[4] if len(res) > 4 else []
-            w(f"- 「{q}」 단계 {res[0]}, 후기분석 {blog.review_eval(c) or '-'}, 숫자 {c}")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

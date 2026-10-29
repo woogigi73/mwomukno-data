@@ -23,8 +23,14 @@ def page(items, total):
 class GeoTest(unittest.TestCase):
     def test_busan(self):
         lat, lng = geo.tm5174_to_wgs84(393000, 187000)
-        self.assertAlmostEqual(lat, 35.1638568, places=5)
-        self.assertAlmostEqual(lng, 129.1190009, places=5)
+        # 기준값: PROJ(EPSG:5174 → 4326, EPSG 변환 1 Molodensky-Badekas)
+        self.assertAlmostEqual(lat, 35.1636747, places=6)
+        self.assertAlmostEqual(lng, 129.1190442, places=6)
+
+    def test_legacy_fix(self):
+        o = geo._legacy(393000, 187000)
+        f = geo.legacy_fix(*o)
+        self.assertLess(geo.distance_m(f[0], f[1], 35.1636747, 129.1190442), 0.5)
 
     def test_invalid(self):
         self.assertIsNone(geo.tm5174_to_wgs84("", "1"))
@@ -243,11 +249,15 @@ class BlogTest(unittest.TestCase):
 
     def test_review_eval(self):
         from pipeline import blog
-        good = blog.aspect_counts(["정말 맛있어요 친절하고 재방문 의사"] * 12)
-        bad = blog.aspect_counts(["맛없고 불친절, 비싸요"] * 3 + ["그냥 맛있어요"] * 9)
-        g, b = blog.review_eval(good), blog.review_eval(bad)
-        self.assertGreater(int(g.split("|")[0]), int(b.split("|")[0]))
-        self.assertGreaterEqual(int(g.split("|")[0]), 44)
-        self.assertEqual(blog.review_eval(blog.aspect_counts(["맛있"])), "")  # 글 1개는 판단 안 함
-        few = blog.review_eval(blog.aspect_counts(["존맛"] * 2))
-        self.assertLessEqual(int(few.split("|")[0]), 40)  # 글이 적으면 3.5점 쪽으로
+        st = lambda e: int(e.split("|")[0])
+        # 부다면옥(인기 5단계, 맛 칭찬 3·아쉬움 2) 같은 유명 맛집이 3점 아래로 떨어지지 않게
+        self.assertGreaterEqual(st(blog.review_eval([3, 2, 0, 0, 0, 0, 1, 0, 5, 0, 20], 5)), 38)
+        # 인기 많고 칭찬 많은 곳 > 인기 많고 아쉬움 많은 곳 > 후기 거의 없는 곳
+        good = st(blog.review_eval([8, 0, 2, 0, 3, 0, 4, 0, 2, 3, 20], 5))
+        mixed = st(blog.review_eval([3, 4, 0, 2, 0, 1, 1, 0, 0, 0, 20], 5))
+        low = st(blog.review_eval([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3], 0))
+        self.assertGreater(good, mixed)
+        self.assertGreater(mixed, low)
+        self.assertLessEqual(good, 49)
+        self.assertEqual(blog.review_eval([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 3), "")
+        self.assertEqual(blog.review_eval([0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 20], 5).split("|")[5], "8")  # 웨이팅 16/20

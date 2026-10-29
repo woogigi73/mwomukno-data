@@ -19,10 +19,12 @@ _K0 = 1.0
 _X0 = 200000.0
 _Y0 = 500000.0
 
-# towgs84 (Position Vector 규약, PROJ와 동일)
+# Korean 1985 → WGS 84 (EPSG 변환 1): Molodensky-Badekas, Coordinate Frame 규약, 기준점(pivot) 포함.
+# PROJ(EPSG 데이터베이스)와 같은 방식. 예전에는 기준점 없이 Position Vector로 계산해 약 15m 어긋났다.
 _DX, _DY, _DZ = -145.907, 505.034, 685.756
 _RX, _RY, _RZ = (math.radians(v / 3600.0) for v in (-1.162, 2.347, 1.592))
 _DS = 6.342e-6
+_PX, _PY, _PZ = -3159521.31, 4068151.32, 3748113.85
 
 
 def _meridian_arc(phi, a, e2):
@@ -91,9 +93,11 @@ def tm5174_to_wgs84(x, y):
     lat, lon = _tm_inverse(x, y)
     bx, by, bz = _geodetic_to_ecef(lat, lon, _A_B, _F_B)
     s = 1 + _DS
-    wx = _DX + s * (bx - _RZ * by + _RY * bz)
-    wy = _DY + s * (_RZ * bx + by - _RX * bz)
-    wz = _DZ + s * (-_RY * bx + _RX * by + bz)
+    qx, qy, qz = bx - _PX, by - _PY, bz - _PZ
+    # Coordinate Frame 회전 행렬 [[1, rz, -ry], [-rz, 1, rx], [ry, -rx, 1]]
+    wx = _PX + _DX + s * (qx + _RZ * qy - _RY * qz)
+    wy = _PY + _DY + s * (-_RZ * qx + qy + _RX * qz)
+    wz = _PZ + _DZ + s * (_RY * qx - _RX * qy + qz)
     wlat, wlon = _ecef_to_geodetic(wx, wy, wz, _A_W, _F_W)
     wlat, wlon = math.degrees(wlat), math.degrees(wlon)
     if not (32.5 <= wlat <= 39.0 and 124.0 <= wlon <= 132.5):
@@ -107,3 +111,45 @@ def distance_m(lat1, lon1, lat2, lon2):
     dp, dl = p2 - p1, math.radians(lon2 - lon1)
     h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * r * math.asin(min(1.0, math.sqrt(h)))
+
+
+# ---------------------------------------------------------------- 예전 변환으로 만든 좌표 고치기 (한 번만)
+def _legacy(x, y):
+    """예전 방식(기준점 없는 Position Vector) — 이미 저장된 좌표를 고칠 때만 쓴다."""
+    lat, lon = _tm_inverse(x, y)
+    bx, by, bz = _geodetic_to_ecef(lat, lon, _A_B, _F_B)
+    s = 1 + _DS
+    wx = _DX + s * (bx - _RZ * by + _RY * bz)
+    wy = _DY + s * (_RZ * bx + by - _RX * bz)
+    wz = _DZ + s * (-_RY * bx + _RX * by + bz)
+    a, b = _ecef_to_geodetic(wx, wy, wz, _A_W, _F_W)
+    return math.degrees(a), math.degrees(b)
+
+
+_FIX: dict = {}
+
+
+def legacy_fix(lat: float, lng: float) -> tuple:
+    """예전 변환 좌표 → 올바른 좌표. 차이(13~25m)는 전국에 걸쳐 천천히 바뀌어서 0.05도 격자로 충분하다."""
+    if not _FIX:
+        for x in range(60000, 620001, 5000):
+            for y in range(-20000, 760001, 5000):
+                o = _legacy(x, y)
+                n = tm5174_to_wgs84(x, y)
+                if not n:
+                    continue
+                _FIX.setdefault((round(o[0] * 20), round(o[1] * 20)), (n[0] - o[0], n[1] - o[1]))
+    ki, kj = round(lat * 20), round(lng * 20)
+    for r in range(0, 4):
+        best = None
+        for di in range(-r, r + 1):
+            for dj in range(-r, r + 1):
+                d = _FIX.get((ki + di, kj + dj))
+                if d is not None:
+                    best = d
+                    break
+            if best:
+                break
+        if best:
+            return lat + best[0], lng + best[1]
+    return lat, lng

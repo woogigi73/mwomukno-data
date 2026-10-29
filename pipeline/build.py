@@ -20,7 +20,7 @@ import time
 
 from . import blog, sources
 from .classify import clean_text, classify, name_similarity, norm_name
-from .geo import distance_m, tm5174_to_wgs84
+from .geo import distance_m, legacy_fix, tm5174_to_wgs84
 from .safehttp import HttpError, get_json, log, redact, secret
 
 ROOT = pathlib.Path(".")
@@ -395,7 +395,7 @@ def apply_blog(rows: list, bstate: dict) -> bool:
                 pass
         menu = blog.merge_menu(r[11], (v[1].split("·") if v and v[1] else []), r[1], r[6], r[2])
         hours = v[9] if v and len(v) >= 10 and v[3] == blog.VERSION else ""
-        ev = blog.review_eval(v[10:21]) if v and len(v) >= 21 else ""
+        ev = blog.review_eval(v[10:21], b) if v and len(v) >= 21 else ""
         if r[12] != b or r[13] != menu or r[14] != hours or r[15] != ev:
             r[12], r[13], r[14], r[15] = b, menu, hours, ev
             changed = True
@@ -467,6 +467,84 @@ def blog_left(regions: dict) -> bool:
     return False
 
 
+# ---------------------------------------------------------------- 위치 보정 (카카오 장소 좌표)
+
+def apply_kakao_pos(rows: list, kstate: dict) -> bool:
+    """카카오에서 확인한 장소 좌표(가게 입구 기준)가 있으면 그걸 쓴다. 400m 넘게 다르면 다른 곳일 수 있어 쓰지 않는다."""
+    changed = False
+    for r in rows:
+        v = kstate.get(r[0])
+        if not v or len(v) < 5 or v[4] != "p" or not v[2]:
+            continue
+        lat6, lng6 = int(round(v[2] * 1e6)), int(round(v[3] * 1e6))
+        if (lat6, lng6) == (r[4], r[5]):
+            continue
+        if distance_m(r[4] / 1e6, r[5] / 1e6, v[2], v[3]) > 400:
+            continue
+        r[4], r[5] = lat6, lng6
+        changed = True
+    return changed
+
+
+def kakao_refine(rows: list, kstate: dict, key: str) -> int:
+    """카카오 매칭된 식당의 카카오 장소 좌표를 받아 둔다(6곳씩 동시에). 반환: 확인한 수."""
+    from concurrent.futures import ThreadPoolExecutor
+    headers = {"Authorization": f"KakaoAK {key}"}
+    todo = [r for r in rows if r[10] and (lambda v: v and v[0] and (len(v) < 5 or (v[4] == "x" and (NOW - dt.datetime.strptime(v[1], "%Y%m%d").replace(tzinfo=KST)).days >= 60)))(kstate.get(r[0]))]
+    n = 0
+
+    def ask(r):
+        try:
+            _, data = get_json(sources.KAKAO_KEYWORD, {"query": r[1], "x": f"{r[5] / 1e6:.6f}", "y": f"{r[4] / 1e6:.6f}",
+                                                       "radius": "1000", "sort": "distance", "size": "15"},
+                               headers=headers, retries=3)
+            return r, data, None
+        except HttpError as e:
+            return r, None, e
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for i in range(0, len(todo), 60):
+            room = BUDGET["kakao"] - used["kakao"]
+            if room <= 0 or time_left() < 480:
+                break
+            chunk = todo[i:i + min(60, room)]
+            used["kakao"] += len(chunk)
+            stop = False
+            for r, data, err in pool.map(ask, chunk):
+                if err is not None:
+                    if err.status in (401, 403, 429) or "limit" in (err.body or "").lower():
+                        stop = True
+                    continue
+                kid = kstate[r[0]][0]
+                hit = next((d for d in data.get("documents") or [] if str(d.get("id")) == str(kid)), None)
+                try:
+                    if hit:
+                        kstate[r[0]] = [kid, TODAY, round(float(hit["y"]), 6), round(float(hit["x"]), 6), "p"]
+                    else:
+                        kstate[r[0]] = [kid, TODAY, "", "", "x"]
+                except (TypeError, ValueError, KeyError):
+                    continue
+                n += 1
+            if stop:
+                note("⚠️ 카카오 장소 검색 한도 도달 — 위치 보정은 내일 이어서 합니다.")
+                BUDGET["kakao"] = 0
+                break
+    return n
+
+
+def finalize_region(code: str, data: dict, info: dict) -> None:
+    rows = data.get("r", [])
+    data["cols"] = COLS
+    path = REGION_DIR / f"{code}.json"
+    save(path, data, compact_lines=True)
+    blob = path.read_bytes()
+    if rows:
+        lats = [x[4] for x in rows]
+        lngs = [x[5] for x in rows]
+        info["bbox"] = [min(lats), min(lngs), max(lats), max(lngs)]
+    info.update({"sha": hashlib.sha256(blob).hexdigest(), "size": len(blob)})
+
+
 # ---------------------------------------------------------------- 지역 처리
 
 def build_region(code: str, info: dict, keys: dict) -> bool:
@@ -508,8 +586,10 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
         flags = 1 if r.get("model") else 0
         rows.append([r["id"], r["name"], r["kind"], r["cat"], int(round(r["lat"] * 1e6)), int(round(r["lng"] * 1e6)),
                      r["addr"], r["tel"], r["open"], flags, kid, r.get("food", ""), -1, "", "", ""])
+    apply_kakao_pos(rows, kstate)
     apply_blog(rows, load(STATE / "blog" / f"{code}.json", {}))
     rows.sort(key=lambda x: x[0])
+    info["geo"] = 2  # 새 좌표 변환으로 만든 파일
     if not rows:
         note(f"  · {code} 결과 0건 — 파일을 바꾸지 않음")
         return False
@@ -597,6 +677,7 @@ def main() -> None:
     done = 0
     kakao_new = 0
     blog_new = 0
+    pos_new = [0]
     cursor_start = regions.get("_meta", {}).get("cursor", 0)
 
     def checkpoint() -> None:
@@ -673,12 +754,37 @@ def main() -> None:
             if not path.exists() or time_left() < 600:
                 continue
             data = load(path, {})
-            if apply_blog(data.get("r", []), load(STATE / "blog" / f"{code}.json", {})) or data.get("cols") != COLS:
-                data["cols"] = COLS
-                save(path, data, compact_lines=True)
-                blob_ = path.read_bytes()
-                regions[code].update({"sha": hashlib.sha256(blob_).hexdigest(), "size": len(blob_)})
+            rows_ = data.get("r", [])
+            changed = False
+            if regions[code].get("geo") != 2:  # 예전 좌표 변환(약 15m 어긋남)으로 만든 좌표를 한 번 고친다
+                for r in rows_:
+                    la, ln = legacy_fix(r[4] / 1e6, r[5] / 1e6)
+                    r[4], r[5] = int(round(la * 1e6)), int(round(ln * 1e6))
+                regions[code]["geo"] = 2
+                changed = True
+            changed |= apply_kakao_pos(rows_, load(STATE / "kakao" / f"{code}.json", {}))
+            changed |= apply_blog(rows_, load(STATE / "blog" / f"{code}.json", {}))
+            if changed or data.get("cols") != COLS:
+                finalize_region(code, data, regions[code])
         checkpoint()
+
+        # 위치 보정: 카카오 매칭된 식당의 카카오 장소 좌표 받기 (부산부터, 카카오 장소 검색 한도 안에서)
+        if keys["kakao"] and used["kakao"] < BUDGET["kakao"] and time_left() > 900:
+            for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
+                path = REGION_DIR / f"{code}.json"
+                if not path.exists() or used["kakao"] >= BUDGET["kakao"] or time_left() < 900:
+                    continue
+                kpath = STATE / "kakao" / f"{code}.json"
+                kstate = load(kpath, {})
+                data = load(path, {})
+                got = kakao_refine(data.get("r", []), kstate, keys["kakao"])
+                if got:
+                    save(kpath, kstate)
+                    if apply_kakao_pos(data["r"], kstate):
+                        finalize_region(code, data, regions[code])
+                    note(f"  · {code} 위치 보정 확인 {got}곳")
+                    pos_new[0] += got
+                    checkpoint()
 
         # 블로그 언급량·추천 메뉴: 부산부터. 처음에는 기존 파일에 새 칸(blog, menu)을 붙이는 것만 해도 이름 기반 메뉴가 생긴다.
         for code in sorted([c for c in regions if not c.startswith("_")], key=lambda c: (0 if int(c) in BUSAN else 1, c)):
@@ -716,9 +822,9 @@ def main() -> None:
         pending_regions = any(is_stale(regions[c]) for c in codes) or regions.get("_meta", {}).get("cursor", 0) != 0
         pending_kakao = keys["kakao"] and used["kakao"] < BUDGET["kakao"] - 100
         pending_blog = keys["kakao"] and used["blog"] < BUDGET["blog"] - 100
-        progressed = done > 0 or kakao_new > 0 or blog_new > 0 or regions.get("_meta", {}).get("cursor", 0) != cursor_start
+        progressed = done > 0 or kakao_new > 0 or blog_new > 0 or pos_new[0] > 0 or regions.get("_meta", {}).get("cursor", 0) != cursor_start
         more = progressed and (pending_regions and used["general"] < BUDGET["general"] - 50) or (pending_kakao and kakao_left(regions)) \
-            or (pending_blog and blog_new > 0 and blog_left(regions))
+            or (pending_blog and blog_new > 0 and blog_left(regions)) or (pending_kakao and pos_new[0] > 0)
         pathlib.Path("reports").mkdir(exist_ok=True)
         (pathlib.Path("reports") / "continue.txt").write_text("yes\n" if more else "no\n", encoding="utf-8")
 
