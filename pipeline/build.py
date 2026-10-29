@@ -38,7 +38,7 @@ BUDGET = {
     "rest": int(os.environ.get("BUDGET_REST", "8500")),
     "model": int(os.environ.get("BUDGET_MODEL", "900")),
     "kakao": int(os.environ.get("BUDGET_KAKAO", "60000")),
-    "blog": int(os.environ.get("BUDGET_BLOG", "60000")),
+    "blog": int(os.environ.get("BUDGET_BLOG", "29500")),  # 카카오 블로그 검색 하루 한도(약 3만) 안에서
 }
 TIME_LIMIT_S = int(os.environ.get("TIME_LIMIT_S", str(5 * 3600)))
 REFRESH_DAYS = 6
@@ -448,6 +448,7 @@ def blog_update(rows: list, bstate: dict, key: str) -> int:
                 n += 1
             if stop:
                 BUDGET["blog"] = 0
+                MODEL_STATE["blog_stop"] = TODAY
                 break
     return n
 
@@ -546,10 +547,13 @@ def load_usage() -> None:
         for k in used:
             used[k] = int(u.get(k, 0))
         MODEL_STATE["fail"] = u.get("model_fail", "")
+        if u.get("blog_stop") == TODAY:  # 오늘 블로그 검색 한도를 이미 다 썼으면 이번 실행에서도 건너뜀
+            MODEL_STATE["blog_stop"] = TODAY
+            BUDGET["blog"] = 0
 
 
 def save_usage() -> None:
-    save(USAGE_PATH, {"date": TODAY, "model_fail": MODEL_STATE["fail"], **used})
+    save(USAGE_PATH, {"date": TODAY, "model_fail": MODEL_STATE["fail"], "blog_stop": MODEL_STATE.get("blog_stop", ""), **used})
 
 
 def is_stale(info: dict) -> bool:
