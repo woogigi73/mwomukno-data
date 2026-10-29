@@ -11,7 +11,7 @@
   "last": "20261028",
   "model": 0,
   "name": "서울특별시 종로구",
-  "sha": "b28b984249b46a1c4a6ca24656fd21f2cd57b5c2bad319bbb99bbae0e745e35c",
+  "sha": "ac627ee42a0995ed9b93b43404b987ccf48bc074e81ad1bb1369e9517e83459f",
   "size": 1508722
  },
  "3010000": {
@@ -71,7 +71,7 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 광진구",
-  "sha": "8594274deeafee3f721f73776cf52c4b59815b80ec47981f03d82283e5b936c2",
+  "sha": "9da6a36526941c4733f86856cac0d6a1400c545277073b13778f4e8b52edd99a",
   "size": 994010
  },
  "3050000": {
@@ -101,8 +101,8 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 중랑구",
-  "sha": "795f6977a229c02af8c415b7f8a6fc4b6610b9494a73352213bf03b02c56dfb4",
-  "size": 796194
+  "sha": "8b0ba2f67d515764a51362189720488ce7690ce06b442c9ec474385f24ea259d",
+  "size": 796186
  },
  "3070000": {
   "bbox": [
@@ -116,7 +116,7 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 성북구",
-  "sha": "05082cbd9fca51707d63daca828177e387a2f4361387f6efb8602797055aeff5",
+  "sha": "1e1a4cadc4e9c797b41a21d6f44f1030c1a89228d328476521c401f3bc112742",
   "size": 917477
  },
  "3080000": {
@@ -176,7 +176,7 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 은평구",
-  "sha": "c72b56c4090a865ab93422700529a7cebda973f979a178e07dba0535ebc8e23f",
+  "sha": "df9cac58998467f09a87de0c848cbf0b60466ad3cea2593136e687af45826d76",
   "size": 813118
  },
  "3120000": {
@@ -251,8 +251,8 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 구로구",
-  "sha": "2662ca76dffac95bc1bb95e47b3801d77c1daffdda2a860a7300ce004d5ba41f",
-  "size": 965207
+  "sha": "5676565ba79eae51a9e0fc446921308b2118667d4ab19dccd4ce63332a17b7eb",
+  "size": 965215
  },
  "3170000": {
   "bbox": [
@@ -266,7 +266,7 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 금천구",
-  "sha": "f781cf1a5efbb35beb378cafd2e664ec14788ecc01740b03446301820903fd96",
+  "sha": "f8af36e4f97d9ad7749796cc8972d20e196a25371ec170eef7004ce51c433c73",
   "size": 790282
  },
  "3180000": {
@@ -281,7 +281,7 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 영등포구",
-  "sha": "fdfbced1e36b5d7a80964f00e6cad1039596c294b4b359886ae7a226ca9ccbe4",
+  "sha": "0c1c36007882efa5d3c8053d5d80d44ac711fbdae969818e4ce7595000439c33",
   "size": 1702166
  },
  "3190000": {
@@ -296,7 +296,7 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 동작구",
-  "sha": "e5507cceffd49264ae6cc84440bc37ec67c5a7adb97273acfe9d072847aba198",
+  "sha": "d7027fa61bdae91abeb1531b0e5e0e81f8c868e20b2c4ddee6f2c13f5443bfa0",
   "size": 767639
  },
  "3200000": {
@@ -311,8 +311,8 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 관악구",
-  "sha": "4b10640b2a37c17417f164af470877bc0b1cf34b456380fd005d83adb56b21f7",
-  "size": 1090433
+  "sha": "2d02b8e3a171c793ce750f5e6d312966faeaaddf96ab0d74b6092288a5a15525",
+  "size": 1090427
  },
  "3210000": {
   "bbox": [
@@ -326,7 +326,7 @@
   "last": "20261029",
   "model": 0,
   "name": "서울특별시 서초구",
-  "sha": "f789d668cfc299b2b072e93542b05eef975ddfceda3c5d292c5604743259455e",
+  "sha": "050a0abbfe8a21885de2c94309426cdb2e425cf2ae262e8638e052686f4a3991",
   "size": 1441432
  },
  "3220000": {
@@ -388,8 +388,8 @@
   "model": 17,
   "model_ok": "20261029",
   "name": "부산광역시 중구",
-  "sha": "2d86e16ac780d6f39844be70739c1f1bfd53f70811618af45df93699fcd19e6f",
-  "size": 479768
+  "sha": "efeee733a5e16c9e2e4af5e2c9527ef8007385d0060528551fc6c692210221fb",
+  "size": 479779
  },
  "3260000": {
   "bbox": [
@@ -405,8 +405,8 @@
   "model": 9,
   "model_ok": "20261029",
   "name": "부산광역시 서구",
-  "sha": "42419a4b91ac107d5f80666db830b9322355d260c0fb55997ca5b9bf90748159",
-  "size": 275042
+  "sha": "3e2efbaeab70f3705753c2df671a3b7a7f5e2effeaa4731f2f1acfc580a08faa",
+  "size": 275053
  },
  "3270000": {
   "bbox": [
@@ -422,7 +422,7 @@
   "model": 31,
   "model_ok": "20261029",
   "name": "부산광역시 동구",
-  "sha": "7f86c10fd0dad7eac702b977d422b71d9fbd92d7eabda0a0c85495ad620d5256",
+  "sha": "734d7aca87b8ba90769cf224473f26ec5b3304c8ddc588ad58cb717ba95d77e6",
   "size": 307547
  },
  "3280000": {
@@ -456,8 +456,8 @@
   "model": 65,
   "model_ok": "20261029",
   "name": "부산광역시 부산진구",
-  "sha": "dad591819d4a9557bfedd1c39489210697f0436dde6499091fb91a393371f572",
-  "size": 1311375
+  "sha": "f482053de043a97cfc45a4a4522b8dc8a43a0f5715085bd17abdf9405ab7e364",
+  "size": 1311386
  },
  "3300000": {
   "bbox": [
@@ -473,7 +473,7 @@
   "model": 16,
   "model_ok": "20261029",
   "name": "부산광역시 동래구",
-  "sha": "6986c889274da7bdcda39aca28837c9a27d44fe48ae8c2638971622e2c79d153",
+  "sha": "d88f18b1133a2dc95b0e28929efeab440c0e89418d837f85fac84391922d3636",
   "size": 728432
  },
  "3310000": {
@@ -490,7 +490,7 @@
   "model": 6,
   "model_ok": "20261029",
   "name": "부산광역시 남구",
-  "sha": "e39b1dc2ad1dbc631eacc18aadaa427767d06319bcf278d09d4369443de87120",
+  "sha": "127c5685d552edfa3e481b7b101f1b102dc025ff28895f3f458abf852734c85c",
   "size": 620218
  },
  "3320000": {
@@ -507,8 +507,8 @@
   "model": 0,
   "model_ok": "20261029",
   "name": "부산광역시 북구",
-  "sha": "4f860034ddc3cbad46f280920034c3c7be5529bf99c4f4e78662edf338a90f21",
-  "size": 546541
+  "sha": "ba4bc16ad9916061ef9b365d8acb0efea03dae888e41588215a9d8e8c7c621ad",
+  "size": 546533
  },
  "3330000": {
   "bbox": [
@@ -524,7 +524,7 @@
   "model": 25,
   "model_ok": "20261029",
   "name": "부산광역시 해운대구",
-  "sha": "cd00ccc3a5453a373417c2710a78a18d9a7bc6447a32b95b863621f89866abc1",
+  "sha": "2c7ba14fdb9778b5773680b84d03ba6fdf5f92ddf700b251e05121f352d6b5b4",
   "size": 1054828
  },
  "3340000": {
@@ -541,8 +541,8 @@
   "model": 6,
   "model_ok": "20261029",
   "name": "부산광역시 사하구",
-  "sha": "529ddb2f504087853f92c80fda37d40132214b185699a94d346d2ebc1849e946",
-  "size": 677221
+  "sha": "06b7c828317131d266d04b02723565364f033bde90a5b064080b093e592513ff",
+  "size": 677232
  },
  "3350000": {
   "bbox": [
@@ -558,7 +558,7 @@
   "model": 61,
   "model_ok": "20261029",
   "name": "부산광역시 금정구",
-  "sha": "c6e9452c4f35be8d69492d965161e5c501dface5b9ef177564cf635730ac2b42",
+  "sha": "47dfda1507d6835ce2d4306603343a36f4a2eabe053afcd0c5dbc1db05906044",
   "size": 641536
  },
  "3360000": {
@@ -575,8 +575,8 @@
   "model": 1,
   "model_ok": "20261029",
   "name": "부산광역시 강서구",
-  "sha": "030cb163d0c17652d96b345906ab0e9a5cb49f8d5d093358981a802f34acb601",
-  "size": 524073
+  "sha": "4ef621f1dbbd757bfb0fdecd1f79ecd3e6d570facffa9b8f8ac15eafc8d30c30",
+  "size": 524084
  },
  "3370000": {
   "bbox": [
@@ -592,8 +592,8 @@
   "model": 22,
   "model_ok": "20261029",
   "name": "부산광역시 연제구",
-  "sha": "8f4423940c97bdad42787fd952b7eb446cbdfef9b237fb9222bb965ef96fce7a",
-  "size": 562077
+  "sha": "71b8c8ebe2560c5fb6c7429ca0883d5c5123aa001d4aa306d002ce7122ab8e9f",
+  "size": 562088
  },
  "3380000": {
   "bbox": [
@@ -609,7 +609,7 @@
   "model": 14,
   "model_ok": "20261029",
   "name": "부산광역시 수영구",
-  "sha": "ac5fd85deee43b4857b730d644d37e11b593946f15c956afed76e61b8fdeb879",
+  "sha": "92386da7c91e8afe998a155024cf4cbd065a0e53eb9242cbc5bdd606d26b2652",
   "size": 694156
  },
  "3390000": {
@@ -626,7 +626,7 @@
   "model": 45,
   "model_ok": "20261029",
   "name": "부산광역시 사상구",
-  "sha": "574f632ed436096ddc736684353e4ad78281c12175734a8d125e262c304ce5fb",
+  "sha": "2e77a942cb0a93aca1ed1f8a3e537865232c8d068af55f2c8de1c09af6cd797d",
   "size": 552857
  },
  "3400000": {
@@ -643,8 +643,8 @@
   "model": 16,
   "model_ok": "20261029",
   "name": "부산광역시 기장군",
-  "sha": "e5dad7805f9d0f715e780c3d276b375b41132438ad83502aa0e72d596154d541",
-  "size": 589479
+  "sha": "8f266716821dc41063d46177d2560b9636901f53f39f07b4a094aeea7a026e73",
+  "size": 589490
  },
  "3410000": {
   "bbox": [
@@ -658,8 +658,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대구광역시 중구",
-  "sha": "42fb418c236443ddbe27ddbd4b51707d7aee7162bf653b5c5599fee78b9321b0",
-  "size": 718466
+  "sha": "e2d9341a0f72e7e634e364591b8b948f58086eb0a7b918db5fa4ba07afeefd1e",
+  "size": 718477
  },
  "3420000": {
   "bbox": [
@@ -673,8 +673,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대구광역시 동구",
-  "sha": "230504a51ec10c95d3a395edecd76bf8b1580759e9173dbccd5f4d6820b190f2",
-  "size": 844263
+  "sha": "fa60a83833fa86735bdecf389e4db62f99fe8796a3ac70564ce6e3672acb4c2b",
+  "size": 844257
  },
  "3430000": {
   "bbox": [
@@ -688,7 +688,7 @@
   "last": "20261029",
   "model": 0,
   "name": "대구광역시 서구",
-  "sha": "f9f35a9a572e331c5ceb2a210d3b9e10c62e0cd5ccf52f1af300e361b60e005d",
+  "sha": "44684ea6c44ec2de10f83c598a7975b106b327aa5bb0ad190562d51a4806e89d",
   "size": 476090
  },
  "3440000": {
@@ -718,8 +718,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대구광역시 북구",
-  "sha": "fd66a174b73fa0f498aebf0218378e2adbacf7089aca2b54db78b61e27ea5cd9",
-  "size": 1071366
+  "sha": "6e5109f89bbeefadc0ff30305976aae7c8ed772a832800ecbd93e81dfea69d36",
+  "size": 1071364
  },
  "3460000": {
   "bbox": [
@@ -733,7 +733,7 @@
   "last": "20261029",
   "model": 0,
   "name": "대구광역시 수성구",
-  "sha": "e5e5ad7c44bde0e0a811deb9ae86a2782370d3edbdac8c832a7dd1c38c1a8537",
+  "sha": "4a81e639b89d4589f8ee90909af53222fa6d5746cfbaa2937914546e4e65a797",
   "size": 1079214
  },
  "3470000": {
@@ -748,7 +748,7 @@
   "last": "20261029",
   "model": 0,
   "name": "대구광역시 달서구",
-  "sha": "caa7d6b7680b64ced62d644f2120a97324c611fe498ba43c55f511714fa27aea",
+  "sha": "5e83485c77b2e3706e3fedfed693d669adc232e6fba32b1cbb8aed71992e6fb7",
   "size": 1386504
  },
  "3480000": {
@@ -763,8 +763,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대구광역시 달성군",
-  "sha": "c6cd8f048a8f8a03d7183501cdfb3b45f468e36327d3a2250ba5f38751265a36",
-  "size": 686579
+  "sha": "b957b3b80af2215e9d7d23750ab1669a80d25f62ba049c1f71ba9d07dc1212ba",
+  "size": 686590
  },
  "3520000": {
   "bbox": [
@@ -778,7 +778,7 @@
   "last": "20261029",
   "model": 0,
   "name": "인천광역시 연수구",
-  "sha": "b2846895865d9d206c501b21afdf1608866b82d1ca69a119b2aaea05afa92d22",
+  "sha": "36cd13a6a66c54ee51c2f072b2d9891b874fa74b5905a4751ed4c6558c3dd306",
   "size": 1092216
  },
  "3530000": {
@@ -823,7 +823,7 @@
   "last": "20261029",
   "model": 0,
   "name": "인천광역시 계양구",
-  "sha": "5ad257dc3f18551b47cdff2ae7c5cb611071deb7da334f023a2d29c63919ab9d",
+  "sha": "5b7ae9d19a8899bdd444ce809ec2dc7c69c4b56311055084d1b9d1045a0402e2",
   "size": 608628
  },
  "3565000": {
@@ -883,8 +883,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대전광역시 동구",
-  "sha": "ede85d3788027089777d2267443397b3bf69710cea756a1fe071f3df80b6e0cc",
-  "size": 608822
+  "sha": "45fe242317c342550f9a4a8021f2dbe875bd77a2abfb294975f728da18ccef12",
+  "size": 608828
  },
  "3650000": {
   "bbox": [
@@ -898,7 +898,7 @@
   "last": "20261029",
   "model": 0,
   "name": "대전광역시 중구",
-  "sha": "91e6158b07124eecbea5e6397de7db35c2b3df37dce9d760b9367e10ee631db6",
+  "sha": "feed4a66b49323ecfe42012214793b15fdfaf8f2c251f3d1d443d2b39c4e2830",
   "size": 725233
  },
  "3660000": {
@@ -913,8 +913,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대전광역시 서구",
-  "sha": "2e3a1af1bf0bc6fde26c8a7ca93562595b0f9f0653f07e75e85c4ac91b0c911d",
-  "size": 1347228
+  "sha": "bc5931b68d645f7961592d2c8f91c15fc2f0f107f6ca53f2820a420da323a7cc",
+  "size": 1370925
  },
  "3670000": {
   "bbox": [
@@ -928,8 +928,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대전광역시 유성구",
-  "sha": "19ab4b8519ddeea15ded787e62e11a1bdee35508f5dbed12beccd2b435942657",
-  "size": 1177578
+  "sha": "1126b94cb1ecda85ba3844000a74cd0016b578df4ca62095e56bbb87139690d0",
+  "size": 1263461
  },
  "3680000": {
   "bbox": [
@@ -943,8 +943,8 @@
   "last": "20261029",
   "model": 0,
   "name": "대전광역시 대덕구",
-  "sha": "42ce9ed4a19f6055c9f8ad760b9eab532adc8bc8863083dbe16ede214ee8d281",
-  "size": 474174
+  "sha": "1b4ed74fbd089b3db28e0931b2b609e68f0f10ee3ffb1bdac25094c5eaa2accc",
+  "size": 501424
  },
  "3690000": {
   "bbox": [
@@ -958,8 +958,8 @@
   "last": "20261029",
   "model": 0,
   "name": "울산광역시 중구",
-  "sha": "944d42fdafdb69e57912684079b7a187202496d4b2dd3bfac716444d4c33ee11",
-  "size": 518224
+  "sha": "87c55b3743fecae80a9669958df17ef0c9eb7e7982563f86a90f5f1de899ee77",
+  "size": 551037
  },
  "3700000": {
   "bbox": [
@@ -973,8 +973,8 @@
   "last": "20261029",
   "model": 0,
   "name": "울산광역시 남구",
-  "sha": "367e1f6068ddb5fa0b294302f6a66a1080ba0b414eb3590846f51d230f66f866",
-  "size": 1067033
+  "sha": "88daacc1a3d0c09c100e989e3df9f4245be8009624dc7725977f29fb753e7189",
+  "size": 1067039
  },
  "3710000": {
   "bbox": [
@@ -1003,8 +1003,8 @@
   "last": "20261029",
   "model": 0,
   "name": "울산광역시 북구",
-  "sha": "c4fa665a519691c5938f9ce0f4515690daf3aecbdf33b8dca2fb1ae0740e8b8d",
-  "size": 505980
+  "sha": "b7363bba0411ab2a8eefce965bc4a4703f0f4ed7c566dab1cc0d20c5c1650bf5",
+  "size": 505974
  },
  "3730000": {
   "bbox": [
@@ -1018,8 +1018,8 @@
   "last": "20261029",
   "model": 0,
   "name": "울산광역시 울주군",
-  "sha": "0dc0101811c0b772010d7d4a09762d32013e5093e31559e59fb80679c233bf94",
-  "size": 689362
+  "sha": "5a776dbbc6f5e98608ee603f7ed9ea78b65423cfefaf07f434d07d4663f63bbd",
+  "size": 689368
  },
  "3740000": {
   "bbox": [
@@ -1033,8 +1033,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 수원시 영통구",
-  "sha": "8681091b61e93588911d6a0c5fc987d96cbdaa539aa4f69251989911a0b72341",
-  "size": 2923418
+  "sha": "4d728f5a7d87bd35bec62e5c8a1ae92eff12c3c7d810529ba77b7a3c918e6ef7",
+  "size": 2923406
  },
  "3780000": {
   "bbox": [
@@ -1048,8 +1048,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 성남시 분당구",
-  "sha": "c8b915898a41868053f529c3a2628cf90063bcda6513d97ed3c07d456150cdea",
-  "size": 2242935
+  "sha": "81dca1356509f31b031a2b6ae2b0c31d33f5a674b3aaa20fc7c9f54ad50c7b58",
+  "size": 2242911
  },
  "3820000": {
   "bbox": [
@@ -1063,7 +1063,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 의정부시",
-  "sha": "c481dd2ee9ceb5bdcdacff3736bef8e223b3e2890a460ee50010f86454ac4e9d",
+  "sha": "abd35cd68657bc18c5bbf6f33bddcee8b29a03ca410136680e2200035324d41c",
   "size": 1085374
  },
  "3830000": {
@@ -1078,8 +1078,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 안양시 만안구",
-  "sha": "ba77b21de97df0b009f92b69a4d22835a9102077bfe0da3a06d18f866c02d86f",
-  "size": 841311
+  "sha": "c4d233263b5a84eab4162b97e0ecbabdf565e19ee24298727d621b278934400d",
+  "size": 841303
  },
  "3860000": {
   "bbox": [
@@ -1093,8 +1093,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 부천시 소사구",
-  "sha": "a0443115e1bd8789f191047ad964f8dcb058b10e45d60f6b13178e9289ff560f",
-  "size": 1865660
+  "sha": "262298f1320a66aede5e70a762f4cdaae5e00f134f358f022a8203ff870600f5",
+  "size": 1865654
  },
  "3900000": {
   "bbox": [
@@ -1108,8 +1108,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 광명시",
-  "sha": "983f0c63a772c4b59be6ccd0df888da9dc36304fe4c1884a62cf7a4aee4b2603",
-  "size": 556695
+  "sha": "403f7a725e438ea0d5973590c7ec34461dc41361b1f50fa6626f8684485b2ecb",
+  "size": 556689
  },
  "3910000": {
   "bbox": [
@@ -1123,8 +1123,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 평택시",
-  "sha": "98d6824af70da169459f436c754189e16f3e4c2eff9d8d491b6abc7d1411b654",
-  "size": 1795956
+  "sha": "768d2ad52fcfdb67e1c41da320e0e88834a5a83d692f44b2d911f4bfc2db4437",
+  "size": 1795962
  },
  "3920000": {
   "bbox": [
@@ -1153,7 +1153,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 안산시 상록구",
-  "sha": "6bf5c171b5423d25c31522704f03a5ffc739014ed808061949b6b92341d53682",
+  "sha": "47523beb747fd4f4f70650ac2842539c8f0bbf24280e6eb98c9ca5a9df641bcc",
   "size": 1769176
  },
  "3940000": {
@@ -1168,7 +1168,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 고양시 덕양구",
-  "sha": "33468a750dafc5f7ba71dd181b2eb1a0c80a8b18bc824ce55d39a80c7044af5c",
+  "sha": "18fd7edbc7bda12da33431954f4b86816d5a79d02e15cb0802dc30c637018e34",
   "size": 2321393
  },
  "3970000": {
@@ -1213,7 +1213,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 남양주시",
-  "sha": "192428da4cddc91fb30a20b32dc5897b79847e822751a7420fc8c80b3265d7b8",
+  "sha": "b67b49ff5e809a5ca345500e0c25158ac6bf501019a0b9d4238f9218c20683e3",
   "size": 1638729
  },
  "4000000": {
@@ -1228,7 +1228,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 오산시",
-  "sha": "c7e69229cdf851d200fc78673f2f374ba31cba0365235b15c683e844403551c6",
+  "sha": "800c51208fc26c1dfcdf3d39b60a4cf8cfeb60fd5ad023915354f960444a63aa",
   "size": 540242
  },
  "4010000": {
@@ -1243,7 +1243,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 시흥시",
-  "sha": "c8e89cfe4305a68d118a3d4868299a785702e160f7a08b583591021f9b68c53b",
+  "sha": "b89d23deca3b08fda11564e92b5eac1fb6bff1ce2852c301bc3d2ff0402fa3d1",
   "size": 1301067
  },
  "4020000": {
@@ -1258,7 +1258,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 군포시",
-  "sha": "90074b4d97621d017bcc00deb02823734083dd96a5d22574dd3cb8e3d4078c01",
+  "sha": "b4ded239e79df24c66559333cb10ca3cc6bfd2a7db1281619caaa96aa6c157d2",
   "size": 510584
  },
  "4030000": {
@@ -1288,7 +1288,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 하남시",
-  "sha": "afe649ad0e7461020eca39b75e89ad38202f1cf646fe7ad0a902d0eacad21da1",
+  "sha": "0be750080d716166892079c1e3df67cf668066369255578b105a96b25440fea2",
   "size": 694346
  },
  "4050000": {
@@ -1303,7 +1303,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 용인시 수지구",
-  "sha": "73fa7b7a38ad15a53b70c08fbdfd66c88ecfd88a22fbe7802dc84832c1eca499",
+  "sha": "d26ac159f78a35e50872fce07a0b7ebaf4a47fe9b525303401d4feeea32b85e9",
   "size": 2123820
  },
  "4060000": {
@@ -1318,7 +1318,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 파주시",
-  "sha": "f3926ba87b2f948219f60f48413e0cdf560795adccdc060db145a85de53fc26b",
+  "sha": "188f1a417f4d4baaeaf57e59791b27e5571f40997e8bde02f13c16e8c4cebd6b",
   "size": 1214722
  },
  "4070000": {
@@ -1333,8 +1333,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 이천시",
-  "sha": "29380eb243c09c1b3ed341158b315736c59d70d471b9a0b68dcee2ae2a4d2160",
-  "size": 679591
+  "sha": "87f5ac7eea6b5d8190b17950df0103d4240be1318a27a29465fe2d577d291b86",
+  "size": 679597
  },
  "4080000": {
   "bbox": [
@@ -1348,7 +1348,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 안성시",
-  "sha": "ffb57d1ce212c77acb79b0e11151b0a40ab309af9dfb4e838f31554ab5d52a8a",
+  "sha": "260aa17a9b9164e3a476c547858a423437975fd4144084f4d9507fa9aa2ce19f",
   "size": 630165
  },
  "4090000": {
@@ -1363,7 +1363,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 김포시",
-  "sha": "a72b917b8f6a0bf360fcd89ffc1b8ec2daa0ce34ca987c0cef096f04b6944e8b",
+  "sha": "246fb502d802634075c4b76550c3d424115171b921c334f5dadd441441adc040",
   "size": 1050293
  },
  "4140000": {
@@ -1408,7 +1408,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 양평군",
-  "sha": "1bd0ba5439184086b0988f0efb88799d48779283e8085f47f1b039cfdadfe406",
+  "sha": "f872eafe13970e9273abbf517e2b668c06346745be167bace1d1b813ccf971dd",
   "size": 366923
  },
  "4390000": {
@@ -1423,8 +1423,8 @@
   "last": "20261029",
   "model": 0,
   "name": "충청북도 충주시",
-  "sha": "b50d54f0c35d3239203ffc02e9075f0fe1991fc8fd1c3f03b9e48b95f0c5ad06",
-  "size": 768033
+  "sha": "851e39e0698c64cfbb83e74868666eb3c18dc0e6fc946b21270e4c8f9751fba2",
+  "size": 768021
  },
  "4400000": {
   "bbox": [
@@ -1438,8 +1438,8 @@
   "last": "20261029",
   "model": 0,
   "name": "충청북도 제천시",
-  "sha": "dcb85a7b4582d085e99feda3481110ab8abe531d17532239361101f2c790bbeb",
-  "size": 486241
+  "sha": "27409c68e72f0012123271abd268a14bd03014e1fccca256b42b56cb9415cc78",
+  "size": 486235
  },
  "4420000": {
   "bbox": [
@@ -1528,8 +1528,8 @@
   "last": "20261029",
   "model": 0,
   "name": "충청북도 음성군",
-  "sha": "e3d5e74c2d6f4e31ea2613389cc2a9f5cb2dc2635aa705d31022e629248f53e9",
-  "size": 424659
+  "sha": "4d0aca40a09dbe2a278e996b3c0862f38f1b79308263a35b1b851abb4d57be30",
+  "size": 424647
  },
  "4480000": {
   "bbox": [
@@ -1543,7 +1543,7 @@
   "last": "20261029",
   "model": 0,
   "name": "충청북도 단양군",
-  "sha": "6e9f826d4eb9d108582535603d69ddd3bfcc6e64a28c3f362d4b210f522dc42f",
+  "sha": "5be8a0c659489fb47d2f85cd954561c886fd4384eecd2dc878b508cb885aa0fa",
   "size": 134161
  },
  "4490000": {
@@ -1558,8 +1558,8 @@
   "last": "20261029",
   "model": 0,
   "name": "충청남도 천안시 서북구",
-  "sha": "d7b15fee502a30579dccd27502755290a57656f4066bf1a8b625e9f737b4b9d2",
-  "size": 1956154
+  "sha": "ad108be96ea45c125f08731d802d15037cf1e832554417252a5660eb89bd361f",
+  "size": 1956176
  },
  "4500000": {
   "bbox": [
@@ -1588,7 +1588,7 @@
   "last": "20261029",
   "model": 0,
   "name": "충청남도 보령시",
-  "sha": "acc923f567641d3193b4cdc80225940887f00cc4d01185fa7d004d7dcf3e1b1f",
+  "sha": "2323f881f845e1df9d887ff658d72bc710cee97298ad46dca3e832bec614dd0e",
   "size": 401214
  },
  "4520000": {
@@ -1603,7 +1603,7 @@
   "last": "20261029",
   "model": 0,
   "name": "충청남도 아산시",
-  "sha": "eb8239816b25bcafbf08f2ca1ca32aca56ab2517e488381050f550d6cd727393",
+  "sha": "ad991d7a22f0fb14cd00b3ccf7dc16621941ae9e9038d837ac816d41e3e59743",
   "size": 1043783
  },
  "4530000": {
@@ -1633,7 +1633,7 @@
   "last": "20261029",
   "model": 0,
   "name": "충청남도 논산시",
-  "sha": "d09e4f172ee9d51074d4921b8574b50f1568c393178a99e4f3ad5c67d797b5b2",
+  "sha": "331747d76dc44c168c0a730587da1a982faccddffaef6f741dacc0314e8cec8b",
   "size": 376987
  },
  "4550000": {
@@ -1723,7 +1723,7 @@
   "last": "20261029",
   "model": 0,
   "name": "충청남도 예산군",
-  "sha": "ef0a83b309b2ab4459d535c94fda9d95feb3dc9ffe2dcfe768e55b8d62d2ea18",
+  "sha": "4a772532140c39c361b4a65b957fbd325abedaf9403f946a7e3cc419dbfa4de8",
   "size": 264222
  },
  "4620000": {
@@ -1753,8 +1753,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 포항시 북구",
-  "sha": "a74802ebe0b35cdd2a3fb80d67cea7ed22f097ecbf0bf40ea95708af482fcc18",
-  "size": 1728441
+  "sha": "75fd7dc47f2dd1f4d348b5d7d8c270ec041fe60a6e7a251315aa970a9a34ba9a",
+  "size": 1728423
  },
  "5050000": {
   "bbox": [
@@ -1768,8 +1768,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 경주시",
-  "sha": "3e22d0361b3727c1909c14881786a115809dd02613132673318543b6526dbd3d",
-  "size": 1076551
+  "sha": "530a38743f5afe750b73a47d2ef49303703b5669feab157c4443a0b8c0909f6c",
+  "size": 1076545
  },
  "5060000": {
   "bbox": [
@@ -1783,8 +1783,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 김천시",
-  "sha": "1a92ba9cb7ceee9d8f166714dc296ef4932fc5ee34e789f2885586b9e1578ab5",
-  "size": 460996
+  "sha": "c6684e09c39b6191a101b7942b0315ae215b4e0b3631ef4ca1480dd4c43e333b",
+  "size": 460990
  },
  "5070000": {
   "bbox": [
@@ -1798,7 +1798,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 안동시",
-  "sha": "ef7c5a72624f941590b5f63f6a85f0a290bf4d7d84bf9861b4e3b3b7b0cc4513",
+  "sha": "a4f36033db8dbc63aec127d523e9e37b2687167675b9f2c80eef2037c35bc1c8",
   "size": 546431
  },
  "5080000": {
@@ -1813,7 +1813,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 구미시",
-  "sha": "76add6c707f4f2f2becda859ab8b14e18fec73d0ea99417b42a774b7bba7c05f",
+  "sha": "48554de59abd83ef29f2aa224887102263231227a21cc288db400407c6a03f4a",
   "size": 1195283
  },
  "5090000": {
@@ -1828,7 +1828,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 영주시",
-  "sha": "d84024d0e5b9d2bca2076157b7f2e03c9c11b128833e301f71633608e060036f",
+  "sha": "c8159571810778756a78f49756517f400ce5c33fe442ef0b1a90d4a3b4f8ade2",
   "size": 335024
  },
  "5100000": {
@@ -1858,7 +1858,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 상주시",
-  "sha": "4327fe746f3b04d7b08cb9adfca9d372902c4f8f053af39642f08a18d212ab24",
+  "sha": "15d49a6bde2e9650677d59921e1e316bdd63f04f8640fdcf0827bfaa98b6e804",
   "size": 273323
  },
  "5120000": {
@@ -1888,7 +1888,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 경산시",
-  "sha": "0ba291ece92ac527fb28d9051411b000d509dae9fdd297a6f66738ad275efcb9",
+  "sha": "9cdb12e1caeb4509aeb9354b0af62926f16c477b356e15c4d289fbcd26e4a23d",
   "size": 752176
  },
  "5150000": {
@@ -1918,8 +1918,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 청송군",
-  "sha": "ee3766718d585605ac287c15cd7ac748d784c44b52e736efc99a76f35a07757f",
-  "size": 107375
+  "sha": "a193b0cc399d30eeb75f953fd7e65a06b21085268838c9b3b49f74d27960602d",
+  "size": 107369
  },
  "5170000": {
   "bbox": [
@@ -2008,7 +2008,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 칠곡군",
-  "sha": "24f081fdcf6037a1a0e05f823cb63920ef27aa99a85ed68b0b18485db8a6a1c5",
+  "sha": "c4d1a43ef8c67c9779b83e5b9bb2b1fed6358e3f74e7961d6ae054fd148d57bd",
   "size": 381632
  },
  "5230000": {
@@ -2053,8 +2053,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상북도 울진군",
-  "sha": "7c68226e7481ffee24e3a5ad792965ac04aa4bbd22abdde57615821ff462b2b5",
-  "size": 200557
+  "sha": "1b618b7070532d1e31fbaf395a5ea1e4bd0dfee9f8224b44fd66420b2c20b7af",
+  "size": 200551
  },
  "5260000": {
   "bbox": [
@@ -2083,8 +2083,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 진주시",
-  "sha": "b8bf0f073f2576282ac44f1c9969dec576d170b6ff7c955d7610c1ce2c437643",
-  "size": 1155453
+  "sha": "7ac4374439f9b1c4141ecc3d0e0a82ca6e32b208619513ec3eb7d4c80df27783",
+  "size": 1155447
  },
  "5330000": {
   "bbox": [
@@ -2098,8 +2098,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 통영시",
-  "sha": "86d1780bb2ac3ca719765c59c74b2e23a700ca19a2cdeb30f6ad8dfabe0f64ee",
-  "size": 465067
+  "sha": "137d74e94c447b664b40a90036f26f11d4d00343aee3f4c3a75d4ced5203dd8c",
+  "size": 465061
  },
  "5340000": {
   "bbox": [
@@ -2128,7 +2128,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 김해시",
-  "sha": "85377ff9b5f7e5af8ca3aeb720b9e0007f8f2ba9eea07545001d1d8cce983620",
+  "sha": "b88adbc8c2afa33721cec5a9a03f783e95cc4bb0dcb64f1b55104346006d4e62",
   "size": 1663024
  },
  "5360000": {
@@ -2143,8 +2143,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 밀양시",
-  "sha": "ebfed97f4b9c31391d9949fb0d82cdbefffef9f6b949ff7ad13aa72d781e1880",
-  "size": 353040
+  "sha": "6ec396b302026b6710cedeaf94a0b0d71b8be7460fcbc7f56563497a0aa96a4e",
+  "size": 353034
  },
  "5370000": {
   "bbox": [
@@ -2158,7 +2158,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 거제시",
-  "sha": "3d2c8efe774b927c77fb51dc0277fabf2f1014e71cec9f3ef662be6bfbf3adea",
+  "sha": "9808e90f8e17a57edac67dc7597cc7a84b78402c7d4f642bfa1c324ddcbb27a4",
   "size": 859155
  },
  "5380000": {
@@ -2173,8 +2173,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 양산시",
-  "sha": "ae0614c8e9b2dcfaeadf521a0a3686fc9b6318f8e5ea09add9762a096b2f12a5",
-  "size": 1082561
+  "sha": "df90690efc9db38e342f23763df1a49972ffd1b26d73bf9391b79627be31b454",
+  "size": 1082555
  },
  "5390000": {
   "bbox": [
@@ -2233,8 +2233,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 고성군",
-  "sha": "c15d0e2f649d7218efb18987b4f7534d4de6cca3af454ae49a1ae39a7dd94698",
-  "size": 169066
+  "sha": "7ca43066c5ea5725804cbdc7f1db395b79c429e8ee350417e87a29ebcef5760c",
+  "size": 169060
  },
  "5430000": {
   "bbox": [
@@ -2308,7 +2308,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 거창군",
-  "sha": "38bb5f11e1465dc787ed0b3bad0f36a9b11c365164253f09e4ff2ed338c88565",
+  "sha": "161f3f4cda72639cce8bd3b0ee60fdb6d572f369bca534e1820f40fbdff5eef7",
   "size": 200161
  },
  "5480000": {
@@ -2338,7 +2338,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 화성시 동탄구",
-  "sha": "0a9da29de14377f42d8b5d8e9c35dc29901ad28e019f314be3022e70a53b20f0",
+  "sha": "bb3e1364c17bb9672c70d6a00b2808f58777fbbb8897d03582d9be13d26f3799",
   "size": 2366458
  },
  "5540000": {
@@ -2353,8 +2353,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 광주시",
-  "sha": "737ae7a7fbb844fca1e79043bda5b6c8d24923ada05fda415d25bc71700bcc89",
-  "size": 630939
+  "sha": "5ff7c5e7a1a249598c62cba7665bb84d465a7b3e7cf232276af47809e22dd434",
+  "size": 630907
  },
  "5570000": {
   "bbox": [
@@ -2398,8 +2398,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 양주시",
-  "sha": "f11f950e43fbccd3c0f34f17fd51e028f3c2ed3a3801b6a002df955b77886712",
-  "size": 690092
+  "sha": "14ff541caa1463ae5c524fb3255b3b0b99bc4b1e58464da7e902473d37ba0b41",
+  "size": 690080
  },
  "5600000": {
   "bbox": [
@@ -2413,7 +2413,7 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 포천시",
-  "sha": "b9609ba2e693acd947625419f48db92cec77a7c8678b32a1f87c6b4d74ee87a7",
+  "sha": "8e44ecc656fc7e78796b1c76340700a18ea204d80de9b671ce15c993c85b5f38",
   "size": 631384
  },
  "5670000": {
@@ -2429,8 +2429,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경상남도 창원시 진해구",
-  "sha": "f94c8a1db526b6d3e31ca124b8c90571decb822e2d409ed718c75180df7bfff1",
-  "size": 3216089
+  "sha": "96489f24d5f3f630389cb8570bb80f83a776e995d96ce72abdeaa1d870a60d1d",
+  "size": 3216081
  },
  "5680000": {
   "bbox": [
@@ -2444,7 +2444,7 @@
   "last": "20261029",
   "model": 0,
   "name": "충청남도 당진시",
-  "sha": "4d65a74bd2b5c9952954f5e342160c92b36a1e39238227127fe006d2b49d7acd",
+  "sha": "4abe11de7a99658e9c815f4a2d6c315c18db1f6e3a5886c2306830c324d6d2a2",
   "size": 585643
  },
  "5690000": {
@@ -2474,8 +2474,8 @@
   "last": "20261029",
   "model": 0,
   "name": "경기도 여주시",
-  "sha": "d08fd5cdc76f3ab6fdd1695ff61a07b735a0a921a8edcffa99cb50ded580293e",
-  "size": 402082
+  "sha": "1838b740547f8f5507d09209296c1e4a3330ade3dbdef59502814f94eb61f4cd",
+  "size": 402076
  },
  "5710000": {
   "bbox": [
@@ -2489,8 +2489,8 @@
   "last": "20261029",
   "model": 0,
   "name": "충청북도 청주시 청원구",
-  "sha": "65b00378b72506c81e58f7ff8ad1e4ce8860b0fc4562b6a96ccf3acab4ab3f1d",
-  "size": 2623147
+  "sha": "bbac22e30f98c5123ccea85504f19f22035e3a683081ff6e4ea70a3aae4b75e8",
+  "size": 2623129
  },
  "5780000": {
   "bbox": [
@@ -2504,8 +2504,8 @@
   "last": "20261029",
   "model": 0,
   "name": "전남광주통합특별시 목포시",
-  "sha": "9d10afed5a0aeb5221320fed3721b295665e3fb0dbdcc2fa46d7a25b2fb2ca6d",
-  "size": 875130
+  "sha": "b4d4f4d9302ed83cbd02490cf150e23ea1ba935550479cefdf09d210435d6fc6",
+  "size": 875136
  },
  "5785000": {
   "bbox": [
@@ -2519,7 +2519,7 @@
   "last": "20261029",
   "model": 0,
   "name": "전남광주통합특별시 여수시",
-  "sha": "0b2cca24a26f0222634f07a2cc95c2ae6ebbb6e7a680963efaea15d84c30dfd2",
+  "sha": "cc85ba46375c394bc7ca52f945dc8e3d8c33e357d7d985f467c3e089003a931b",
   "size": 1093331
  },
  "5790000": {
@@ -2624,8 +2624,8 @@
   "last": "20261029",
   "model": 0,
   "name": "전남광주통합특별시 북구",
-  "sha": "af21933c8500b1e9e1e4aaa06c8ab5329a6608eae71d2c19f469e431cf55deba",
-  "size": 1035799
+  "sha": "d42b07d1df743e0c35223174959b3f998e37c6a0697ecb6f5da83e4788e6ebfb",
+  "size": 1035805
  },
  "5825000": {
   "bbox": [
@@ -2789,8 +2789,8 @@
   "last": "20261029",
   "model": 0,
   "name": "전남광주통합특별시 영암군",
-  "sha": "f6130cc48ed270956744f83139bd3670e293b6b9a3b9b9d53550518b0fca197d",
-  "size": 177517
+  "sha": "1007f87404d42d63600425d881adfb0315629a98a56f652d0c40c11f714ed2cc",
+  "size": 177523
  },
  "5880000": {
   "bbox": [
@@ -2849,8 +2849,8 @@
   "last": "20261029",
   "model": 0,
   "name": "전남광주통합특별시 장성군",
-  "sha": "f485a092509c72ed742305f2e7e82a3edfab46601d9b912c46cb12846c5355a5",
-  "size": 119547
+  "sha": "ca845f72af1fb69fb13a60ef39980eeabc89b8bedf3860f492841d1f6a27596f",
+  "size": 119553
  },
  "5900000": {
   "bbox": [
@@ -2925,8 +2925,8 @@
   "last": "20261029",
   "model": 0,
   "name": "제주특별자치도 서귀포시",
-  "sha": "5cdd36b3a3899de723f861ac8875335986868aa2c8c8a44adbf424ad1d33cdb2",
-  "size": 1085931
+  "sha": "603572a231ee6209e9c986c5295176a153c6be49f25e280df72d3ad132184a42",
+  "size": 1099136
  },
  "_meta": {
   "cursor": 0,
