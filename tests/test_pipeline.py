@@ -187,14 +187,14 @@ class BlogTest(unittest.TestCase):
         docs = [{"title": "<b>해운대</b> <b>대패부대</b> 후기", "contents": "대패삼겹살 이랑 부대찌개 최고, 대패삼겹살 또 먹고 싶다",
                  "datetime": "2026-09-01T12:00:00.000+09:00"} for _ in range(8)]
         docs += [{"title": "다른 가게", "contents": "해운대 회", "datetime": "2026-09-01T12:00:00.000+09:00"}] * 2
-        b, menu, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구 우동 1", {"meta": {"total_count": 80}, "documents": docs},
+        b, menu, _, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구 우동 1", {"meta": {"total_count": 80}, "documents": docs},
                                 dt.date(2026, 10, 24), False)
         self.assertEqual(b, 3)  # 80 * 0.8 = 64
         self.assertEqual(menu[:2], ["대패삼겹살", "부대찌개"])
-        b2, _, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
+        b2, _, _, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
                               dt.date(2026, 10, 24), True)
         self.assertEqual(b2, 3)  # 체인은 최대 3단계
-        b3, m3, _, _ = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
+        b3, m3, _, _, _ = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
                                dt.date(2026, 10, 24), False)
         self.assertEqual((b3, m3), (0, []))
 
@@ -202,7 +202,7 @@ class BlogTest(unittest.TestCase):
         import datetime as dt
         from pipeline import blog
         docs = [{"title": "해운대 맛집", "contents": "친구이와 같이 갔어요 해운대", "datetime": "2026-09-01T00:00:00"}] * 10
-        b, _, st, _ = blog.evaluate("이와", "부산광역시 해운대구", {"meta": {"total_count": 2500000}, "documents": docs},
+        b, _, st, _, _ = blog.evaluate("이와", "부산광역시 해운대구", {"meta": {"total_count": 2500000}, "documents": docs},
                                  dt.date(2026, 10, 24), False)
         self.assertEqual(st[1], 0)
         self.assertEqual(b, 0)
@@ -240,3 +240,14 @@ class BlogTest(unittest.TestCase):
         from pipeline import blog
         self.assertEqual(blog.merge_menu("", ["수육", "커피"], "한신해물천국", "부산광역시 남구", "b"), "수육")
         self.assertEqual(blog.merge_menu("", ["아메리카노", "김밥", "커피"], "나르커피", "부산광역시 남구", "c"), "아메리카노·커피")
+
+    def test_review_eval(self):
+        from pipeline import blog
+        good = blog.aspect_counts(["정말 맛있어요 친절하고 재방문 의사"] * 12)
+        bad = blog.aspect_counts(["맛없고 불친절, 비싸요"] * 3 + ["그냥 맛있어요"] * 9)
+        g, b = blog.review_eval(good), blog.review_eval(bad)
+        self.assertGreater(int(g.split("|")[0]), int(b.split("|")[0]))
+        self.assertGreaterEqual(int(g.split("|")[0]), 44)
+        self.assertEqual(blog.review_eval(blog.aspect_counts(["맛있"])), "")  # 글 1개는 판단 안 함
+        few = blog.review_eval(blog.aspect_counts(["존맛"] * 2))
+        self.assertLessEqual(int(few.split("|")[0]), 40)  # 글이 적으면 3.5점 쪽으로

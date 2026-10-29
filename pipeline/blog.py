@@ -184,6 +184,7 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
     rel = recent = ads = 0
     menu_counts: dict = {}
     hours_found: list = []
+    rel_texts: list = []
     docs = sorted(docs, key=lambda d: str(d.get("datetime") or ""), reverse=True)
     for d in docs:
         title, body = strip(d.get("title")), strip(d.get("contents"))
@@ -196,6 +197,7 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
         if (short or chain) and region and region not in text:
             continue
         rel += 1
+        rel_texts.append(text)
         when = str(d.get("datetime") or "")[:10]
         try:
             if (today - dt.date.fromisoformat(when)).days <= 730:
@@ -221,7 +223,77 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
     need = 2 if rel >= 3 else 1
     bad = place_words(addr) | NOT_MENU | {region} | PLACE_CLASH.get(region, set())
     menu = pick_menu(menu_counts, need, bad)
-    return b, menu, [total, rel, len(docs), recent, ads], vote_hours(hours_found)
+    return b, menu, [total, rel, len(docs), recent, ads], vote_hours(hours_found), aspect_counts(rel_texts)
+
+
+# ---------------------------------------------------------------- 후기 분석 (맛·친절·가성비·분위기·웨이팅·재방문)
+# 글에서 긍정/부정 표현이 나온 '글 수'만 센다(글 내용은 저장하지 않음).
+ASPECTS = {
+    "t": (  # 맛
+        r"맛있|맛나|존맛|꿀맛|JMT|jmt|맛도리|인생\s?(?:맛집|국밥|짬뽕|돈까스|밀면|피자|라멘|파스타|버거)|감동|일품|훌륭|최고의\s?맛|"
+        r"감칠맛|진한\s?국물|국물이\s?(?:진|깊|시원)|육즙|부드럽|쫄깃|고소|담백|신선|맛집\s?인정|맛이\s?좋|정말\s?맛|너무\s?맛|완전\s?맛",
+        r"맛없|맛이\s?없|별로였|별로다|별로임|실망|비추|그저\s?그|평범했|기대\s?이하|짜다|짰|너무\s?짜|싱거|느끼했|비린|질겼|퍽퍽|"
+        r"아쉬웠|아쉬운\s?맛|다시는\s?안|두\s?번은\s?안|맛이\s?변했",
+    ),
+    "s": (  # 친절·서비스
+        r"친절|서비스\s?(?:가|도)?\s?좋|서비스를?\s?주|응대가\s?좋|사장님이?\s?(?:좋|친절|유쾌|정이)|세심|직원분들?이?\s?(?:친절|좋)",
+        r"불친절|퉁명|무례|응대가?\s?(?:별로|불쾌)|서비스가?\s?(?:별로|엉망)|직원.{0,6}(?:불친절|별로)|기분\s?나빴",
+    ),
+    "p": (  # 가성비
+        r"가성비|저렴|착한\s?가격|가격도?\s?(?:착|좋|괜찮|합리)|양이\s?(?:많|푸짐|넉넉)|푸짐|혜자|무한\s?리필|리필",
+        r"비싸|가격이?\s?(?:비싸|사악|부담|쎄)|양이\s?(?:적|작)|창렬|가성비가?\s?(?:별로|떨어)",
+    ),
+    "m": (  # 분위기·청결
+        r"분위기\s?(?:가|도)?\s?좋|분위기\s?맛집|인테리어|깔끔|청결|깨끗|오션\s?뷰|뷰가?\s?(?:좋|예쁘|멋)|아늑|감성|넓",
+        r"시끄|비좁|좁아|지저분|더럽|위생이?\s?(?:별로|안\s?좋)|냄새가?\s?(?:심|나)|어수선",
+    ),
+}
+_ASP_RE = {k: (re.compile(p), re.compile(n)) for k, (p, n) in ASPECTS.items()}
+_WAIT = re.compile(r"웨이팅|줄\s?(?:서|을\s?서|이\s?길)|대기\s?(?:가|시간|번호|줄)|오픈\s?런|예약\s?필수|기다려서|기다렸")
+_REVISIT = re.compile(r"재방문|또\s?(?:가|갈|올|오고|방문|먹으러)|다시\s?(?:방문|가고|오고|찾)|단골|n\s?번째\s?방문|\d+\s?번째\s?방문")
+
+
+def aspect_counts(texts: list) -> list:
+    """글마다 각 항목 긍정/부정이 나왔는지 → [맛+,맛-,친절+,친절-,가성비+,가성비-,분위기+,분위기-,웨이팅,재방문,분석한 글 수]"""
+    out = [0] * 11
+    for t in texts:
+        for i, k in enumerate("tspm"):
+            pos, neg = _ASP_RE[k]
+            n = bool(neg.search(t))
+            p = bool(pos.search(t)) and not n  # 한 글에 둘 다 있으면 부정으로 본다(아쉬운 점을 쓴 글)
+            out[i * 2] += p
+            out[i * 2 + 1] += n
+        out[8] += bool(_WAIT.search(t))
+        out[9] += bool(_REVISIT.search(t))
+    out[10] = len(texts)
+    return out
+
+
+def review_eval(c: list) -> str:
+    """항목별 점수 문자열. 형식 '종합별점x10|맛|친절|가성비|분위기|웨이팅|재방문|글수' (항목 0~9, 모르면 -)
+    블로그 글은 대부분 칭찬이라 '긍정 비율'을 그대로 별점으로 쓰면 다 4.8점이 된다.
+    그래서 부정 언급에 무게를 두고(1건 = 칭찬 3건), 글이 적으면 보통(3.5점) 쪽으로 당긴다."""
+    if not c or c[10] < 2:
+        return ""
+    def part(p, n, prior=2.0):
+        if p + n == 0:
+            return None
+        s = (p + 0.7 * prior) / (p + 3 * n + prior)  # 0~1, 부정 1건은 긍정 3건만큼
+        return max(0.0, min(1.0, s))
+    t, sv, pr, md = part(c[0], c[1]), part(c[2], c[3]), part(c[4], c[5]), part(c[6], c[7])
+    n = c[10]
+    rv = c[9] / n
+    # 종합: 맛 60%, 친절 15%, 가성비 15%, 분위기 10% (없는 항목은 빼고 비율 다시 맞춤) + 재방문 언급 가산
+    ws = [(t, .6), (sv, .15), (pr, .15), (md, .1)]
+    tw = sum(w for v, w in ws if v is not None)
+    base = sum(v * w for v, w in ws if v is not None) / tw if tw else 0.55
+    base = min(1.0, base + min(0.08, rv * 0.25))
+    conf = min(1.0, n / 10)  # 글이 10개 미만이면 3.5점 쪽으로 당김
+    stars = 3.5 + (1.0 + 4.0 * base - 3.5) * conf
+    g = lambda v: "-" if v is None else str(min(9, int(v * 10)))
+    wait = min(9, round(c[8] / n * 10))
+    rev = min(9, round(rv * 10))
+    return f"{round(stars * 10)}|{g(t)}|{g(sv)}|{g(pr)}|{g(md)}|{wait}|{rev}|{n}"
 
 
 # ---------------------------------------------------------------- 영업시간 (글에 적힌 것만)

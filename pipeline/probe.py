@@ -5,7 +5,7 @@
 import datetime as dt
 import pathlib
 
-from . import sources
+from . import blog, sources
 from .safehttp import HttpError, get_json, log, redact, secret
 
 OUT = pathlib.Path("reports/probe.md")
@@ -120,15 +120,47 @@ def main() -> None:
                 w(f"  - 필드: {', '.join(sorted(docs[0].keys()))}")
         except HttpError as e:
             w(f"- 키워드 검색 실패: HTTP {e.status} {e.body[:200]}")
-    w("\n## 블로그 검색 (집계 숫자·메뉴 단어만 기록)")
+    w("\n## 위치 정확도: 공공데이터 좌표 vs 카카오 장소 좌표 (부산 표본)")
     if kk:
+        import glob as _glob
         import json as _json
-        from . import blog
-        try:
-            rows = _json.loads(pathlib.Path("docs/v1/r/3330000.json").read_text(encoding="utf-8"))["r"]
-        except Exception:  # noqa: BLE001
-            rows = []
-        picks = [r for r in rows if r[10]][::max(1, len([r for r in rows if r[10]]) // 30)][:30]
+        import random as _random
+        from .geo import distance_m
+        rows = []
+        for f in sorted(_glob.glob("docs/v1/r/3[23]*.json")):
+            try:
+                rows += [r for r in _json.loads(pathlib.Path(f).read_text(encoding="utf-8"))["r"] if r[10]]
+            except Exception:  # noqa: BLE001
+                pass
+        _random.seed(3)
+        sample = _random.sample(rows, min(300, len(rows)))
+        dists, miss = [], 0
+        for r in sample:
+            lat, lng = r[4] / 1e6, r[5] / 1e6
+            try:
+                _, data = get_json(sources.KAKAO_KEYWORD, {"query": r[1], "x": f"{lng:.6f}", "y": f"{lat:.6f}", "radius": "1000",
+                                                         "sort": "distance", "size": "15"},
+                                   headers={"Authorization": f"KakaoAK {kk}"}, retries=2)
+            except HttpError as e:
+                w(f"- 카카오 검색 실패 HTTP {e.status}")
+                break
+            hit = next((d for d in data.get("documents", []) if str(d.get("id")) == str(r[10])), None)
+            if not hit:
+                miss += 1
+                continue
+            dists.append(distance_m(lat, lng, float(hit["y"]), float(hit["x"])))
+        if dists:
+            dists.sort()
+            q = lambda p: round(dists[min(len(dists) - 1, int(len(dists) * p))])
+            w(f"- 표본 {len(sample)}곳 중 같은 장소 확인 {len(dists)}곳 (못 찾음 {miss})")
+            w(f"- 차이: 중간값 {q(.5)}m, 75% {q(.75)}m, 90% {q(.9)}m, 95% {q(.95)}m, 최대 {round(dists[-1])}m")
+            w(f"- 30m 넘게 차이: {sum(d > 30 for d in dists)}곳, 100m 넘게: {sum(d > 100 for d in dists)}곳, 300m 넘게: {sum(d > 300 for d in dists)}곳")
+
+    w("\n## 후기 분석 점검 (집계 숫자만 기록)")
+    if kk:
+        famous = ["합천국밥집", "부다면옥", "담미옥", "해운대암소갈비집", "쌍둥이돼지국밥", "비비비당", "초량밀면", "신발원", "거대갈비", "본전돼지국밥"]
+        picks = [r for r in rows if any(r[1].replace(" ", "") == f for f in famous)][:10]
+        picks += _random.sample([r for r in rows if r not in picks], 30)
         today = dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).date()
         for r in picks:
             q = blog.query(r[1], r[6])
@@ -136,13 +168,11 @@ def main() -> None:
                 st, data = get_json(blog.BLOG_URL, {"query": q, "size": "20", "sort": "accuracy"},
                                     headers={"Authorization": f"KakaoAK {kk}"}, retries=2)
             except HttpError as e:
-                w(f"- 블로그 검색 실패: HTTP {e.status} {e.body[:200]}")
+                w(f"- 블로그 검색 실패: HTTP {e.status} (하루 한도일 수 있음)")
                 break
-            docs = data.get("documents") or []
-            nn = blog.norm_name(r[1]) if hasattr(blog, "norm_name") else ""
-            rel = sum(1 for d in docs if nn and nn in blog.norm_name(blog.strip(d.get("title")) + blog.strip(d.get("contents"))))
-            b, menu, _, hours = blog.evaluate(r[1], r[6], data, today, False)
-            w(f"- 「{q}」 전체 {data.get('meta', {}).get('total_count')}건, 받은 {len(docs)}건 중 이 가게 {rel}건 → 단계 {b}, 메뉴 {'·'.join(menu) or '-'}, 영업시간 {hours or '-'}")
+            res = blog.evaluate(r[1], r[6], data, today, False)
+            c = res[4] if len(res) > 4 else []
+            w(f"- 「{q}」 단계 {res[0]}, 후기분석 {blog.review_eval(c) or '-'}, 숫자 {c}")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

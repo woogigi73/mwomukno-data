@@ -337,7 +337,7 @@ def kakao_match(records: list, kakao_state: dict, key: str) -> int:
 
 # ---------------------------------------------------------------- 블로그 언급량·추천 메뉴
 
-COLS = ["id", "name", "kind", "cat", "lat6", "lng6", "addr", "tel", "open", "flags", "kakao", "food", "blog", "menu", "hours"]
+COLS = ["id", "name", "kind", "cat", "lat6", "lng6", "addr", "tel", "open", "flags", "kakao", "food", "blog", "menu", "hours", "eval"]
 _CHAIN: dict = {}
 
 
@@ -384,7 +384,7 @@ def apply_blog(rows: list, bstate: dict) -> bool:
     changed = False
     for r in rows:
         while len(r) < len(COLS):
-            r.append(-1 if len(r) == 12 else "")
+            r.append(-1 if len(r) == 12 else "")  # 12 blog, 13 menu, 14 hours, 15 eval
             changed = True
         v = bstate.get(r[0])
         b = int(v[0]) if v and len(v) >= 4 and v[3] == blog.VERSION else -1
@@ -395,8 +395,9 @@ def apply_blog(rows: list, bstate: dict) -> bool:
                 pass
         menu = blog.merge_menu(r[11], (v[1].split("·") if v and v[1] else []), r[1], r[6], r[2])
         hours = v[9] if v and len(v) >= 10 and v[3] == blog.VERSION else ""
-        if r[12] != b or r[13] != menu or r[14] != hours:
-            r[12], r[13], r[14] = b, menu, hours
+        ev = blog.review_eval(v[10:21]) if v and len(v) >= 21 else ""
+        if r[12] != b or r[13] != menu or r[14] != hours or r[15] != ev:
+            r[12], r[13], r[14], r[15] = b, menu, hours, ev
             changed = True
     return changed
 
@@ -404,6 +405,8 @@ def apply_blog(rows: list, bstate: dict) -> bool:
 def blog_stale(v) -> bool:
     if not v or len(v) < 4 or v[3] != blog.VERSION:
         return True
+    if len(v) < 21:
+        return True  # 후기 분석(맛·친절·가성비…)이 없는 예전 결과 → 다시 확인 (그 전까지는 예전 결과를 그대로 씀)
     return (NOW - dt.datetime.strptime(v[2], "%Y%m%d").replace(tzinfo=KST)).days >= blog.REFRESH_DAYS
 
 
@@ -443,8 +446,8 @@ def blog_update(rows: list, bstate: dict, key: str) -> int:
                             note("⚠️ 블로그 검색 하루 한도 도달 — 내일 이어서 합니다.")
                         stop = True
                     continue
-                b, menu, stats, hours = blog.evaluate(r[1], r[6], data, today, is_chain(r[1]))
-                bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats, hours]
+                b, menu, stats, hours, asp = blog.evaluate(r[1], r[6], data, today, is_chain(r[1]))
+                bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats, hours, *asp]
                 n += 1
             if stop:
                 BUDGET["blog"] = 0
@@ -504,7 +507,7 @@ def build_region(code: str, info: dict, keys: dict) -> bool:
         kid = (kstate.get(r["id"]) or [""])[0]
         flags = 1 if r.get("model") else 0
         rows.append([r["id"], r["name"], r["kind"], r["cat"], int(round(r["lat"] * 1e6)), int(round(r["lng"] * 1e6)),
-                     r["addr"], r["tel"], r["open"], flags, kid, r.get("food", ""), -1, "", ""])
+                     r["addr"], r["tel"], r["open"], flags, kid, r.get("food", ""), -1, "", "", ""])
     apply_blog(rows, load(STATE / "blog" / f"{code}.json", {}))
     rows.sort(key=lambda x: x[0])
     if not rows:
