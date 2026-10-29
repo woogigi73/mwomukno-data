@@ -481,3 +481,28 @@ body.foodon .tog,body.foodon .cats{opacity:.45}
 .menu.guess .mlabel{font-style:normal}
 .menu .mchip.hit{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .panel{z-index:7}
+
+/* ===================== v9: 좁은 폰에서 결과 화면 겹침 고침 ===================== */
+.ov-head{position:relative;z-index:6;background:var(--bg)}
+.ov-body{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.overlay.done .stage{flex:none;padding:4px 0}
+.overlay.done .result{scroll-margin-top:8px}
+/* 작은 폰: 지도가 화면의 40% 이상 남도록 패널을 줄이고, 넘치면 패널 안에서 스크롤 */
+.panel{max-height:58dvh;overflow-y:auto;overscroll-behavior:contain}
+@media (max-width:420px){
+  .seg button{padding:7px 9px;font-size:13.5px}
+  .tlabel{display:none}
+  .row{gap:6px}
+  .tog{padding:6px 10px}
+  #foodIn{padding:7px 2px}
+}
+@media (max-height:780px) and (orientation:portrait){
+  .panel{gap:7px;padding-top:8px}
+  .game{min-height:58px;padding:7px 3px 6px}
+  .game small{display:none}
+  .game svg{width:22px;height:22px}
+}
+.mapwrap.short .zoom{display:none}
+.mapwrap.short .recbtn{top:62px}
+@media (orientation:landscape) and (min-width:600px){.panel{max-height:none}}
+@media (max-height:700px) and (orientation:portrait){.panel{max-height:50dvh}}

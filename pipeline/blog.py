@@ -112,10 +112,24 @@ def menu_from_name(name: str, addr: str = "") -> list:
     return [w for w in sorted(c, key=lambda w: (-len(w), w)) if w not in WEAK_IN_NAME and w not in NOT_MENU and w not in bad][:2]
 
 
-def merge_menu(food: str, blog_menu: list, name: str, addr: str = "") -> str:
+CAFE_DRINKS = {"커피", "아메리카노", "라떼", "카페라떼", "아인슈페너", "핸드드립", "콜드브루", "바닐라라떼", "플랫화이트", "에스프레소",
+               "밀크티", "버블티", "스무디", "에이드", "생과일주스"}
+CAFE_OK = CAFE_DRINKS | {"크로플", "와플", "케이크", "치즈케이크", "티라미수", "마카롱", "스콘", "크루아상", "소금빵", "베이글", "도넛",
+                         "휘낭시에", "쿠키", "빵", "빙수", "팥빙수", "젤라또", "아이스크림", "브런치", "샌드위치", "샐러드", "토스트",
+                         "떡", "전통차", "디저트", "파니니", "에그타르트", "푸딩", "와인", "하이볼", "칵테일", "생맥주", "수제맥주"}
+
+
+def fits_kind(word: str, kind: str) -> bool:
+    """업종과 안 맞는 메뉴 빼기: 카페에 국밥, 밥집에 아메리카노 같은 것(여러 가게를 묶은 글에서 섞여 들어옴)."""
+    if kind == "c":
+        return word in CAFE_OK
+    return word not in CAFE_DRINKS
+
+
+def merge_menu(food: str, blog_menu: list, name: str, addr: str = "", kind: str = "") -> str:
     out: list = []
     bad = place_words(addr) | NOT_MENU | PLACE_CLASH.get(region_word(addr), set())
-    blog_menu = [w for w in blog_menu if w not in bad]
+    blog_menu = [w for w in blog_menu if w not in bad and (not kind or fits_kind(w, kind))]
     for src in ([s.strip() for s in re.split(r"[,·/]", food or "") if s.strip()], blog_menu, menu_from_name(name, addr)):
         for w in src:
             if len(out) >= 3:
@@ -142,11 +156,16 @@ def pick_menu(menu_counts: dict, need: int, bad: set) -> list:
 
 def score_stats(name: str, total: int, rel: int, ndocs: int, recent: int, ads: int, chain: bool) -> int:
     """저장해 둔 숫자만으로 단계를 다시 계산할 수 있게 따로 둔다."""
-    est = total * (rel / ndocs) if ndocs else 0.0
+    frac = rel / ndocs if ndocs else 0.0
+    # 검색 결과는 관련 높은 순이라, 앞 20개 중 이 가게 글이 적으면 뒤쪽은 더 적다.
+    # 그래서 '전체 건수 × 비율'을 그대로 믿지 않고, 확인한 글 수에 비율을 곱한 만큼만 늘려 준다.
+    # (20개 모두 이 가게 글이고 전체가 수백 건 이상일 때만 최고 단계)
+    est = min(total * frac, rel * 30 * frac)
+    est = max(est, float(rel)) if rel >= 2 else est
     if len(norm_name(name)) <= 2:
         est = min(est, rel)  # 두 글자 이름은 다른 글에도 흔해서 직접 확인한 글 수만 인정
     if chain:
-        est = min(est, 30)  # 체인 이름은 지점과 상관없이 글이 많아서 크게 쳐 주지 않는다
+        est = min(est, 100)  # 체인은 지점과 상관없이 글이 많아서 최대 3단계
     b = bucket(est)
     if rel and not recent:
         b = max(0, b - 1)  # 2년 넘은 글뿐이면 한 단계 낮춤
@@ -192,10 +211,14 @@ def evaluate(name: str, addr: str, payload: dict, today: dt.date, chain: bool) -
                     hours_found.append(h)
         except ValueError:
             pass
-        for w, c in menu_from_text(text.replace(name, " ")).items():
-            menu_counts[w] = menu_counts.get(w, 0) + min(c, 2)
+        # 가게 이름 근처(앞뒤 80자)만 본다: 여러 가게를 묶은 글에서 다른 가게 메뉴가 섞이지 않게. 한 글에서는 한 번만 센다.
+        near = []
+        for mm in re.finditer(re.escape(name.strip()) if name.strip() in text else re.escape(name.split()[0]), text):
+            near.append(text[max(0, mm.start() - 80):mm.end() + 80])
+        for w in menu_from_text(" ".join(near).replace(name, " ") if near else title):
+            menu_counts[w] = menu_counts.get(w, 0) + 1
     b = score_stats(name, total, rel, len(docs), recent, ads, chain)
-    need = 2 if rel >= 4 else 1
+    need = 2 if rel >= 3 else 1
     bad = place_words(addr) | NOT_MENU | {region} | PLACE_CLASH.get(region, set())
     menu = pick_menu(menu_counts, need, bad)
     return b, menu, [total, rel, len(docs), recent, ads], vote_hours(hours_found)

@@ -774,7 +774,7 @@
     // 범위 이름표 (점 위에 보이도록 나중에)
     {
       ctx.font = '800 12px ' + font; ctx.textAlign = 'center';
-      const tw = ctx.measureText(label).width + 16, ly = Math.max(16, cy - topR - 12);
+      const tw = ctx.measureText(label).width + 16, ly = Math.max(S.journey.length ? 64 : 16, cy - topR - 12);
       ctx.fillStyle = P.surface; ctx.globalAlpha = 0.92;
       ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(cx - tw / 2, ly - 13, tw, 20, 10); else ctx.rect(cx - tw / 2, ly - 13, tw, 20); ctx.fill();
       ctx.globalAlpha = 1; ctx.fillStyle = P.ink; ctx.fillText(label, cx, ly + 1);
@@ -792,6 +792,7 @@
     ctx.fillStyle = P.ink; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
     canvas.setAttribute('aria-label', '도보 ' + S.minutes + '분 반경 지도, 후보 ' + S.pool.length + '곳');
     view.dots = dots; view.dotR = dotR;
+    mapwrap.classList.toggle('short', h < 340); // 지도가 낮으면 오른쪽 버튼을 줄인다
     fxKick();
     $('#zoomLbl').textContent = '×' + (Math.round(V.zoom * 10) / 10);
     if (card) placeCard();
@@ -1296,7 +1297,8 @@
   }
   function openGame(type) {
     stopAll(); gameKey++;
-    $('#game').hidden = false; result.hidden = true; stage.textContent = '';
+    $('#game').hidden = false; $('#game').classList.remove('done'); result.hidden = true; stage.textContent = '';
+    $('#game .ov-body').scrollTop = 0;
     $('#gTitle').textContent = TITLES[type];
     $('#gHead').textContent = S.round + '차 · ' + (S.food ? '「' + S.food.slice(0, 8) + '」 · ' : (S.meal === 'lunch' ? '점심' : '저녁') + ' · ') + '후보 ' + cands.length + '곳 (전체 ' + S.pool.length.toLocaleString('ko-KR') + '곳)';
     requestAnimationFrame(() => ({ roulette, ladder, pirate, race, cup, bomb, slot, shake: shakeGame })[type](cands));
@@ -1806,6 +1808,8 @@
   function showResult(cand, fromEl) {
     const r = cand.r, wm = routeMeters(r, cand.m), mins = walkMin(wm);
     result.textContent = ''; result.hidden = false;
+    $('#game').classList.add('done'); // 결과가 나오면 게임 칸은 제 크기 그대로 두고 화면을 아래로 내려 결과를 보여 준다
+    setTimeout(() => { if (!result.hidden && result.scrollIntoView) result.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }, 650);
     const title = textEl('h3', r.name);
     result.append(
       textEl('div', S.round + '차 당첨', 'eyebrow'), title,

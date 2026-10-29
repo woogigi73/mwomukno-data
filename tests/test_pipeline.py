@@ -193,7 +193,7 @@ class BlogTest(unittest.TestCase):
         self.assertEqual(menu[:2], ["대패삼겹살", "부대찌개"])
         b2, _, _, _ = blog.evaluate("대패부대", "부산광역시 해운대구", {"meta": {"total_count": 80}, "documents": docs},
                               dt.date(2026, 10, 24), True)
-        self.assertEqual(b2, 2)  # 체인은 최대 30 → 2단계
+        self.assertEqual(b2, 3)  # 체인은 최대 3단계
         b3, m3, _, _ = blog.evaluate("없는집", "부산광역시 해운대구", {"meta": {"total_count": 0}, "documents": []},
                                dt.date(2026, 10, 24), False)
         self.assertEqual((b3, m3), (0, []))
@@ -225,3 +225,18 @@ class BlogTest(unittest.TestCase):
         self.assertNotIn("off", blog.parse_hours("공휴일 휴무"))
         self.assertNotIn("off", blog.parse_hours("둘째, 넷째주 일요일 휴무"))
         self.assertNotIn("off", blog.parse_hours("명절 당일 휴무"))
+
+    def test_score_false_positive(self):
+        from pipeline import blog
+        # 앞 20개 중 1~4개만 이 가게 글이면 전체 건수가 커도 높게 치지 않는다
+        self.assertLessEqual(blog.score_stats("카페 플라워", 10942, 1, 20, 1, 0, False), 1)
+        self.assertLessEqual(blog.score_stats("주차장식당", 183911, 4, 20, 4, 0, False), 2)
+        # 20개 모두 이 가게 글이고 전체 수백 건 이상이면 최고 단계
+        self.assertEqual(blog.score_stats("해운대암소갈비집", 35530, 20, 20, 20, 0, False), 5)
+        self.assertEqual(blog.score_stats("대우쟁반짜장", 47, 12, 20, 12, 0, False), 2)
+        self.assertEqual(blog.score_stats("굽네치킨 명지점", 174940, 20, 20, 20, 0, True), 3)
+
+    def test_menu_kind_filter(self):
+        from pipeline import blog
+        self.assertEqual(blog.merge_menu("", ["수육", "커피"], "한신해물천국", "부산광역시 남구", "b"), "수육")
+        self.assertEqual(blog.merge_menu("", ["아메리카노", "김밥", "커피"], "나르커피", "부산광역시 남구", "c"), "아메리카노·커피")

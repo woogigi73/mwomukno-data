@@ -346,17 +346,37 @@ def base_name(name: str) -> str:
     return re.sub(r"[가-힣a-z0-9]{1,8}점$", "", n) if len(n) > 4 else n
 
 
+_FIRST: dict = {}
+_REGIONISH = re.compile(r"(시|구|군|동|읍|면|리|역|점)$")
+
+
+def first_word(name: str) -> str:
+    parts = (name or "").split()
+    return norm_name(parts[0]) if len(parts) > 1 else ""
+
+
 def chain_names() -> dict:
-    """전국에서 같은 이름(지점명 뺀)이 5곳 이상이면 체인으로 본다."""
+    """전국에서 같은 이름(지점명 뺀)이 5곳 이상이면 체인으로 본다.
+    '굽네치킨 명지국제신도시'처럼 '점' 없이 지점 이름을 붙인 경우를 위해 첫 낱말도 센다."""
     if not _CHAIN:
         cnt: dict = {}
+        first: dict = {}
         for path in REGION_DIR.glob("*.json"):
             for r in load(path, {}).get("r", []):
                 b = base_name(r[1])
                 cnt[b] = cnt.get(b, 0) + 1
+                f = first_word(r[1])
+                if f:
+                    first[f] = first.get(f, 0) + 1
         _CHAIN.update({k: v for k, v in cnt.items() if v >= 5})
         _CHAIN.setdefault("", 0)
+        _FIRST.update({k: v for k, v in first.items() if v >= 8 and len(k) >= 3 and not _REGIONISH.search(k)})
     return _CHAIN
+
+
+def is_chain(name: str) -> bool:
+    chain_names()
+    return base_name(name) in _CHAIN or first_word(name) in _FIRST
 
 
 def apply_blog(rows: list, bstate: dict) -> bool:
@@ -368,7 +388,12 @@ def apply_blog(rows: list, bstate: dict) -> bool:
             changed = True
         v = bstate.get(r[0])
         b = int(v[0]) if v and len(v) >= 4 and v[3] == blog.VERSION else -1
-        menu = blog.merge_menu(r[11], (v[1].split("·") if v and v[1] else []), r[1], r[6])
+        if b >= 0 and len(v) >= 9:  # 저장된 숫자로 다시 계산 (계산 방식이 바뀌어도 다시 검색할 필요 없음)
+            try:
+                b = blog.score_stats(r[1], *[int(x) for x in v[4:9]], is_chain(r[1]))
+            except (TypeError, ValueError):
+                pass
+        menu = blog.merge_menu(r[11], (v[1].split("·") if v and v[1] else []), r[1], r[6], r[2])
         hours = v[9] if v and len(v) >= 10 and v[3] == blog.VERSION else ""
         if r[12] != b or r[13] != menu or r[14] != hours:
             r[12], r[13], r[14] = b, menu, hours
@@ -418,7 +443,7 @@ def blog_update(rows: list, bstate: dict, key: str) -> int:
                             note("⚠️ 블로그 검색 하루 한도 도달 — 내일 이어서 합니다.")
                         stop = True
                     continue
-                b, menu, stats, hours = blog.evaluate(r[1], r[6], data, today, base_name(r[1]) in chains)
+                b, menu, stats, hours = blog.evaluate(r[1], r[6], data, today, is_chain(r[1]))
                 bstate[r[0]] = [b, "·".join(menu), TODAY, blog.VERSION, *stats, hours]
                 n += 1
             if stop:
