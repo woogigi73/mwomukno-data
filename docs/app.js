@@ -15,6 +15,13 @@
   document.documentElement.classList.toggle('lowfx', reduce);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  // 지도·연출에서 매 프레임 색을 읽으면 느려서(스타일 다시 계산) 한 번 읽어 두고, 다크 모드가 바뀔 때만 다시 읽는다
+  let palCache = null;
+  const palette = () => palCache || (palCache = {
+    map: css('--map'), line: css('--line'), muted: css('--muted'), accent: css('--accent'), ring: css('--ring'), ink: css('--ink'),
+    surface: css('--surface'), bg: css('--bg'), b: css('--meal'), s: css('--drink'), bs: css('--both'), c: css('--cafe'), font: css('--font'),
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { palCache = null; });
 
   // ------------------------------------------------------------ 저장 (실패해도 동작)
   const store = {
@@ -288,11 +295,13 @@
   // 중심에서 주변 가게까지의 '실제 걷는 길' 거리를 길찾기 서버(FOSSGIS)에서 한 번에 최대 99곳씩 받는다.
   // 위치마다 최대 3번(1초 이상 간격)만 묻고, 나머지 가게는 가까운 실측값의 '돌아가는 비율'로 추정한다.
   const ROUTER = 'https://routing.openstreetmap.de/routed-foot/';
-  const W = { key: '', exact: new Map(), samples: [], passes: 0, busy: false, last: 0, failUntil: 0, timer: 0, total: 0, route: null, bins: null };
+  const W = { key: '', rc: new Map(), exact: new Map(), samples: [], passes: 0, busy: false, last: 0, failUntil: 0, timer: 0, total: 0, route: null, bins: null };
   function routeMeters(r, m) {
     const ex = W.exact.get(r.id);
     if (ex != null) return ex;
-    return m * ratioAt(r.lat, r.lng, m);
+    let ra = W.rc.get(r.id); // 실측 표본이 바뀔 때까지 가게별 비율을 기억
+    if (ra === undefined) { ra = ratioAt(r.lat, r.lng, m); W.rc.set(r.id, ra); }
+    return m * ra;
   }
   function ratioAt(lat, lng, m) {
     if (!W.samples.length) return m < 60 ? 1.2 : DETOUR;
@@ -311,7 +320,7 @@
   function scheduleWalk() {
     const key = walkKey();
     if (key !== W.key) {
-      W.key = key; W.exact = new Map(); W.samples = []; W.passes = 0; W.bins = null; W.route = null;
+      W.key = key; W.exact = new Map(); W.rc = new Map(); W.samples = []; W.passes = 0; W.bins = null; W.route = null;
     }
     if (!settings.route || W.busy || W.passes >= 3 || W.total >= 40 || !S.near || !S.near.length) return;
     if (Date.now() < W.failUntil || !navigator.onLine) return;
@@ -367,7 +376,7 @@
         W.exact.set(c.r.id, Math.max(total, c.m));
         if (c.m >= 60) W.samples.push({ lat: c.r.lat, lng: c.r.lng, ratio: Math.max(1, Math.min(3, total / c.m)), ang: Math.atan2(c.r.lat - origin.lat, (c.r.lng - origin.lng) * Math.cos(origin.lat * Math.PI / 180)) });
       });
-      W.passes++; W.bins = null;
+      W.passes++; W.bins = null; W.rc = new Map();
     } catch (e) {
       W.failUntil = Date.now() + 5 * 60e3; // 서버가 바쁘거나 막히면 5분 동안은 직선 추정으로
     } finally {
@@ -631,6 +640,20 @@
     return im;
   }
   const ready = (im) => im && im.complete && !im.bad && im.naturalWidth > 0;
+  // 흑백·어둡게 처리는 지도 조각마다 한 번만 해 두고 다시 쓴다(그릴 때마다 필터를 돌리면 폰에서 매우 느림)
+  const shaded = new Map();
+  function shadedTile(im, key, dark) {
+    const k = key + (dark ? 'd' : 'l');
+    let c = shaded.get(k);
+    if (c) { shaded.delete(k); shaded.set(k, c); return c; }
+    c = document.createElement('canvas'); c.width = c.height = 256;
+    const g = c.getContext('2d');
+    g.filter = dark ? 'grayscale(1) invert(1) brightness(.9) contrast(.85)' : 'grayscale(1) contrast(.9) brightness(1.04)';
+    g.drawImage(im, 0, 0, 256, 256);
+    shaded.set(k, c);
+    if (shaded.size > 72) shaded.delete(shaded.keys().next().value);
+    return c;
+  }
   function drawTiles(cx, cy, mpp, w, h, cosLat, dpr) {
     if (!settings.basemap || !navigator.onLine) return false;
     const z = Math.max(3, Math.min(19, Math.round(Math.log2(156543.03 * cosLat * dpr / mpp))));
@@ -642,18 +665,18 @@
     if ((x1 - x0 + 1) * (y1 - y0 + 1) > 64) return false;
     const dark = darkQ.matches;
     ctx.save();
-    if (hasFilter) ctx.filter = dark ? 'grayscale(1) invert(1) brightness(.9) contrast(.85)' : 'grayscale(1) contrast(.9) brightness(1.04)';
     ctx.globalAlpha = hasFilter ? (dark ? 0.5 : 0.62) : 0.4;
+    const pic = (im, key) => (hasFilter ? shadedTile(im, key, dark) : im);
     ctx.imageSmoothingEnabled = true;
     const size = 256 * s + 0.5;
     for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
       const sx = cx + (tx * 256 - Cx) * s, sy = cy + (ty * 256 - Cy) * s;
       const im = tileImg(z, tx, ty);
-      if (ready(im)) { ctx.drawImage(im, sx, sy, size, size); continue; }
+      if (ready(im)) { ctx.drawImage(pic(im, z + '/' + tx + '/' + ty), sx, sy, size, size); continue; }
       // 아직 안 받아졌으면 한 단계 넓은 그림을 잘라서 임시로
       if (z > 3) {
-        const pn = 1 << (z - 1), p = tiles.get((z - 1) + '/' + ((((tx >> 1) % pn) + pn) % pn) + '/' + (ty >> 1));
-        if (ready(p)) ctx.drawImage(p, (tx & 1) * 128, (ty & 1) * 128, 128, 128, sx, sy, size, size);
+        const pn = 1 << (z - 1), pk = (z - 1) + '/' + ((((tx >> 1) % pn) + pn) % pn) + '/' + (ty >> 1), p = tiles.get(pk);
+        if (ready(p)) ctx.drawImage(pic(p, pk), (tx & 1) * 128, (ty & 1) * 128, 128, 128, sx, sy, size, size);
       }
     }
     ctx.restore();
@@ -687,9 +710,8 @@
     };
     const reach = blob(1);
     view.reach = reach;
-    const P = { map: css('--map'), line: css('--line'), muted: css('--muted'), accent: css('--accent'), ring: css('--ring'), ink: css('--ink'),
-      surface: css('--surface'), bg: css('--bg'), b: css('--meal'), s: css('--drink'), bs: css('--both'), c: css('--cafe') };
-    const font = css('--font');
+    const P = palette();
+    const font = P.font;
     ctx.fillStyle = P.map; ctx.fillRect(0, 0, w, h);
     const based = drawTiles(cx, cy, mpp, w, h, cosLat, dpr);
     osmAttr.hidden = !based;
@@ -805,6 +827,10 @@
     ctx.fillStyle = P.ink; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
     canvas.setAttribute('aria-label', '도보 ' + S.minutes + '분 반경 지도, 후보 ' + S.pool.length + '곳');
     view.dots = dots; view.dotR = dotR;
+    ensureSweep();
+    if (sweepEl) { const R = radiusPx * 1.05; sweepEl.style.left = cx + 'px'; sweepEl.style.top = cy + 'px'; sweepEl.style.width = sweepEl.style.height = Math.round(R * 2) + 'px'; }
+    if (pulseEl) { pulseEl.style.left = cx + 'px'; pulseEl.style.top = cy + 'px'; }
+    fxNeedFull = true;
     mapwrap.classList.toggle('short', h < 340); // 지도가 낮으면 오른쪽 버튼을 줄인다
     fxKick();
     $('#zoomLbl').textContent = '×' + (Math.round(V.zoom * 10) / 10);
@@ -818,6 +844,19 @@
   const SWEEP_MS = 4200;
   let fxRaf = 0, fxLast = 0, lock = null;
   function fxKick() { if (!fxRaf) fxRaf = requestAnimationFrame(fxFrame); }
+  // 레이더 빛줄기·가운데 물결은 CSS 애니메이션(화면 합성기가 돌림, CPU 거의 안 씀). 점 반짝임만 캔버스에 작은 칸으로 그린다.
+  const sweepEl = $('#sweep'), pulseEl = $('#pulse');
+  let sweepAnim = null, fxDirty = [], fxNeedFull = true;
+  function ensureSweep() {
+    if (reduce || !sweepEl || sweepAnim || !sweepEl.animate) return;
+    sweepAnim = sweepEl.animate([{ transform: 'translate(-50%,-50%) rotate(0deg)' }, { transform: 'translate(-50%,-50%) rotate(360deg)' }],
+      { duration: SWEEP_MS, iterations: Infinity });
+  }
+  // 빛줄기 앞쪽 끝의 각도(캔버스 기준): 회전 0도일 때 12시 방향
+  const sweepAngle = () => ((((sweepAnim && sweepAnim.currentTime) || 0) % SWEEP_MS) / SWEEP_MS) * Math.PI * 2 - Math.PI / 2;
+  // 손가락으로 누르는 동안과 직후에는 연출을 쉬어서 버튼 반응을 먼저 처리한다
+  let lastInput = 0;
+  for (const ev of ['pointerdown', 'keydown', 'wheel']) addEventListener(ev, () => { lastInput = performance.now(); }, { passive: true, capture: true });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) fxKick(); });
   function pathPts(pts) {
     const out = [];
@@ -833,49 +872,29 @@
     fxRaf = 0;
     if (!view || document.hidden) return;
     const live = !reduce && $('#game').hidden;
-    if (live && t - fxLast < 30 && !lock) { fxRaf = requestAnimationFrame(fxFrame); return; } // 30fps면 충분 (배터리)
+    const busy = !!(lock || W.route); // 걷는 길·조준이 있을 때만 화면 전체를 다시 그린다
+    if (live && !lock && (t - fxLast < (busy ? 33 : 66) || t - lastInput < 350)) { fxRaf = requestAnimationFrame(fxFrame); return; }
     fxLast = t;
-    const dpr = Math.min(2, window.devicePixelRatio || 1), w = view.w, h = view.h;
-    if (fxc.width !== Math.round(w * dpr) || fxc.height !== Math.round(h * dpr)) { fxc.width = Math.round(w * dpr); fxc.height = Math.round(h * dpr); }
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1), w = view.w, h = view.h;
+    if (fxc.width !== Math.round(w * dpr) || fxc.height !== Math.round(h * dpr)) { fxc.width = Math.round(w * dpr); fxc.height = Math.round(h * dpr); fxDirty = []; }
     const g = fctx;
-    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
-    const cx = view.cx, cy = view.cy, R = view.radiusPx * 1.05, acc = css('--accent');
-    if (!reduce && view.reach) {
-      // 1) 레이더 빛줄기
-      const a = (t % SWEEP_MS) / SWEEP_MS * Math.PI * 2 - Math.PI, tail = 1.15;
-      g.save(); g.clip(view.reach);
-      if (g.createConicGradient) {
-        const cg = g.createConicGradient(a - tail, cx, cy);
-        const f = tail / (Math.PI * 2);
-        cg.addColorStop(0, 'rgba(255,194,26,0)'); cg.addColorStop(f * 0.7, 'rgba(255,184,0,.22)');
-        cg.addColorStop(f, 'rgba(255,200,40,.55)'); cg.addColorStop(Math.min(1, f + 0.002), 'rgba(255,194,26,0)'); cg.addColorStop(1, 'rgba(255,194,26,0)');
-        g.fillStyle = cg; g.fillRect(0, 0, w, h);
-      } else {
-        for (let i = 0; i < 12; i++) {
-          g.fillStyle = 'rgba(255,194,26,' + (0.03 * (i + 1) / 2).toFixed(3) + ')';
-          g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, R, a - tail + i * tail / 12, a - tail + (i + 1) * tail / 12); g.closePath(); g.fill();
-        }
-      }
-      g.strokeStyle = 'rgba(255,214,90,.9)'; g.lineWidth = 2; g.shadowColor = acc; g.shadowBlur = 10;
-      g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); g.stroke();
-      g.restore();
-      // 2) 빛이 지나간 가게 점이 반짝
-      const dr = view.dotR || 6;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (busy || fxNeedFull) { g.clearRect(0, 0, w, h); fxNeedFull = busy; } else for (const b of fxDirty) g.clearRect(b[0], b[1], b[2], b[3]);
+    fxDirty = [];
+    const P = palette();
+    const cx = view.cx, cy = view.cy;
+    if (!reduce && view.reach && sweepAnim) {
+      // 빛줄기가 지나간 가게 점이 반짝 (그린 자리만 다음에 지운다)
+      const a = sweepAngle(), dr = view.dotR || 6;
       for (const d of view.dots || []) {
         let k = a - d.a; while (k < 0) k += Math.PI * 2; while (k >= Math.PI * 2) k -= Math.PI * 2;
         if (k > 1.0) continue;
-        const al = 1 - k;
+        const al = 1 - k, rr = dr + 2 + k * 11;
         g.globalAlpha = al * 0.9; g.strokeStyle = d.col; g.lineWidth = 2.4;
-        g.beginPath(); g.arc(d.x, d.y, dr + 2 + k * 11, 0, Math.PI * 2); g.stroke();
+        g.beginPath(); g.arc(d.x, d.y, rr, 0, Math.PI * 2); g.stroke();
         g.globalAlpha = al * 0.55; g.fillStyle = '#fff';
         g.beginPath(); g.arc(d.x, d.y, dr * 0.55, 0, Math.PI * 2); g.fill();
-      }
-      g.globalAlpha = 1;
-      // 3) 가운데 물결
-      for (const off of [0, 1200]) {
-        const p = ((t + off) % 2400) / 2400;
-        g.globalAlpha = (1 - p) * 0.8; g.strokeStyle = acc; g.lineWidth = 3;
-        g.beginPath(); g.arc(cx, cy, 10 + p * 38, 0, Math.PI * 2); g.stroke();
+        fxDirty.push([d.x - rr - 3, d.y - rr - 3, rr * 2 + 6, rr * 2 + 6]);
       }
       g.globalAlpha = 1;
     }
@@ -887,7 +906,7 @@
       g.beginPath(); pp.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
       g.setLineDash([total * grow, total + 10]);
       g.strokeStyle = 'rgba(255,194,26,.45)'; g.lineWidth = 10; g.stroke();
-      g.strokeStyle = css('--ink'); g.lineWidth = 3.4; g.setLineDash(grow < 1 ? [total * grow, total + 10] : [8, 7]); g.lineDashOffset = reduce ? 0 : -t / 35; g.stroke();
+      g.strokeStyle = P.ink; g.lineWidth = 3.4; g.setLineDash(grow < 1 ? [total * grow, total + 10] : [8, 7]); g.lineDashOffset = reduce ? 0 : -t / 35; g.stroke();
       g.restore();
       if (grow >= 1 && total > 20) {
         const p = reduce ? 0.5 : ((t - W.route.t0 - 900) % 7000) / 7000, at = p * total;
@@ -1151,23 +1170,30 @@
     drawMap();
   }
 
+  // 버튼을 누르면 눌린 모양부터 바로 보여 주고, 지도·후보 계산은 다음 화면에서 한다(빠르게 여러 번 눌러도 한 번만 계산)
+  let soonT = 0;
+  function soon(btnEl, single) {
+    if (btnEl && single && btnEl.parentElement) for (const b of btnEl.parentElement.children) b.setAttribute('aria-pressed', b === btnEl);
+    if (soonT) return;
+    soonT = requestAnimationFrame(() => setTimeout(() => { soonT = 0; render(); }, 0));
+  }
   document.addEventListener('click', (e) => {
     const t = e.target.closest('button');
     if (!t || t.closest('.overlay') || t.closest('.sheet')) return;
     if (t.id === 'mLunch' || t.id === 'mDinner') {
       S.meal = t.id === 'mLunch' ? 'lunch' : 'dinner';
-      S.kinds = new Set(defaultKinds(S.round, S.meal === 'dinner')); render();
+      S.kinds = new Set(defaultKinds(S.round, S.meal === 'dinner')); soon(t, true);
     } else if (t.id === 'tMeal' || t.id === 'tDrink' || t.id === 'tCafe') {
       const k = { tMeal: 'b', tDrink: 's', tCafe: 'c' }[t.id];
       if (S.kinds.has(k)) { if (S.kinds.size > 1) S.kinds.delete(k); } else S.kinds.add(k);
-      render();
-    } else if (t.dataset.tier) { settings.tier = t.dataset.tier; saveSettings(); hideCard(); render(); }
-    else if (t.dataset.r) { S.round = +t.dataset.r; S.kinds = new Set(defaultKinds(S.round, S.meal === 'dinner')); render(); }
-    else if (t.dataset.m) { S.minutes = +t.dataset.m; settings.minutes = S.minutes; saveSettings(); render(); }
+      t.setAttribute('aria-pressed', S.kinds.has(k)); soon();
+    } else if (t.dataset.tier) { settings.tier = t.dataset.tier; saveSettings(); hideCard(); soon(t, true); }
+    else if (t.dataset.r) { S.round = +t.dataset.r; S.kinds = new Set(defaultKinds(S.round, S.meal === 'dinner')); soon(t, true); }
+    else if (t.dataset.m) { S.minutes = +t.dataset.m; settings.minutes = S.minutes; saveSettings(); soon(t, true); }
     else if (t.dataset.cat) {
       const c = t.dataset.cat;
       if (c === '전체') S.cats.clear(); else if (S.cats.has(c)) S.cats.delete(c); else S.cats.add(c);
-      render();
+      soon();
     } else if (t.dataset.g) startGame(t.dataset.g);
     else if (t.id === 'locBtn') { resetView(); locate(true); }
     else if (t.id === 'recBtn') openRecord();
@@ -1401,13 +1427,14 @@
   }
   function openGame(type) {
     stopAll(); gameKey++;
+    if (sweepAnim) sweepAnim.pause();
     $('#game').hidden = false; $('#game').classList.remove('done'); result.hidden = true; stage.textContent = '';
     $('#game .ov-body').scrollTop = 0;
     $('#gTitle').textContent = TITLES[type];
     $('#gHead').textContent = S.round + '차 · ' + (S.food ? '「' + S.food.slice(0, 8) + '」 · ' : (S.meal === 'lunch' ? '점심' : '저녁') + ' · ') + '후보 ' + cands.length + '곳 (전체 ' + S.pool.length.toLocaleString('ko-KR') + '곳)';
     requestAnimationFrame(() => ({ roulette, ladder, pirate, race, cup, bomb, slot, shake: shakeGame })[type](cands));
   }
-  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; fxKick(); }
+  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; if (sweepAnim) sweepAnim.play(); fxKick(); }
   $('#gClose').onclick = closeGame;
 
   const FX = window.MMFX || { sfx: new Proxy({}, { get: () => () => {} }), cannons() {}, burst() {}, sparkle() {}, smoke() {}, dust() {}, shake() {}, flash() {}, stamp() {}, countdown() {}, popText() {} };

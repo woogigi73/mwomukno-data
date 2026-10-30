@@ -522,3 +522,13 @@ body.foodon .tog,body.foodon .cats{opacity:.45}
 .walkbar{background:linear-gradient(135deg,#1C9A55,#147a43)}
 .walkbar .eyebrow{color:rgba(255,255,255,.88)}
 .walkbar b{color:#fff}
+
+/* ===================== v12: 가볍게 — 빛줄기·물결은 CSS(합성기)로 ===================== */
+.sweep{animation:none;mix-blend-mode:normal;will-change:transform;z-index:0;
+  background:conic-gradient(from 0deg,rgba(255,194,26,0) 0deg,rgba(255,194,26,0) 294deg,rgba(255,184,0,.2) 330deg,rgba(255,200,40,.5) 359.4deg,rgba(255,194,26,0) 360deg)}
+@media (prefers-color-scheme:dark){.sweep{mix-blend-mode:normal}}
+.sweep::after{content:"";position:absolute;left:calc(50% - 1px);top:0;width:2px;height:50%;border-radius:2px;
+  background:linear-gradient(to top,rgba(255,220,110,.95),rgba(255,220,110,.15))}
+.pulse{z-index:2}
+.pulse::before,.pulse::after{will-change:transform,opacity}
+.game::after,.brand b{will-change:transform}
