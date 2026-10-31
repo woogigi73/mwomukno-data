@@ -532,3 +532,13 @@ body.foodon .tog,body.foodon .cats{opacity:.45}
 .pulse{z-index:2}
 .pulse::before,.pulse::after{will-change:transform,opacity}
 .game::after,.brand b{will-change:transform}
+
+/* ===================== v13: 카카오 지도 바탕 ===================== */
+.kakaomap{position:absolute;inset:0;transform-origin:50% 50%;pointer-events:none;will-change:transform;z-index:0}
+body.kmap .panel{margin-top:0}
+body.kmap .mapbot{bottom:30px}
+body.kmap .osm{display:none}
+body.kmap .sweep{opacity:.85}
+/* 게임 화면이 열려 있으면 뒤쪽 장식(버튼 반짝임·물결·레이더·지도 층)을 멈추고 숨긴다 */
+body.gameon .app{visibility:hidden}
+body.gameon .game::after,body.gameon .brand b,body.gameon .pulse::before,body.gameon .pulse::after{animation-play-state:paused}

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://routing.openstreetmap.de; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
-<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://dapi.kakao.com https://t1.daumcdn.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org https://*.daumcdn.net https://*.kakaocdn.net https://*.kakao.com; connect-src 'self' https://routing.openstreetmap.de https://dapi.kakao.com https://*.daumcdn.net; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="description" content="걸어갈 수 있는 진짜 식당을 룰렛·사다리·해적 룰렛·경마로 골라 주는 친구·동료용 식당 고르기">
 <meta name="theme-color" content="#FFC21A">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=12">
+<link rel="stylesheet" href="app.css?v=13">
 <title>뭐 먹노?</title>
 </head>
 <body>
@@ -27,6 +27,7 @@
   </header>
 
   <section class="mapwrap" id="mapwrap">
+    <div class="kakaomap" id="kmap" hidden></div>
     <canvas id="map" role="img" aria-label="도보 반경 지도"></canvas>
     <div class="sweep" id="sweep" aria-hidden="true"></div>
     <canvas class="mapfx" id="mapfx" aria-hidden="true"></canvas>
@@ -107,7 +108,7 @@
 </div>
 
 <noscript><p>자바스크립트를 켜야 쓸 수 있어요.</p></noscript>
-<script src="fx.js?v=12" defer></script>
-<script src="app.js?v=12" defer></script>
+<script src="fx.js?v=13" defer></script>
+<script src="app.js?v=13" defer></script>
 </body>
 </html>

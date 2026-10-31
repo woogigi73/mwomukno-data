@@ -31,7 +31,7 @@
   let visits = store.get('visits', []);         // [[id, name, time]]
   let fav = new Set(store.get('fav', []));
   let hidden = store.get('hidden', {});          // {id: [until(0=계속), name]}
-  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good', lowfx: false, basemap: true, route: true, openNow: true }, store.get('settings', {}));
+  const settings = Object.assign({ minutes: 10, exclude: true, shake: true, onboarded: false, tier: 'good', lowfx: false, basemap: true, route: true, openNow: true, kmap: true }, store.get('settings', {}));
   const saveSettings = () => store.set('settings', settings);
 
   // ------------------------------------------------------------ 상태
@@ -683,6 +683,84 @@
     return true;
   }
   darkQ.addEventListener && darkQ.addEventListener('change', () => drawMap());
+  // ------------------------------------------------------------ 카카오 지도 바탕
+  // 카카오 지도는 바탕 그림만 맡고(손가락 조작은 지금처럼 이 앱이 받음), 레이더·범위·가게 점은 그 위 캔버스에 그린다.
+  // 카카오 지도는 북쪽이 약간(부산 약 1.2도) 기울어 있어서, 카카오가 알려 주는 좌표 변환을 재서 그대로 맞춘다.
+  // 키는 사이트 설정(config.json)의 JavaScript 키(등록한 사이트 주소에서만 작동). 못 불러오면 예전 지도로 돌아간다.
+  const KM = { state: 'off', map: null, el: $('#kmap'), mpp: 1, level: 4, ex: [1, 0], nx: [0, -1], w: 0, h: 0, syncT: 0, syncedAt: 0, why: '' };
+  const kmapOn = () => KM.state === 'on' && !!KM.map;
+  function kmapLoad() {
+    if (KM.state !== 'off' || settings.kmap === false || !/^[0-9a-f]{32}$/.test(CONFIG.kakaoJs || '') || !KM.el) return;
+    KM.state = 'loading';
+    const sc = document.createElement('script');
+    sc.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + CONFIG.kakaoJs + '&autoload=false';
+    sc.async = true;
+    const to = setTimeout(() => kmapFail('시간 초과'), 9000);
+    sc.onload = () => {
+      if (!(window.kakao && kakao.maps && kakao.maps.load)) { clearTimeout(to); kmapFail('지도 프로그램 없음'); return; }
+      kakao.maps.load(() => { clearTimeout(to); if (KM.state === 'loading') kmapInit(); });
+    };
+    sc.onerror = () => { clearTimeout(to); kmapFail('불러오기 실패'); };
+    document.head.append(sc);
+  }
+  function kmapFail(why) {
+    KM.state = 'fail'; KM.why = why; KM.map = null;
+    if (KM.el) { KM.el.hidden = true; KM.el.textContent = ''; }
+    document.body.classList.remove('kmap');
+    drawMap();
+  }
+  function kmapInit() {
+    try {
+      const km = kakao.maps;
+      KM.el.hidden = false;
+      KM.map = new km.Map(KM.el, { center: new km.LatLng(S.center.lat, S.center.lng), level: 4, draggable: false, scrollwheel: false,
+        disableDoubleClick: true, disableDoubleClickZoom: true, keyboardShortcuts: false });
+      KM.w = KM.el.clientWidth; KM.h = KM.el.clientHeight;
+      kmapMeasure();
+      KM.state = 'on';
+      document.body.classList.add('kmap');
+      drawMap(); kmapSync(false);
+      km.event.addListener(KM.map, 'tilesloaded', () => { if (KM.state === 'on' && !KM.ok) { KM.ok = true; } });
+    } catch (e) { kmapFail(String(e && e.message || e)); }
+  }
+  // 카카오 지도의 '1m가 몇 px, 어느 방향인지'를 S.center 근처에서 잰다
+  function kmapMeasure() {
+    const km = kakao.maps, proj = KM.map.getProjection(), c = S.center, cosLat = Math.cos(c.lat * Math.PI / 180);
+    const p0 = proj.containerPointFromCoords(new km.LatLng(c.lat, c.lng));
+    const pe = proj.containerPointFromCoords(new km.LatLng(c.lat, c.lng + 500 / (111320 * cosLat)));
+    const pn = proj.containerPointFromCoords(new km.LatLng(c.lat + 500 / 110540, c.lng));
+    KM.ex = [(pe.x - p0.x) / 500, (pe.y - p0.y) / 500];
+    KM.nx = [(pn.x - p0.x) / 500, (pn.y - p0.y) / 500];
+    KM.mpp = 1 / Math.hypot(KM.ex[0], KM.ex[1]);
+    KM.level = KM.map.getLevel();
+  }
+  const kmapP0 = () => { const p = KM.map.getProjection().containerPointFromCoords(new kakao.maps.LatLng(S.center.lat, S.center.lng)); return [p.x, p.y]; };
+  // 손을 뗀 뒤: 카카오 지도 단계(2배씩)에 맞춰 확대 배율을 맞추고, 화면 가운데 좌표로 카카오 지도를 옮긴다. panOnly면 이동만.
+  function kmapSync(panOnly) {
+    if (!kmapOn() || !view) return;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (w !== KM.w || h !== KM.h) { KM.map.relayout(); KM.w = w; KM.h = h; }
+    if (!panOnly) {
+      const mpp = view.base / V.zoom;
+      const L = Math.max(1, Math.min(12, Math.round(KM.level + Math.log2(mpp / KM.mpp))));
+      if (L !== KM.level) { KM.map.setLevel(L); kmapMeasure(); }
+      V.zoom = view.base / KM.mpp; // 카카오 단계에 딱 맞춘다
+    }
+    // 화면 가운데의 좌표 = S.center에서 (−V.px, −V.py)px 만큼 떨어진 곳
+    const f = KM.mpp / (view.base / V.zoom), ex = [KM.ex[0] * f, KM.ex[1] * f], nx = [KM.nx[0] * f, KM.nx[1] * f];
+    const det = ex[0] * nx[1] - nx[0] * ex[1], dx = -V.px, dy = -V.py;
+    const e = (dx * nx[1] - nx[0] * dy) / det, n = (ex[0] * dy - dx * ex[1]) / det;
+    const cosLat = Math.cos(S.center.lat * Math.PI / 180);
+    KM.map.setCenter(new kakao.maps.LatLng(S.center.lat + n / 110540, S.center.lng + e / (111320 * cosLat)));
+    KM.syncedAt = performance.now();
+    drawMap();
+  }
+  function kmapSoon(panOnly, delay) {
+    if (!kmapOn()) return;
+    clearTimeout(KM.syncT);
+    KM.syncT = setTimeout(() => { if (!gesture || panOnly) kmapSync(panOnly); }, delay || 0);
+  }
+
   function drawMap() {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -692,17 +770,32 @@
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const bins = reachBins(), NB = bins.length;
-    const radiusM = Math.max(...bins) * 1.04, baseR = Math.min(w, h) / 2 * 0.84, mpp = radiusM / baseR / V.zoom;
+    const radiusM = Math.max(...bins) * 1.04, baseR = Math.min(w, h) / 2 * 0.84, base = radiusM / baseR, mpp = base / V.zoom;
     const cosLat = Math.cos(S.center.lat * Math.PI / 180);
     const cx = w / 2 + V.px, cy = h / 2 + V.py, radiusPx = radiusM / mpp;
-    const toPx = (lat, lng) => [cx + (lng - S.center.lng) * 111320 * cosLat / mpp, cy - (lat - S.center.lat) * 110540 / mpp];
-    view = { toPx, mpp, cx, cy, cosLat, w, h, radiusPx };
+    // 1m가 화면에서 어느 방향으로 몇 px인가 (보통은 북쪽이 위, 카카오 지도 위에서는 카카오 방향 그대로)
+    const K = kmapOn();
+    let ex = [1 / mpp, 0], nx = [0, -1 / mpp];
+    if (K) {
+      const f = KM.mpp / mpp;
+      ex = [KM.ex[0] * f, KM.ex[1] * f]; nx = [KM.nx[0] * f, KM.nx[1] * f];
+      // 손가락 조작 중에는 카카오 지도를 그림처럼 늘리고 옮겨 미리 보여 주고, 손을 떼면 맞춘다
+      const p0 = kmapP0(), C = [w / 2, h / 2];
+      const tx = cx - C[0] - f * (p0[0] - C[0]), ty = cy - C[1] - f * (p0[1] - C[1]);
+      const off = Math.abs(f - 1) > 0.002 || Math.abs(tx) > 0.6 || Math.abs(ty) > 0.6;
+      KM.el.style.transform = off ? 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + f.toFixed(4) + ')' : '';
+      // 크게 어긋났을 때만 다시 맞춘다(카카오 좌표 반올림으로 생기는 1~2px 차이는 위 이동으로 메움, 무한 반복 방지)
+      if (!gesture && (Math.abs(f - 1) > 0.002 || Math.hypot(tx, ty) > 3) && performance.now() - KM.syncedAt > 400) kmapSoon(false, 80);
+    }
+    const mPx = (e, n) => [cx + e * ex[0] + n * nx[0], cy + e * ex[1] + n * nx[1]];
+    const toPx = (lat, lng) => mPx((lng - S.center.lng) * 111320 * cosLat, (lat - S.center.lat) * 110540);
+    view = { toPx, mPx, mpp, base, cx, cy, cosLat, w, h, radiusPx, ex, nx };
     // 걸어서 닿는 범위(방향마다 다름) 모양 — scale배 크기로
     const blob = (scale) => {
       const path = new Path2D();
       for (let i = 0; i <= NB; i++) {
-        const k = i % NB, ang = -Math.PI + (k + 0.5) / NB * Math.PI * 2, rr = bins[k] * scale / mpp;
-        const x = cx + Math.cos(ang) * rr, y = cy - Math.sin(ang) * rr;
+        const k = i % NB, ang = -Math.PI + (k + 0.5) / NB * Math.PI * 2, rr = bins[k] * scale;
+        const [x, y] = mPx(Math.cos(ang) * rr, Math.sin(ang) * rr);
         if (i === 0) path.moveTo(x, y); else path.lineTo(x, y);
       }
       path.closePath();
@@ -712,12 +805,12 @@
     view.reach = reach;
     const P = palette();
     const font = P.font;
-    ctx.fillStyle = P.map; ctx.fillRect(0, 0, w, h);
-    const based = drawTiles(cx, cy, mpp, w, h, cosLat, dpr);
-    osmAttr.hidden = !based;
-    // 100m 격자 (길 그림이 있으면 더 옅게)
+    if (K) ctx.clearRect(0, 0, w, h); else { ctx.fillStyle = P.map; ctx.fillRect(0, 0, w, h); }
+    const based = K || drawTiles(cx, cy, mpp, w, h, cosLat, dpr);
+    osmAttr.hidden = K || !based;
+    // 100m 격자 (길 그림이 있으면 더 옅게, 카카오 지도 위에서는 안 그림)
     const grid = 100 / mpp;
-    if (grid > 12) {
+    if (grid > 12 && !K) {
       ctx.strokeStyle = P.line; ctx.globalAlpha = based ? 0.18 : 0.45; ctx.lineWidth = 1; ctx.beginPath();
       for (let x = ((cx % grid) + grid) % grid; x < w; x += grid) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
       for (let y = ((cy % grid) + grid) % grid; y < h; y += grid) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
@@ -736,8 +829,8 @@
     for (const m of [5, 10, 15]) {
       if (m >= S.minutes) continue;
       ctx.stroke(blob(m / S.minutes));
-      const top = bins[Math.floor(NB * 0.75)] * m / S.minutes / mpp;
-      ctx.fillStyle = P.muted; ctx.globalAlpha = 0.85; ctx.textAlign = 'center'; ctx.fillText(m + '분', cx, cy - top - 4); ctx.globalAlpha = 0.45;
+      const [lx, ly] = mPx(0, bins[Math.floor(NB * 0.75)] * m / S.minutes);
+      ctx.fillStyle = P.muted; ctx.globalAlpha = 0.85; ctx.textAlign = 'center'; ctx.fillText(m + '분', lx, ly - 4); ctx.globalAlpha = 0.45;
     }
     ctx.globalAlpha = 1; ctx.setLineDash([11, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = P.ring;
     ctx.stroke(reach); ctx.setLineDash([]);
@@ -959,14 +1052,15 @@
 
   // 확대·이동: 한 손가락 끌기, 두 손가락 벌리기, 마우스 휠, +/- 버튼, 두 번 누르기
   function zoomAt(f, x, y) {
-    const z = Math.max(1, Math.min(8, V.zoom * f));
+    const z = Math.max(kmapOn() ? 0.5 : 1, Math.min(8, V.zoom * f));
     const k = z / V.zoom;
     const w = canvas.clientWidth, h = canvas.clientHeight;
     const ox = x - w / 2, oy = y - h / 2;
     V.px = ox - (ox - V.px) * k; V.py = oy - (oy - V.py) * k;
     V.zoom = z;
-    if (z === 1) { V.px = 0; V.py = 0; }
+    if (z === 1 && !kmapOn()) { V.px = 0; V.py = 0; }
     clampPan(); drawMap();
+    if (!gesture) kmapSoon(false, 120); // 버튼·휠: 잠깐 뒤 카카오 지도 단계에 맞춤
   }
   function clampPan() {
     const lim = Math.max(canvas.clientWidth, canvas.clientHeight) * V.zoom * 0.6;
@@ -1002,7 +1096,10 @@
     } else if (gesture.mode === 'tap' || gesture.mode === 'pan') {
       const [x, y] = local(e);
       if (gesture.mode === 'tap' && Math.hypot(x - gesture.x0, y - gesture.y0) > 7) { gesture.mode = 'pan'; clearTimeout(pressTimer); hideCard(); }
-      if (gesture.mode === 'pan') { V.px = gesture.px + x - gesture.x0; V.py = gesture.py + y - gesture.y0; clampPan(); drawMap(); }
+      if (gesture.mode === 'pan') {
+        V.px = gesture.px + x - gesture.x0; V.py = gesture.py + y - gesture.y0; clampPan();
+        if (kmapOn()) { if (!KM.panRaf) KM.panRaf = requestAnimationFrame(() => { KM.panRaf = 0; kmapSync(true); }); } else drawMap();
+      }
     }
   });
   const endPtr = (e) => {
@@ -1017,12 +1114,16 @@
       else if (now - lastTap < 320) { zoomAt(2, x, y); lastTap = 0; }
       else { lastTap = now; hideCard(); if (V.zoom === 1 && !S.pool.length && S.state === 'ready') toast('지도를 꾹 누르면 그곳을 중심으로 찾아요'); }
     }
-    if (ptrs.size === 0) gesture = null;
+    if (ptrs.size === 0) { gesture = null; kmapSoon(false, 0); }
     else if (ptrs.size === 1 && gesture.mode === 'pinch') { const [p] = [...ptrs.values()]; gesture = { mode: 'pan', x0: p[0], y0: p[1], px: V.px, py: V.py }; }
   };
   canvas.addEventListener('pointerup', endPtr);
   canvas.addEventListener('pointercancel', endPtr);
-  canvas.addEventListener('wheel', (e) => { e.preventDefault(); const [x, y] = local(e); zoomAt(e.deltaY < 0 ? 1.25 : 0.8, x, y); }, { passive: false });
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault(); const [x, y] = local(e);
+    if (kmapOn()) { const now = performance.now(); if (now - (KM.wheelAt || 0) < 250) return; KM.wheelAt = now; zoomAt(e.deltaY < 0 ? 2 : 0.5, x, y); } // 카카오 지도는 한 번에 한 단계
+    else zoomAt(e.deltaY < 0 ? 1.25 : 0.8, x, y);
+  }, { passive: false });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   function hitDot(x, y) {
     if (!view) return null;
@@ -1034,14 +1135,19 @@
     }
     return best;
   }
+  // 화면 위치 → 좌표 (지도 방향·축척 그대로 거꾸로 계산)
+  function pxToLL(x, y) {
+    const { ex, nx } = view, det = ex[0] * nx[1] - nx[0] * ex[1], dx = x - view.cx, dy = y - view.cy;
+    const e = (dx * nx[1] - nx[0] * dy) / det, n = (ex[0] * dy - dx * ex[1]) / det;
+    return { lat: S.center.lat + n / 110540, lng: S.center.lng + e / (111320 * view.cosLat) };
+  }
   function moveCenterTo(x, y) {
-    const lat = S.center.lat + (view.cy - y) * view.mpp / 110540;
-    const lng = S.center.lng + (x - view.cx) * view.mpp / (111320 * view.cosLat);
+    const { lat, lng } = pxToLL(x, y);
     resetView();
     moveCenter({ lat, lng }, true);
   }
-  $('#zoomIn').onclick = () => zoomAt(1.6, canvas.clientWidth / 2, canvas.clientHeight / 2);
-  $('#zoomOut').onclick = () => zoomAt(1 / 1.6, canvas.clientWidth / 2, canvas.clientHeight / 2);
+  $('#zoomIn').onclick = () => zoomAt(kmapOn() ? 2 : 1.6, canvas.clientWidth / 2, canvas.clientHeight / 2);
+  $('#zoomOut').onclick = () => zoomAt(kmapOn() ? 0.5 : 1 / 1.6, canvas.clientWidth / 2, canvas.clientHeight / 2);
 
   // 점을 누르면 뜨는 작은 정보 카드
   let card = null;
@@ -1428,13 +1534,14 @@
   function openGame(type) {
     stopAll(); gameKey++;
     if (sweepAnim) sweepAnim.pause();
+    document.body.classList.add('gameon'); // 게임 화면 뒤의 장식 애니메이션은 멈춘다(보이지 않는데 화면 합성만 무겁게 함)
     $('#game').hidden = false; $('#game').classList.remove('done'); result.hidden = true; stage.textContent = '';
     $('#game .ov-body').scrollTop = 0;
     $('#gTitle').textContent = TITLES[type];
     $('#gHead').textContent = S.round + '차 · ' + (S.food ? '「' + S.food.slice(0, 8) + '」 · ' : (S.meal === 'lunch' ? '점심' : '저녁') + ' · ') + '후보 ' + cands.length + '곳 (전체 ' + S.pool.length.toLocaleString('ko-KR') + '곳)';
     requestAnimationFrame(() => ({ roulette, ladder, pirate, race, cup, bomb, slot, shake: shakeGame })[type](cands));
   }
-  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; if (sweepAnim) sweepAnim.play(); fxKick(); }
+  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; document.body.classList.remove('gameon'); if (sweepAnim) sweepAnim.play(); fxKick(); }
   $('#gClose').onclick = closeGame;
 
   const FX = window.MMFX || { sfx: new Proxy({}, { get: () => () => {} }), cannons() {}, burst() {}, sparkle() {}, smoke() {}, dust() {}, shake() {}, flash() {}, stamp() {}, countdown() {}, popText() {} };
@@ -2131,14 +2238,14 @@
             if (ok) window.addEventListener('devicemotion', onMotionHome); else { settings.shake = false; toast('이 폰에서는 흔들기를 쓸 수 없어요'); }
           }
           saveSettings(); x.setAttribute('aria-pressed', settings[key]);
-          if (key === 'lowfx') { location.reload(); return; }
+          if (key === 'lowfx' || key === 'kmap') { location.reload(); return; }
           if (key === 'basemap') drawMap();
           if (key === 'route') { W.key = ''; W.failUntil = 0; }
           render();
         };
         return x;
       };
-      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('지도에 길·건물 보이기', 'basemap'), sw('실제 걷는 길로 시간 계산', 'route'), sw('그 시간에 문 닫은 곳 빼기', 'openNow'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
+      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('카카오 지도로 보기', 'kmap'), sw('지도에 길·건물 보이기 (카카오 지도를 끈 경우)', 'basemap'), sw('실제 걷는 길로 시간 계산', 'route'), sw('그 시간에 문 닫은 곳 빼기', 'openNow'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
       const snd = document.createElement('button'); snd.className = 'setrow';
       const paint = () => snd.setAttribute('aria-pressed', !(window.MMFX && MMFX.isMuted()));
       snd.append(textEl('span', '게임 효과음')); const si = document.createElement('i'); si.className = 'switch'; snd.append(si);
@@ -2317,12 +2424,15 @@
     if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
     t.textContent = m; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
   }
+  if (location.hostname === 'localhost') window.__mm = { view: () => view, S, KM, V }; // 내 컴퓨터에서 점검할 때만
   // ------------------------------------------------------------ 설정 파일(후원 링크 등). 허용한 주소만 쓴다.
-  const CONFIG = { donate: '' };
+  const CONFIG = { donate: '', kakaoJs: '' };
   fetch('config.json', { cache: 'no-cache' }).then((r) => r.ok ? r.json() : {}).then((c) => {
     const u = String((c && c.donate) || '');
     if (/^https:\/\/(toss\.me|qr\.kakaopay\.com|link\.kakaopay\.com)\/[\w\-./?=&%]+$/.test(u)) CONFIG.donate = u;
-  }).catch(() => { /* 없으면 후원 버튼 없음 */ });
+    const k = String((c && c.kakaoJs) || '');
+    if (/^[0-9a-f]{32}$/.test(k)) { CONFIG.kakaoJs = k; kmapLoad(); }
+  }).catch(() => { /* 없으면 후원 버튼·카카오 지도 없음 */ });
 
   // 효과음 켜기/끄기
   const soundBtn = $('#gSound');
