@@ -689,18 +689,24 @@
   // 키는 사이트 설정(config.json)의 JavaScript 키(등록한 사이트 주소에서만 작동). 못 불러오면 예전 지도로 돌아간다.
   const KM = { state: 'off', map: null, el: $('#kmap'), mpp: 1, level: 4, ex: [1, 0], nx: [0, -1], w: 0, h: 0, syncT: 0, syncedAt: 0, why: '' };
   const kmapOn = () => KM.state === 'on' && !!KM.map;
+  // 보안 설정에 막힌 주소가 있으면 기억해 두고 설정 화면 '카카오 지도 상태'에 보여 준다(원인 찾기용)
+  document.addEventListener('securitypolicyviolation', (e) => {
+    const u = String(e.blockedURI || '');
+    if (/kakao|daum/.test(u) || KM.state === 'loading') KM.blocked = (e.violatedDirective || '').split(' ')[0] + ' ' + u.replace(/^https?:\/\//, '').split(/[/?]/)[0];
+  });
   function kmapLoad() {
     if (KM.state !== 'off' || settings.kmap === false || !/^[0-9a-f]{32}$/.test(CONFIG.kakaoJs || '') || !KM.el) return;
     KM.state = 'loading';
     const sc = document.createElement('script');
     sc.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + CONFIG.kakaoJs + '&autoload=false';
     sc.async = true;
-    const to = setTimeout(() => kmapFail('시간 초과'), 9000);
+    const to = setTimeout(() => kmapFail('12초 안에 못 불러옴' + (KM.blocked ? ', 차단됨: ' + KM.blocked : '')), 12000);
     sc.onload = () => {
-      if (!(window.kakao && kakao.maps && kakao.maps.load)) { clearTimeout(to); kmapFail('지도 프로그램 없음'); return; }
-      kakao.maps.load(() => { clearTimeout(to); if (KM.state === 'loading') kmapInit(); });
+      if (!(window.kakao && kakao.maps && kakao.maps.load)) { clearTimeout(to); kmapFail('지도 프로그램 없음(키·사이트 등록 확인)'); return; }
+      // 늦게라도 준비되면 카카오 지도로 바꾼다
+      kakao.maps.load(() => { clearTimeout(to); if (KM.state === 'loading' || (KM.state === 'fail' && !KM.map)) kmapInit(); });
     };
-    sc.onerror = () => { clearTimeout(to); kmapFail('불러오기 실패'); };
+    sc.onerror = () => { clearTimeout(to); kmapFail('불러오기 실패' + (KM.blocked ? ', 차단됨: ' + KM.blocked : '')); };
     document.head.append(sc);
   }
   function kmapFail(why) {
@@ -712,7 +718,7 @@
   function kmapInit() {
     try {
       const km = kakao.maps;
-      KM.el.hidden = false;
+      KM.el.hidden = false; KM.el.textContent = '';
       KM.map = new km.Map(KM.el, { center: new km.LatLng(S.center.lat, S.center.lng), level: 4, draggable: false, scrollwheel: false,
         disableDoubleClick: true, disableDoubleClickZoom: true, keyboardShortcuts: false });
       KM.w = KM.el.clientWidth; KM.h = KM.el.clientHeight;
