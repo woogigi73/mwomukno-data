@@ -2245,7 +2245,7 @@
         };
         return x;
       };
-      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('카카오 지도로 보기', 'kmap'), sw('지도에 길·건물 보이기 (카카오 지도를 끈 경우)', 'basemap'), sw('실제 걷는 길로 시간 계산', 'route'), sw('그 시간에 문 닫은 곳 빼기', 'openNow'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
+      b.append(sw('폰을 흔들면 바로 뽑기', 'shake'), sw('이번 주에 간 곳은 후보에서 빼기', 'exclude'), sw('카카오 지도로 보기', 'kmap'), textEl('div', '카카오 지도 상태: ' + ({ on: '사용 중', loading: '불러오는 중', fail: '못 불러옴 (' + KM.why + ') — 예전 지도로 표시 중', off: settings.kmap === false ? '꺼 둠' : (CONFIG.kakaoJs ? '준비 중' : '키 없음') }[KM.state] || KM.state), 'fine'), sw('지도에 길·건물 보이기 (카카오 지도를 끈 경우)', 'basemap'), sw('실제 걷는 길로 시간 계산', 'route'), sw('그 시간에 문 닫은 곳 빼기', 'openNow'), sw('화면 효과 줄이기 (오래된 폰·배터리 절약)', 'lowfx'));
       const snd = document.createElement('button'); snd.className = 'setrow';
       const paint = () => snd.setAttribute('aria-pressed', !(window.MMFX && MMFX.isMuted()));
       snd.append(textEl('span', '게임 효과음')); const si = document.createElement('i'); si.className = 'switch'; snd.append(si);
