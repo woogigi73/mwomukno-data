@@ -45,6 +45,30 @@ jobs:
           KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
           TIME_LIMIT_S: "2700"
 
+      - name: 카카오 지도 JavaScript 키를 사이트 설정에 넣기
+        # 이 키는 원래 웹페이지에 보이는 용도(등록한 사이트 주소에서만 작동). REST 키는 절대 넣지 않는다.
+        if: always()
+        env:
+          KAKAO_JS_KEY: ${{ secrets.KAKAO_JS_KEY }}
+          KAKAO_REST_KEY_CHECK: ${{ secrets.KAKAO_REST_KEY }}  # 실수로 REST 키를 넣으면 막기 위한 비교용(어디에도 쓰지 않음)
+        run: |
+          python3 - <<'PY'
+          import json, os, re, pathlib
+          p = pathlib.Path("docs/config.json")
+          c = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+          k = os.environ.get("KAKAO_JS_KEY", "").strip()
+          if k and not re.fullmatch(r"[0-9a-f]{32}", k):
+              print("::warning::KAKAO_JS_KEY 형식이 아니에요(영문 소문자·숫자 32자). 넣지 않습니다.")
+              k = ""
+          if k and k == os.environ.get("KAKAO_REST_KEY_CHECK", "").strip():
+              print("::error::KAKAO_JS_KEY에 REST 키가 들어 있어요. JavaScript 키로 바꿔 주세요. 넣지 않습니다.")
+              k = ""
+          new = dict(c, kakaoJs=k)
+          if new != c:
+              p.write_text(json.dumps(new, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+              print("카카오 지도 키 설정 갱신" if k else "카카오 지도 키 비움")
+          PY
+        
       - name: 결과 저장
         if: always()
         run: |
