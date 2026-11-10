@@ -822,14 +822,14 @@
    37436363,
    126703360
   ],
-  "count": 4609,
+  "count": 4603,
   "estimate": 3959,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261110",
   "model": 0,
   "name": "인천광역시 연수구",
-  "sha": "92d31c78119fe055b684a9fad644d489a0e350c2b8216db6acd488de33dbb6d3",
-  "size": 1129205
+  "sha": "247caa2ffa85bba45c33d89d28f248a49354be50b3ea80e163143fc81d3c49cc",
+  "size": 1127625
  },
  "3530000": {
   "bbox": [
