@@ -838,14 +838,14 @@
    37477250,
    126774028
   ],
-  "count": 5686,
+  "count": 5672,
   "estimate": 5026,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261110",
   "model": 0,
   "name": "인천광역시 남동구",
-  "sha": "fb94c14d1872cc1ef173f21457dc0da9ad747b21b6a096ba1d92748eb0ac9a14",
-  "size": 1299573
+  "sha": "642b85ea9331e01c22197beb1c404d5eb4b6aaf5cac7c6ffe77dce53bbb6e5be",
+  "size": 1296531
  },
  "3540000": {
   "bbox": [
