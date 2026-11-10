@@ -278,14 +278,14 @@
    37485857,
    126918902
   ],
-  "count": 3538,
+  "count": 3528,
   "estimate": 3060,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261110",
   "model": 0,
   "name": "서울특별시 금천구",
-  "sha": "722147385be97bce1fc501d710ce2d5b63b8226f25f625a60d154cef09bfca5b",
-  "size": 819145
+  "sha": "47a85439edd8d9020baba1e0dca2b9a6ecac2279dd9d0da0a5fbdab2ea04b126",
+  "size": 816918
  },
  "3180000": {
   "bbox": [
@@ -294,14 +294,14 @@
    37545003,
    126943007
   ],
-  "count": 7554,
+  "count": 7549,
   "estimate": 6779,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261110",
   "model": 0,
   "name": "서울특별시 영등포구",
-  "sha": "8b7f35bb94a312399987c22a6964f944d4be666e80221856a9a2c325bc238fc6",
-  "size": 1766402
+  "sha": "93ae90211ff4d261988f707b350f0ae1742c146a9b8cf43bc04ecdfb452ccce1",
+  "size": 1764942
  },
  "3190000": {
   "bbox": [
