@@ -461,15 +461,15 @@
    129090412
   ],
   "busan": true,
-  "count": 1386,
+  "count": 1384,
   "estimate": 1225,
   "geo": 2,
-  "last": "20261105",
+  "last": "20261111",
   "model": 5,
-  "model_ok": "20261105",
+  "model_ok": "20261111",
   "name": "부산광역시 영도구",
-  "sha": "9ab93da56a1216ea539db4f9b9aae184f909c044b62fc2c59036952f16984879",
-  "size": 296511
+  "sha": "c09fc9cc5fe430b67b5472cc4b4d413339a21c3aac7a7830ccff108cabe77baa",
+  "size": 296025
  },
  "3290000": {
   "bbox": [
@@ -479,15 +479,15 @@
    129079247
   ],
   "busan": true,
-  "count": 6160,
+  "count": 6150,
   "estimate": 5556,
   "geo": 2,
-  "last": "20261105",
+  "last": "20261111",
   "model": 65,
-  "model_ok": "20261105",
+  "model_ok": "20261111",
   "name": "부산광역시 부산진구",
-  "sha": "4ae63af381573c5da130769e44f4ad4d0757b96437dcce00095b19c16123f012",
-  "size": 1362678
+  "sha": "4766c2e158de4e4f515c396c3d79e8dedebb614999418c39d48ee3eed11fd2a5",
+  "size": 1360528
  },
  "3300000": {
   "bbox": [
