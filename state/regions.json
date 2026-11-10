@@ -551,15 +551,15 @@
    129206629
   ],
   "busan": true,
-  "count": 4788,
+  "count": 4783,
   "estimate": 4320,
   "geo": 2,
-  "last": "20261105",
+  "last": "20261111",
   "model": 25,
-  "model_ok": "20261105",
+  "model_ok": "20261111",
   "name": "부산광역시 해운대구",
-  "sha": "444ff06e9c68ffd47bb67ef189302e2c0a806f91a3e3d6022b0a699613fb4b1c",
-  "size": 1091926
+  "sha": "30636017765b342d98fc4316a4c2555ebff5f82f4c3ab5bbaf8201ac8bb3f278",
+  "size": 1090878
  },
  "3340000": {
   "bbox": [
@@ -569,15 +569,15 @@
    129011655
   ],
   "busan": true,
-  "count": 3294,
+  "count": 3292,
   "estimate": 3058,
   "geo": 2,
-  "last": "20261105",
+  "last": "20261111",
   "model": 1,
-  "model_ok": "20261105",
+  "model_ok": "20261111",
   "name": "부산광역시 사하구",
-  "sha": "b2fdb0fd5dfe428ca151ae4c8d58aadfc11adabc386baba87280109019e5870f",
-  "size": 700137
+  "sha": "672e93e4ac41a8188dfc15a4f90f1d8cd74b1d8e26b07e9d5018a04456f098ed",
+  "size": 699852
  },
  "3350000": {
   "bbox": [
