@@ -1718,14 +1718,14 @@
    37006947,
    126628130
   ],
-  "count": 3055,
+  "count": 3059,
   "estimate": 2730,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 서산시",
-  "sha": "b248070da927b71376e1b41823afbaca9120678ccc738c5b6aab8eb0116b75fb",
-  "size": 632917
+  "sha": "785a93a56efdec697feb4787c72bef3c427926fafb9b7f26b6be800ac01ace14",
+  "size": 633488
  },
  "4540000": {
   "bbox": [
@@ -1734,14 +1734,14 @@
    36323526,
    127317374
   ],
-  "count": 2056,
+  "count": 2055,
   "estimate": 1852,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 논산시",
-  "sha": "6c753ecdf126f5ee88f6ef5e1ffa3a46acaba3b0a1081b268d85b1eefe3a9dbb",
-  "size": 414458
+  "sha": "0f8aa04dfbdfbea203652e9437d2ea2e527de6f7b2941653ee758975d595ff47",
+  "size": 414291
  },
  "4550000": {
   "bbox": [
@@ -1753,11 +1753,11 @@
   "count": 976,
   "estimate": 871,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 금산군",
-  "sha": "28fe022167fe37571e1c337c80fb65158b1119ebdcb03edf091c4e0ef8963096",
-  "size": 192768
+  "sha": "d0d527fc033933f0e383b15cffcb56b4aee1250fa96209439b83693fb9a9b722",
+  "size": 192746
  },
  "4570000": {
   "bbox": [
@@ -1766,14 +1766,14 @@
    36376357,
    127035716
   ],
-  "count": 923,
+  "count": 926,
   "estimate": 854,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 부여군",
-  "sha": "1fbfa1d1e040dae0e332cebebc16c63d94ddef55964fd8aac5a91fd3fd4034d0",
-  "size": 185908
+  "sha": "74a94bcb136f9deacbd089141cfbbaaae2b232ac78eedb4fe8f87d3231133d48",
+  "size": 186410
  },
  "4580000": {
   "bbox": [
@@ -1785,10 +1785,10 @@
   "count": 857,
   "estimate": 771,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 서천군",
-  "sha": "841a3894c32630a990f86c8aedd62beef621ad270bb65957be045bdf8ff516fa",
+  "sha": "204b2ff743fe2276a264eed98cfac3af99d39edbab42db408fe37f414204ba4c",
   "size": 165978
  },
  "4590000": {
@@ -1798,14 +1798,14 @@
    36532170,
    127016065
   ],
-  "count": 523,
+  "count": 522,
   "estimate": 484,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 청양군",
-  "sha": "bb38d8da59499e320f1c4c5a5a2553f3cd4b57883fd452e49797e618e38ddb7e",
-  "size": 105453
+  "sha": "ac0726a789d2a0834d9373aaee97389f0da48ce448ca16b661547536ff578e8d",
+  "size": 105213
  },
  "4600000": {
   "bbox": [
@@ -1817,11 +1817,11 @@
   "count": 1826,
   "estimate": 1673,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 홍성군",
-  "sha": "4a5947622e374e05d2f208897552990aea59e24214ca5c6524848c42921cf36c",
-  "size": 382680
+  "sha": "2f8599e10d9c15dbe25ee1e5ef34e2a09e631a42639bbb2f68daf8ac5841fba3",
+  "size": 382564
  },
  "4610000": {
   "bbox": [
@@ -1830,14 +1830,14 @@
    36801913,
    126949709
   ],
-  "count": 1471,
+  "count": 1464,
   "estimate": 1339,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 예산군",
-  "sha": "884de5139fee19966bb98e15a49708146ca754201df278b67a8835184c1ac0fa",
-  "size": 292895
+  "sha": "0230969d751285a25eb80fe27cfebb0e5a8c4a6a7e1c237ad616ad527fe384cd",
+  "size": 291272
  },
  "4620000": {
   "bbox": [
@@ -1846,14 +1846,14 @@
    36966916,
    126431602
   ],
-  "count": 1416,
+  "count": 1410,
   "estimate": 1291,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청남도 태안군",
-  "sha": "93c3adecb795ad5df960e356aa040948974bbfe32f9a36b92720be02e9493864",
-  "size": 284171
+  "sha": "dc1689ac746cf316be1d70775a0ed3b8afc2b63c99a7a7701ae5650ac3c2429d",
+  "size": 283120
  },
  "5020000": {
   "bbox": [
@@ -1862,14 +1862,14 @@
    36315322,
    129582080
   ],
-  "count": 8779,
+  "count": 8781,
   "estimate": 7775,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "경상북도 포항시 북구",
-  "sha": "d2ff5fd7937d1253482bbd4d647b9d1e2b0d1a25515135478b211374bfcabdde",
-  "size": 1899729
+  "sha": "bbe546b274f63f9e6f6cf149a520fc02f21e4aefbffe95bc6bf0be0f6f963132",
+  "size": 1900272
  },
  "5050000": {
   "bbox": [
