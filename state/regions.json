@@ -2615,14 +2615,14 @@
    36732031,
    127400639
   ],
-  "count": 4435,
+  "count": 4429,
   "estimate": 3826,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261112",
   "model": 0,
   "name": "세종특별자치시 나성동",
-  "sha": "cc2627aab5fcf959df59402da3f5044468a39d98ba4e9e5ee0843a73eb3bf28c",
-  "size": 921649
+  "sha": "7f5a473be1af4b6f606a72cc5ac1e475cdc707b2bffc210227e05d8bc5000f86",
+  "size": 920223
  },
  "5700000": {
   "bbox": [
@@ -2631,14 +2631,14 @@
    37435505,
    127767158
   ],
-  "count": 2261,
+  "count": 2243,
   "estimate": 2013,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261112",
   "model": 0,
   "name": "경기도 여주시",
-  "sha": "07a24f93c15bf2fc9fcfd4e8f6ad6f62d7f66717a483dacf65a0679dbad9c578",
-  "size": 412206
+  "sha": "e63817a07cc99f12f126f4d489bb1e3e119140f933b981c0b116e7b881ded698",
+  "size": 408897
  },
  "5710000": {
   "bbox": [
