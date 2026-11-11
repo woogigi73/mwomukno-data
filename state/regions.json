@@ -1590,14 +1590,14 @@
    37005398,
    127568397
   ],
-  "count": 1707,
+  "count": 1709,
   "estimate": 1593,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청북도 진천군",
-  "sha": "2d3d8941face86dca981657c8e3d014e1a70a4acb27bcbd3e1d5ede03459dea4",
-  "size": 344714
+  "sha": "ed46ee35eaac51e12eea36ef953c769b6e80e1d4f2b9b5ee9daad55d2464007b",
+  "size": 345088
  },
  "4460000": {
   "bbox": [
@@ -1606,14 +1606,14 @@
    36931648,
    128042404
   ],
-  "count": 752,
+  "count": 739,
   "estimate": 664,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청북도 괴산군",
-  "sha": "78d36737fde2a8601fb883c5a23e5e19f22437e8ed780c8444e29e68464c9056",
-  "size": 149375
+  "sha": "7726d0d75a98bf993184751c2ac6cf14dfaf9ee6240fe2b20377b7c8d5cfa5ba",
+  "size": 146909
  },
  "4470000": {
   "bbox": [
@@ -1625,11 +1625,11 @@
   "count": 2312,
   "estimate": 2244,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청북도 음성군",
-  "sha": "96ad278fd2545d6316bc401c359a903712a81ea5a516bcbf0d1e7c2ef1ca9c40",
-  "size": 459420
+  "sha": "f8c98a46de23ec995f8b36b127d5e3daf4ae380efc337a31ca8008910ee52081",
+  "size": 459384
  },
  "4480000": {
   "bbox": [
@@ -1638,14 +1638,14 @@
    37582419,
    128612492
   ],
-  "count": 751,
+  "count": 747,
   "estimate": 722,
   "geo": 2,
-  "last": "20261104",
+  "last": "20261111",
   "model": 0,
   "name": "충청북도 단양군",
-  "sha": "826f4cd606b01726df250b65166b5e2c3ff71fd19da3d191d3b9239a48d92320",
-  "size": 149729
+  "sha": "ac07495355a80795f5eedef6ab3b64f61a4703f97f4632604caf7f1ec28e6c16",
+  "size": 148967
  },
  "4490000": {
   "bbox": [
