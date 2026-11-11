@@ -1,9 +1,14 @@
-# 데이터 갱신 보고서 (2026-11-11 13:28 KST)
+# 데이터 갱신 보고서 (2026-11-11 14:09 KST)
 
-- 오늘 이미 쓴 호출: {'general': 1259, 'rest': 192, 'model': 19, 'kakao': 0, 'blog': 0}
-  · 4050000 경기도 용인시 수지구: 10062곳 (모범 0, 카카오 매칭 +0)
+- 오늘 이미 쓴 호출: {'general': 1377, 'rest': 227, 'model': 19, 'kakao': 0, 'blog': 0}
+  · 4060000 실패: TimeoutError: The read operation timed out 
+  · 4070000 실패: TimeoutError: The read operation timed out 
+  · 4080000 실패: TimeoutError: The read operation timed out 
+  · 4090000 실패: TimeoutError: The read operation timed out 
+  · 4140000 실패: TimeoutError: The read operation timed out 
+  · 4160000 실패: TimeoutError: The read operation timed out 
 
 ## 요약
-- 이번 실행에서 갱신한 지역: 1
+- 이번 실행에서 갱신한 지역: 0
 - 데이터가 있는 지역: 193/193
-- 오늘 호출 수: 일반 1377/8500, 휴게 227/8500, 모범 19/900, 카카오 0/60000, 블로그 0/29500
+- 오늘 호출 수: 일반 1402/8500, 휴게 227/8500, 모범 19/900, 카카오 0/60000, 블로그 0/29500
