@@ -1,12 +1,11 @@
-# 데이터 갱신 보고서 (2026-11-16 23:30 KST)
+# 데이터 갱신 보고서 (2026-11-17 00:14 KST)
 
-- 오늘 이미 쓴 호출: {'general': 284, 'rest': 36, 'model': 0, 'kakao': 0, 'blog': 0}
-  · 3070000 실패: TimeoutError: The read operation timed out 
-  · 3080000 실패: TimeoutError: The read operation timed out 
-  · 3090000 실패: TimeoutError: The read operation timed out 
-  · 3100000 실패: TimeoutError: The read operation timed out 
+- 오늘 이미 쓴 호출: {'general': 0, 'rest': 0, 'model': 0, 'kakao': 0, 'blog': 0}
+  · 3250000 실패: URLError: <urlopen error timed out> 
+  · 3260000 실패: TimeoutError: The read operation timed out 
+  · 3270000 실패: TimeoutError: The read operation timed out 
 
 ## 요약
 - 이번 실행에서 갱신한 지역: 0
 - 데이터가 있는 지역: 193/193
-- 오늘 호출 수: 일반 307/8500, 휴게 36/8500, 모범 0/900, 카카오 0/60000, 블로그 0/29500
+- 오늘 호출 수: 일반 28/8500, 휴게 0/8500, 모범 0/900, 카카오 0/60000, 블로그 0/29500
