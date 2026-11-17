@@ -461,15 +461,15 @@
    129090412
   ],
   "busan": true,
-  "count": 1384,
+  "count": 1381,
   "estimate": 1225,
   "geo": 2,
-  "last": "20261111",
-  "model": 5,
-  "model_ok": "20261111",
+  "last": "20261117",
+  "model": 3,
+  "model_ok": "20261117",
   "name": "부산광역시 영도구",
-  "sha": "c09fc9cc5fe430b67b5472cc4b4d413339a21c3aac7a7830ccff108cabe77baa",
-  "size": 296025
+  "sha": "5d1e3327434ee437e9f6d468231fdc18aa6786abc9b5ae4d720c59f9dd0607c5",
+  "size": 295470
  },
  "3290000": {
   "bbox": [
