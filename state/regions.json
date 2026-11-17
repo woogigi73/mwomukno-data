@@ -497,15 +497,15 @@
    129113933
   ],
   "busan": true,
-  "count": 3477,
+  "count": 3478,
   "estimate": 3087,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261117",
   "model": 16,
-  "model_ok": "20261111",
+  "model_ok": "20261117",
   "name": "부산광역시 동래구",
-  "sha": "e4de27400804d76481143aaee1e01376c03bd7a03d72782d3e9103f59bdf78f8",
-  "size": 757480
+  "sha": "c787a084c3951edf786d140792bec57c33dc3d738005dcefd209bc1f1f71100e",
+  "size": 757572
  },
  "3310000": {
   "bbox": [
@@ -533,15 +533,15 @@
    129049967
   ],
   "busan": true,
-  "count": 2615,
+  "count": 2613,
   "estimate": 2373,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261117",
   "model": 0,
-  "model_ok": "20261111",
+  "model_ok": "20261117",
   "name": "부산광역시 북구",
-  "sha": "721b6206f830a250e8a8f178f4cd1f7f23871d4120556f0b8d7a777d815e16e1",
-  "size": 564844
+  "sha": "c38690f77ab77cab7bfd5803cea02fa49b4cd42ec24049dc93f02627a200bbff",
+  "size": 564382
  },
  "3330000": {
   "bbox": [
