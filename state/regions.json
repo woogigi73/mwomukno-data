@@ -515,15 +515,15 @@
    129123072
   ],
   "busan": true,
-  "count": 2971,
+  "count": 2964,
   "estimate": 2687,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261117",
   "model": 6,
-  "model_ok": "20261111",
+  "model_ok": "20261117",
   "name": "부산광역시 남구",
-  "sha": "7da286c6bc963f501926ea87239ad7035f24c3d7692a9968cde3bf46d597094b",
-  "size": 637935
+  "sha": "a7991592ef9638eb1b0d4d0d2baa1e8808a85901f82d7479d801de88b78daa67",
+  "size": 636467
  },
  "3320000": {
   "bbox": [
