@@ -479,15 +479,15 @@
    129079247
   ],
   "busan": true,
-  "count": 6150,
+  "count": 6140,
   "estimate": 5556,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261117",
   "model": 65,
-  "model_ok": "20261111",
+  "model_ok": "20261117",
   "name": "부산광역시 부산진구",
-  "sha": "6c927f0bc8873361c1d1774371ede4ecdee96f0b4a73360819cc87be0b61adee",
-  "size": 1360528
+  "sha": "8412c7ff9fd169dd88728acfa6d4e03ed230904ff142e4ed70fb5fca7800c3a6",
+  "size": 1358542
  },
  "3300000": {
   "bbox": [
