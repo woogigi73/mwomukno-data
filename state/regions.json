@@ -446,12 +446,12 @@
   "count": 1480,
   "estimate": 1337,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261117",
   "model": 30,
-  "model_ok": "20261111",
+  "model_ok": "20261117",
   "name": "부산광역시 동구",
-  "sha": "368b632ea8d3a7ad186f7b354d62bf57e42b848bb9e72c02fed8367713a2a49c",
-  "size": 317834
+  "sha": "9332fa7c570343f10083e486cd54635f7ab8a848984f6128ab976ac0f94be6fa",
+  "size": 317806
  },
  "3280000": {
   "bbox": [
