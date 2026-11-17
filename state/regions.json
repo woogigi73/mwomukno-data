@@ -641,15 +641,15 @@
    129134501
   ],
   "busan": true,
-  "count": 3259,
+  "count": 3253,
   "estimate": 2864,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261117",
   "model": 14,
-  "model_ok": "20261111",
+  "model_ok": "20261117",
   "name": "부산광역시 수영구",
-  "sha": "73ebe2284bced49f31ad332d7de1d4aabcf122ea0817154a3185ed3bb9365fc6",
-  "size": 725420
+  "sha": "58f0297fc465f5450120093a6145884910b208f9bc631cfe5491bb3389ff7a11",
+  "size": 724087
  },
  "3390000": {
   "bbox": [
