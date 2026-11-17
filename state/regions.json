@@ -407,15 +407,15 @@
    129042146
   ],
   "busan": true,
-  "count": 2334,
+  "count": 2329,
   "estimate": 2157,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261117",
   "model": 17,
-  "model_ok": "20261111",
+  "model_ok": "20261117",
   "name": "부산광역시 중구",
-  "sha": "7a151eb1c17383bc6c9ca3cce95d59727aa6e743e5297d9c4eed13d59ce75b91",
-  "size": 497360
+  "sha": "d0a91bb46549604f644e37282cd79714beeb9bc0fec104c41af0987220dc35aa",
+  "size": 496281
  },
  "3260000": {
   "bbox": [
