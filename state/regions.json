@@ -198,14 +198,14 @@
    37602607,
    126968501
   ],
-  "count": 4036,
+  "count": 4033,
   "estimate": 3553,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "서울특별시 서대문구",
-  "sha": "68e03122acb4cbf232011db3b1d20185113c6fc10ea406fc105d53335dfcca28",
-  "size": 894143
+  "sha": "56d0b6afd33fcb3e94f338be2e96c4f8c3536fa538e7931a662eb11f66d1ce5f",
+  "size": 893181
  },
  "3130000": {
   "bbox": [
