@@ -1,9 +1,11 @@
-# 데이터 갱신 보고서 (2026-11-18 22:53 KST)
+# 데이터 갱신 보고서 (2026-11-18 23:35 KST)
 
-- 오늘 이미 쓴 호출: {'general': 954, 'rest': 28, 'model': 1, 'kakao': 0, 'blog': 0}
+- 오늘 이미 쓴 호출: {'general': 991, 'rest': 28, 'model': 1, 'kakao': 0, 'blog': 0}
   · 3090000 실패: TimeoutError: The read operation timed out 
+  · 3100000 실패: TimeoutError: The read operation timed out 
+  · 3110000 실패: TimeoutError: The read operation timed out 
 
 ## 요약
 - 이번 실행에서 갱신한 지역: 0
 - 데이터가 있는 지역: 193/193
-- 오늘 호출 수: 일반 991/8500, 휴게 28/8500, 모범 1/900, 카카오 0/60000, 블로그 0/29500
+- 오늘 호출 수: 일반 1014/8500, 휴게 28/8500, 모범 1/900, 카카오 0/60000, 블로그 0/29500
