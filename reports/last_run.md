@@ -1,12 +1,9 @@
-# 데이터 갱신 보고서 (2026-11-18 07:48 KST)
+# 데이터 갱신 보고서 (2026-11-18 08:29 KST)
 
-- 오늘 이미 쓴 호출: {'general': 308, 'rest': 0, 'model': 0, 'kakao': 0, 'blog': 0}
-  · 3390000 실패: TimeoutError: The read operation timed out 
-  · 3070000 실패: TimeoutError: The read operation timed out 
-  · 3080000 실패: TimeoutError: The read operation timed out 
-  · 3090000 실패: TimeoutError: The read operation timed out 
+- 오늘 이미 쓴 호출: {'general': 338, 'rest': 0, 'model': 0, 'kakao': 0, 'blog': 0}
+  · 3390000 부산광역시 사상구: 2709곳 (모범 45, 카카오 매칭 +0)
 
 ## 요약
-- 이번 실행에서 갱신한 지역: 0
+- 이번 실행에서 갱신한 지역: 1
 - 데이터가 있는 지역: 193/193
-- 오늘 호출 수: 일반 338/8500, 휴게 0/8500, 모범 0/900, 카카오 0/60000, 블로그 0/29500
+- 오늘 호출 수: 일반 363/8500, 휴게 7/8500, 모범 1/900, 카카오 0/60000, 블로그 0/29500
