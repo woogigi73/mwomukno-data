@@ -326,14 +326,14 @@
    37494165,
    126985813
   ],
-  "count": 5234,
+  "count": 5221,
   "estimate": 4640,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "서울특별시 관악구",
-  "sha": "8dedda6b60a415d033cf8fd9734f2cf4ede97adc9e27c1e928c34de4e54d471c",
-  "size": 1135552
+  "sha": "747f61bf9a4f8f3736431460ff630e9cec4538e5ffac0b17599677afac446922",
+  "size": 1132808
  },
  "3210000": {
   "bbox": [
@@ -342,14 +342,14 @@
    37521318,
    127088503
   ],
-  "count": 6616,
+  "count": 6618,
   "estimate": 5579,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "서울특별시 서초구",
-  "sha": "0fa50188e33f86380e112cda61064afaa17a206fbd619357f2f82fee6cf08901",
-  "size": 1495564
+  "sha": "d5fc01645ece32bc9ce58e8ab22a3c874d66df6d30ca47a3ceff8716fde8d61b",
+  "size": 1495742
  },
  "3220000": {
   "bbox": [
