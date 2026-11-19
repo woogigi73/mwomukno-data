@@ -278,14 +278,14 @@
    37485857,
    126918902
   ],
-  "count": 3528,
+  "count": 3515,
   "estimate": 3060,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "서울특별시 금천구",
-  "sha": "24e77a4af39131abe3ec3d217be823a0fd0f7438edc09d8d04cafa468f0dd78b",
-  "size": 816942
+  "sha": "718ed0375cf87489cdf67dc36d1729d4a102970f3aa0d28c8a573b8acf75f5aa",
+  "size": 813889
  },
  "3180000": {
   "bbox": [
@@ -294,14 +294,14 @@
    37545003,
    126943007
   ],
-  "count": 7549,
+  "count": 7547,
   "estimate": 6779,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "서울특별시 영등포구",
-  "sha": "698e74af08d190db21814c1baf71140df1fef25f5cea0fce64148fcc5995a168",
-  "size": 1764955
+  "sha": "ed79843fbbc3bb09b6a3a3ef90db680eb74155e9e0b8b01c30427619cc787b4d",
+  "size": 1764141
  },
  "3190000": {
   "bbox": [
@@ -310,14 +310,14 @@
    37514742,
    126982348
   ],
-  "count": 3563,
+  "count": 3562,
   "estimate": 3149,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "서울특별시 동작구",
-  "sha": "d5149950b86ec9ff15cf63d7cd9ab4fc009c66cdbff490821c553115c5973165",
-  "size": 794615
+  "sha": "a90f64b1ff7db40f160587e2ee2160b5dc05ae463f0d316dff9ecdeb5959e478",
+  "size": 794393
  },
  "3200000": {
   "bbox": [
