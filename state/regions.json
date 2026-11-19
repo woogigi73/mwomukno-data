@@ -1446,14 +1446,14 @@
    37757815,
    126921842
   ],
-  "count": 5238,
+  "count": 5236,
   "estimate": 4800,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경기도 김포시",
-  "sha": "b2fbcbef8987da402753721b3e3bd1715eb0006c1245c6e0af124772324bb981",
-  "size": 1161967
+  "sha": "2a392f8c8d6779255c3b8a8c43cf0ab3c654dc10100c7afdf9cdde62a407dba6",
+  "size": 1161477
  },
  "4140000": {
   "bbox": [
@@ -1462,14 +1462,14 @@
    38215330,
    127147183
   ],
-  "count": 959,
+  "count": 956,
   "estimate": 862,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경기도 연천군",
-  "sha": "ff5a59854314678cf1a4f6b05e376e68a2e5bbc628e780ef194cb36ac3d4481e",
-  "size": 184479
+  "sha": "8cad19d6d6b580ba829cdd02836376a65b50bd8a807cecae443aca99dbc3ddea",
+  "size": 183945
  },
  "4160000": {
   "bbox": [
@@ -1478,14 +1478,14 @@
    38025801,
    127564849
   ],
-  "count": 1934,
+  "count": 1935,
   "estimate": 1756,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경기도 가평군",
-  "sha": "949a4a1fbbbc9e8946e9e1c1b2e822be06df5119da698c63a90c5978991f60d7",
-  "size": 390511
+  "sha": "901fbf58cfc5ae2882549e6ad8b5998b2aabbe7a3f18fba71b0a5d994a800c4f",
+  "size": 390650
  },
  "4170000": {
   "bbox": [
