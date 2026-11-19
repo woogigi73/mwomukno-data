@@ -838,14 +838,14 @@
    37477250,
    126774028
   ],
-  "count": 5672,
+  "count": 5663,
   "estimate": 5026,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "인천광역시 남동구",
-  "sha": "1f11f8b4d02d5bfa08cda3d0bba40e4f6536ebc353b1179ee70b3056e431bc71",
-  "size": 1296531
+  "sha": "1afe92ce77f94729de892e64bb0c5d2b9aeaf6562868f6f8f99879a583ae2514",
+  "size": 1294571
  },
  "3540000": {
   "bbox": [
@@ -857,11 +857,11 @@
   "count": 5076,
   "estimate": 4508,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "인천광역시 부평구",
-  "sha": "b3f59134785954f611943e8db5a3bf60df3ae135ab63db7a2f049726311045ab",
-  "size": 1143553
+  "sha": "90e82600c1025bcff3fd76bb13ead8661f94cbb27d2654c04fb675afa97ef455",
+  "size": 1143501
  },
  "3550000": {
   "bbox": [
@@ -870,14 +870,14 @@
    37591556,
    126781476
   ],
-  "count": 2790,
+  "count": 2787,
   "estimate": 2487,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "인천광역시 계양구",
-  "sha": "5f0f0845ef5dcfa238ab3243f57f85000d9e9aeae1c758cff7b7c6139cad811a",
-  "size": 629398
+  "sha": "8e61b884855fa90a7f2de57b002f30844e1792387facb3e85ee5c2563c561cc9",
+  "size": 628483
  },
  "3565000": {
   "bbox": [
@@ -886,14 +886,14 @@
    37629306,
    126701674
   ],
-  "count": 104,
+  "count": 109,
   "estimate": 1777,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "인천광역시 검단구",
-  "sha": "d863eb6783655d737b144bacfe881b6b7fa1e0a7e1bb3dad882ef776b10aa3d0",
-  "size": 22707
+  "sha": "77a548baddefb0943f67a5d989d7431d70c781686ca9d0b26ebaba894d7229a8",
+  "size": 23778
  },
  "3570000": {
   "bbox": [
@@ -902,14 +902,14 @@
    37826059,
    126540447
   ],
-  "count": 1750,
+  "count": 1748,
   "estimate": 1593,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "인천광역시 강화군",
-  "sha": "0f384967587eaaf8b5ffeb151b1fb120fa45295585e22e635bf474715e44eb2e",
-  "size": 359253
+  "sha": "624c775eddaa9262c6269c48660cff5d42c25d233bb9852ae0a62da6778d9ead",
+  "size": 358764
  },
  "3580000": {
   "bbox": [
@@ -918,14 +918,14 @@
    37982133,
    126537946
   ],
-  "count": 596,
+  "count": 584,
   "estimate": 555,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "인천광역시 옹진군",
-  "sha": "bf82a16459d86d274eb233a1d9cb2f0cf340b90491a86914e00284632934aedc",
-  "size": 118152
+  "sha": "c0633de1dd962eec71d72ec8de5ea3234b83e2fac2dc1e02bb4841e39f0abe3a",
+  "size": 115804
  },
  "3640000": {
   "bbox": [
@@ -934,14 +934,14 @@
    36418424,
    127537626
   ],
-  "count": 2982,
+  "count": 2977,
   "estimate": 2654,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "대전광역시 동구",
-  "sha": "4344a34a762775a35d41bb2cfeacb91820f3bd9b4d3db8d469a8006c69370021",
-  "size": 625433
+  "sha": "f45f95dd41a7da400313cdd1f9bce7889f7c0e420ae72626bec45cdf19328c8a",
+  "size": 624351
  },
  "3650000": {
   "bbox": [
@@ -950,14 +950,14 @@
    36347252,
    127456530
   ],
-  "count": 3552,
+  "count": 3544,
   "estimate": 3216,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "대전광역시 중구",
-  "sha": "6f6582ea8ae183b9311fdad3a1c075b2cff99a86b68fc7b4481a4769fd0e11ca",
-  "size": 752223
+  "sha": "5dc597f283874db1826fdc19e405697f554564e2b8ccb844b0dafadf7c7283da",
+  "size": 750625
  },
  "3660000": {
   "bbox": [
