@@ -1398,14 +1398,14 @@
    37998477,
    127012428
   ],
-  "count": 6250,
+  "count": 6245,
   "estimate": 5802,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경기도 파주시",
-  "sha": "0dc3ca54cc59b9c6c3935fd22dc355cb13afff8a59c6e430cf9cad20afaec7e9",
-  "size": 1338325
+  "sha": "b9cffadd25155c9f4a465ea33778ee3def585261ca9f5dd9fe4bf50f8e7d7a47",
+  "size": 1336937
  },
  "4070000": {
   "bbox": [
@@ -1430,14 +1430,14 @@
    37142340,
    127514802
   ],
-  "count": 3377,
+  "count": 3399,
   "estimate": 3046,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경기도 안성시",
-  "sha": "9671561df64e678bae3ce6039b411d9382084cfbffc138b80263a7d885ea5b20",
-  "size": 700250
+  "sha": "056a9fa4d17973cc83da0c481aff4773689c0827e30e0ccc7992869f5d2e4bf9",
+  "size": 704676
  },
  "4090000": {
   "bbox": [
