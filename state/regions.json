@@ -1494,14 +1494,14 @@
    37647727,
    127798329
   ],
-  "count": 2071,
+  "count": 2072,
   "estimate": 1882,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경기도 양평군",
-  "sha": "bacd4b36fbbd6ff241d70ee108eddd3776a98d3e2c3861da383c68d68fbe617c",
-  "size": 409105
+  "sha": "2b01f7430541457a0f8dad6b43c26c36fa6f1a4795c086fbecb6a33c8c571429",
+  "size": 409223
  },
  "4390000": {
   "bbox": [
@@ -1510,14 +1510,14 @@
    37199002,
    128095466
   ],
-  "count": 4117,
+  "count": 4116,
   "estimate": 3729,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청북도 충주시",
-  "sha": "2b8aafd2d63d79704d48dbcac2293d1833a9f0169e286dec3e8932198c12b5fb",
-  "size": 850058
+  "sha": "15f37ed88adb13c743f87418993a998cab819bd88c650431556edf9263c2dd17",
+  "size": 849777
  },
  "4400000": {
   "bbox": [
@@ -1526,14 +1526,14 @@
    37224255,
    128299910
   ],
-  "count": 2603,
+  "count": 2607,
   "estimate": 2375,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청북도 제천시",
-  "sha": "331ec2d793119e6d131574b95f5901f14275d719aeb9cc649351e33fdc2b9abb",
-  "size": 539837
+  "sha": "13a4ea44677bef6dfa274c978d274fe948cf9e5a483052ff045646b7c4909ae5",
+  "size": 540568
  },
  "4420000": {
   "bbox": [
@@ -1542,14 +1542,14 @@
    36584933,
    127874118
   ],
-  "count": 610,
+  "count": 612,
   "estimate": 569,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청북도 보은군",
-  "sha": "9a294561c111c3cb36847b1ceaae08ea511de46a5c6f8c4cfccc3c74c75f80df",
-  "size": 121981
+  "sha": "b07d4b175ba0480722f0c9df644129f21202cf1c290a4bf24a282392eb187107",
+  "size": 122421
  },
  "4430000": {
   "bbox": [
@@ -1561,11 +1561,11 @@
   "count": 893,
   "estimate": 813,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청북도 옥천군",
-  "sha": "ad7576af82e9c3f28e010edbb02cc0ebb498428564e18d0f76d4e39e848507f0",
-  "size": 177156
+  "sha": "cecad36a53d9be5a8a22a88ac00b6d4b4892dedef73ffe142d42568c379526d5",
+  "size": 177153
  },
  "4440000": {
   "bbox": [
@@ -1577,11 +1577,11 @@
   "count": 789,
   "estimate": 743,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청북도 영동군",
-  "sha": "fc648a1e8b2492b2dc3679f5b395d80fe193d4f2d3d152a212779cb32291ed03",
-  "size": 155339
+  "sha": "41a6c8ab898a669100e0fc17a5f3fdf2bf85510736b181cc48ee8b30356bda99",
+  "size": 155343
  },
  "4450000": {
   "bbox": [
