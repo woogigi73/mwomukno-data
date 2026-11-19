@@ -230,14 +230,14 @@
    37550776,
    126886269
   ],
-  "count": 3461,
+  "count": 3445,
   "estimate": 3012,
   "geo": 2,
-  "last": "20261110",
+  "last": "20261119",
   "model": 0,
   "name": "서울특별시 양천구",
-  "sha": "f2f1cfebdc27042f2c8acabb4e2a19eb9338400cb3b31d01b1a2b99a000a26a8",
-  "size": 774622
+  "sha": "cce1ffa4921fb41eb1917a3f4089efeff8e530df07e3acf2cb5c37abbffb2789",
+  "size": 771309
  },
  "3150000": {
   "bbox": [
