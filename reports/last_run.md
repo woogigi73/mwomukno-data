@@ -1,9 +1,11 @@
-# 데이터 갱신 보고서 (2026-11-21 00:09 KST)
+# 데이터 갱신 보고서 (2026-11-21 00:50 KST)
 
-- 오늘 이미 쓴 호출: {'general': 0, 'rest': 0, 'model': 0, 'kakao': 0, 'blog': 0}
-  · 5680000 충청남도 당진시: 3171곳 (모범 0, 카카오 매칭 +0)
+- 오늘 이미 쓴 호출: {'general': 44, 'rest': 8, 'model': 0, 'kakao': 0, 'blog': 0}
+  · 5690000 실패: TimeoutError: The read operation timed out 
+  · 5700000 실패: TimeoutError: The read operation timed out 
+  · 5710000 실패: TimeoutError: The read operation timed out 
 
 ## 요약
-- 이번 실행에서 갱신한 지역: 1
+- 이번 실행에서 갱신한 지역: 0
 - 데이터가 있는 지역: 193/193
-- 오늘 호출 수: 일반 44/8500, 휴게 8/8500, 모범 0/900, 카카오 0/60000, 블로그 0/29500
+- 오늘 호출 수: 일반 77/8500, 휴게 8/8500, 모범 0/900, 카카오 0/60000, 블로그 0/29500
