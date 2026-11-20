@@ -1782,14 +1782,14 @@
    36616269,
    127450235
   ],
-  "count": 857,
+  "count": 856,
   "estimate": 771,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청남도 서천군",
-  "sha": "204b2ff743fe2276a264eed98cfac3af99d39edbab42db408fe37f414204ba4c",
-  "size": 165978
+  "sha": "bcfcc52cca01f161dc3aa9e4bd89e069eb04e3d9aad2acbcfedddf19b6140fd4",
+  "size": 165797
  },
  "4590000": {
   "bbox": [
@@ -1801,11 +1801,11 @@
   "count": 522,
   "estimate": 484,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청남도 청양군",
-  "sha": "ac0726a789d2a0834d9373aaee97389f0da48ce448ca16b661547536ff578e8d",
-  "size": 105213
+  "sha": "3b5f42fc02915e1d841739342f658c0a7753691a3291688f819f4f2bb666a7df",
+  "size": 105151
  },
  "4600000": {
   "bbox": [
@@ -1814,14 +1814,14 @@
    36660595,
    126764017
   ],
-  "count": 1826,
+  "count": 1822,
   "estimate": 1673,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청남도 홍성군",
-  "sha": "dd0f765944f26704bd5a1260dc4665b35c21febc4dcec1dced29321a18e915c5",
-  "size": 382573
+  "sha": "e78d5ad0e16cfb11fc26245bac1e16f5150653ec278ca6876fb2077ce8dadc44",
+  "size": 381677
  },
  "4610000": {
   "bbox": [
@@ -1830,14 +1830,14 @@
    36801913,
    126949709
   ],
-  "count": 1464,
+  "count": 1465,
   "estimate": 1339,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청남도 예산군",
-  "sha": "0230969d751285a25eb80fe27cfebb0e5a8c4a6a7e1c237ad616ad527fe384cd",
-  "size": 291272
+  "sha": "978914669d61a7d75b02cf5253fdbb625bdb12d61206134ec2196bd16dbc0317",
+  "size": 291396
  },
  "4620000": {
   "bbox": [
@@ -1846,14 +1846,14 @@
    36966916,
    126431602
   ],
-  "count": 1410,
+  "count": 1406,
   "estimate": 1291,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "충청남도 태안군",
-  "sha": "dc1689ac746cf316be1d70775a0ed3b8afc2b63c99a7a7701ae5650ac3c2429d",
-  "size": 283120
+  "sha": "b36f036c033c05dc48d22ef8a6fc6dc8724b56075844f10723a7fa579ff55419",
+  "size": 282372
  },
  "5020000": {
   "bbox": [
@@ -1862,14 +1862,14 @@
    36315322,
    129582080
   ],
-  "count": 8781,
+  "count": 8772,
   "estimate": 7775,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경상북도 포항시 북구",
-  "sha": "5038e80caacc00d0a4305e011bb8324a528c13d4e6e4141eb0696c8974cb784b",
-  "size": 1900278
+  "sha": "48f9ff4b9f5b7ddf130a2517dab7b8172b0bbdcd42a85d5ad9cd8c383a32f03e",
+  "size": 1898208
  },
  "5050000": {
   "bbox": [
@@ -1878,14 +1878,14 @@
    36067818,
    129519507
   ],
-  "count": 5984,
+  "count": 5979,
   "estimate": 5499,
   "geo": 2,
-  "last": "20261111",
+  "last": "20261120",
   "model": 0,
   "name": "경상북도 경주시",
-  "sha": "a34f275ff223be834d5c99aaf606e9ee9452eedc218762b90ebc1bb81cce8ec0",
-  "size": 1190372
+  "sha": "ed48265f78e78c16e1460fd039d843921497dc1030393054c34fc040581d21ca",
+  "size": 1189341
  },
  "5060000": {
   "bbox": [
