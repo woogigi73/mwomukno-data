@@ -443,15 +443,15 @@
    129065403
   ],
   "busan": true,
-  "count": 1480,
+  "count": 1479,
   "estimate": 1337,
   "geo": 2,
-  "last": "20261117",
+  "last": "20261123",
   "model": 30,
-  "model_ok": "20261117",
+  "model_ok": "20261123",
   "name": "부산광역시 동구",
-  "sha": "e223d83cdf9b06512d5abcf5ef9202f4f71a798d9deb0f919fb2dd27971b4ab3",
-  "size": 317806
+  "sha": "deb375755f2ad3adb86a636a8b915dcb79ad111512681b4834d57137cd415eab",
+  "size": 317671
  },
  "3280000": {
   "bbox": [
