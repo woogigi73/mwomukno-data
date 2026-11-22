@@ -86,14 +86,14 @@
    37604925,
    127076776
   ],
-  "count": 4327,
+  "count": 4328,
   "estimate": 3896,
   "geo": 2,
-  "last": "20261116",
+  "last": "20261122",
   "model": 0,
   "name": "서울특별시 동대문구",
-  "sha": "b4bf78eb7036fba9caf6efaea47562302974ea886a2aba667d0fa01c4667d1ca",
-  "size": 956717
+  "sha": "cb0378492f3bb30ae7a2e34037feb7fd6f905edc815d5f4fb35e15c49f96351f",
+  "size": 956890
  },
  "3060000": {
   "bbox": [
