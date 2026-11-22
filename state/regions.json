@@ -425,15 +425,15 @@
    129026391
   ],
   "busan": true,
-  "count": 1289,
+  "count": 1288,
   "estimate": 1125,
   "geo": 2,
-  "last": "20261117",
+  "last": "20261123",
   "model": 9,
-  "model_ok": "20261117",
+  "model_ok": "20261123",
   "name": "부산광역시 서구",
-  "sha": "4408b27cf060d8dbe946888ad02161f5f1434932f6d6a94221fc79f515d914c1",
-  "size": 285270
+  "sha": "1a00f2c2bfb38eb00ea82e7c6ddd915d6fce855fdac91ea8f99d19bfb25c4f17",
+  "size": 285151
  },
  "3270000": {
   "bbox": [
