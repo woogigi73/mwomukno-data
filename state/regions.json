@@ -587,15 +587,15 @@
    129127924
   ],
   "busan": true,
-  "count": 3158,
+  "count": 3167,
   "estimate": 2831,
   "geo": 2,
-  "last": "20261117",
+  "last": "20261123",
   "model": 61,
-  "model_ok": "20261117",
+  "model_ok": "20261123",
   "name": "부산광역시 금정구",
-  "sha": "1c41067c3d00c9d4406d15ab3f787b5dc2cff89441a36c632ecba71c9cf9bec6",
-  "size": 665174
+  "sha": "d2d8f7318bcf497f39c4e34bf0f70c3eddaf0ef51051c64620a8b6a7a46ed6a5",
+  "size": 667163
  },
  "3360000": {
   "bbox": [
@@ -605,15 +605,15 @@
    128991413
   ],
   "busan": true,
-  "count": 2382,
+  "count": 2381,
   "estimate": 2039,
   "geo": 2,
-  "last": "20261117",
+  "last": "20261123",
   "model": 1,
-  "model_ok": "20261117",
+  "model_ok": "20261123",
   "name": "부산광역시 강서구",
-  "sha": "354db0456e2b0a604fd2ae6181560c60cc16da22c2d870ccc60c0da4b00e54e1",
-  "size": 544088
+  "sha": "0f8f559c6dca1f0881f19d5f599403b696f551135b360c1a8ad71a853292149c",
+  "size": 543694
  },
  "3370000": {
   "bbox": [
@@ -623,15 +623,15 @@
    129113892
   ],
   "busan": true,
-  "count": 2650,
+  "count": 2652,
   "estimate": 2406,
   "geo": 2,
-  "last": "20261117",
+  "last": "20261123",
   "model": 22,
-  "model_ok": "20261117",
+  "model_ok": "20261123",
   "name": "부산광역시 연제구",
-  "sha": "ce944378faa28c5fc9f4faf1adffa0fed797e9995388d60fc09933ec8de5cb07",
-  "size": 583237
+  "sha": "5a0aff9bf23139472c0f771bb7c6913360b8c184e4e2fdc189b428ec42aefeea",
+  "size": 583661
  },
  "3380000": {
   "bbox": [

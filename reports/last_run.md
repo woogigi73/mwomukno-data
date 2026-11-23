@@ -1,38 +1,11 @@
-# 데이터 갱신 보고서 (2026-11-23 18:13 KST)
+# 데이터 갱신 보고서 (2026-11-23 23:39 KST)
 
-- 오늘 이미 쓴 호출: {'general': 739, 'rest': 77, 'model': 13, 'kakao': 54, 'blog': 2}
-  · 3350000 실패: HTTP 503 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "SERVICETIMEOUT_ERROR",
-      "returnAuthMsg": "서비스 연결실패 에러",
-      "returnReasonCode": "
-  · 3360000 실패: HTTP 503 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "SERVICETIMEOUT_ERROR",
-      "returnAuthMsg": "서비스 연결실패 에러",
-      "returnReasonCode": "
-  · 3370000 실패: HTTP 503 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "SERVICETIMEOUT_ERROR",
-      "returnAuthMsg": "서비스 연결실패 에러",
-      "returnReasonCode": "
-  · 3380000 실패: HTTP 503 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "SERVICETIMEOUT_ERROR",
-      "returnAuthMsg": "서비스 연결실패 에러",
-      "returnReasonCode": "
-  · 3400000 실패: HTTP 503 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "SERVICETIMEOUT_ERROR",
-      "returnAuthMsg": "서비스 연결실패 에러",
-      "returnReasonCode": "
+- 오늘 이미 쓴 호출: {'general': 744, 'rest': 77, 'model': 13, 'kakao': 54, 'blog': 2}
+  · 3350000 부산광역시 금정구: 3167곳 (모범 61, 카카오 매칭 +0)
+  · 3360000 부산광역시 강서구: 2381곳 (모범 1, 카카오 매칭 +0)
+  · 3370000 부산광역시 연제구: 2652곳 (모범 22, 카카오 매칭 +0)
 
 ## 요약
-- 이번 실행에서 갱신한 지역: 0
+- 이번 실행에서 갱신한 지역: 3
 - 데이터가 있는 지역: 193/193
-- 오늘 호출 수: 일반 744/8500, 휴게 77/8500, 모범 13/900, 카카오 54/60000, 블로그 2/29500
+- 오늘 호출 수: 일반 832/8500, 휴게 99/8500, 모범 16/900, 카카오 54/60000, 블로그 2/29500
