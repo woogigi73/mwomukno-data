@@ -71,17 +71,33 @@
   const isNew = (r) => r.open > 19000101 && r.open <= todayYmd && (Date.now() - ymdToTime(r.open)) / DAY <= NEW_DAYS;
 
   // ------------------------------------------------------------ 종류(빠른 고르기)
+  // 가게 이름·업종·메뉴(블로그 추천 메뉴, 공공데이터 대표 음식)를 함께 본다.
+  // 이름에 '탕'이 있어도 탕수육·탕후루·사탕은 국물이 아니고, '마라톤'은 중식이 아니다(예전에 잘못 잡히던 것).
+  // (오래된 아이폰에서 오류가 나지 않게 '앞쪽 글자 확인(lookbehind)' 정규식은 쓰지 않는다)
+  const menuHas = (r, re) => re.test(r.food || '') || (r.menu || []).some((m) => re.test(m));
+  const SOUP_NAME = /국밥|탕(?!수|후)|국수|찌개|곰탕|해장|라멘|우동|쌀국수|짬뽕|전골|순대국|순댓국|수제비|냉면|밀면|육개장|복국|재첩/;
+  const SOUP_MENU = /국밥|탕$|찌개|국수|라멘|우동|쌀국수|짬뽕|전골|순댓국|순대국|수제비|냉면|밀면|육개장|해장국|복국|국$/;
   const CATS = [
-    ['국물', (r) => /국밥|탕|국수|칼국수|찌개|곰탕|해장|라멘|우동|쌀국수|짬뽕|전골|순대|수제비|냉면|밀면/.test(r.name) || ['탕', '냉면'].includes(r.cat)],
-    ['한식', (r) => ['한식', '탕', '냉면', '김밥'].includes(r.cat)],
-    ['중식', (r) => r.cat === '중식' || /반점|짬뽕|마라|양꼬치|중화/.test(r.name)],
-    ['일식', (r) => r.cat === '일식' || /스시|초밥|돈까스|돈카츠|라멘|우동|이자카야|규동|텐동/.test(r.name)],
-    ['양식', (r) => ['양식', '레스토랑', '세계음식', '패스트푸드'].includes(r.cat) || /파스타|피자|버거|스테이크|브런치/.test(r.name)],
-    ['분식', (r) => ['분식', '김밥'].includes(r.cat) || /떡볶이|김밥|분식/.test(r.name)],
-    ['고기', (r) => r.cat === '고기구이' || /고기|갈비|삼겹|곱창|막창|대창|한우|족발|보쌈|오리/.test(r.name)],
-    ['회·해물', (r) => ['횟집', '복어'].includes(r.cat) || /회센터|횟집|해물|조개|장어|아구|아귀|대게|물회/.test(r.name)],
+    ['국물', (r) => (SOUP_NAME.test(r.name) && !/사탕/.test(r.name)) || ['탕', '냉면', '복어'].includes(r.cat) || menuHas(r, SOUP_MENU)],
+    ['한식', (r) => ['한식', '탕', '냉면', '김밥'].includes(r.cat) ||
+      (r.cat === '음식점' && menuHas(r, /국밥|찌개|백반|정식|비빔밥|불고기|제육|두루치기|보쌈|족발|칼국수|냉면|밀면|해장국|곰탕|설렁탕|순댓국|김치|쌈밥|갈비찜|닭갈비|찜닭/))],
+    ['중식', (r) => r.cat === '중식' || /반점|짬뽕|마라(?!톤)|양꼬치|중화|중국집|짜장/.test(r.name) ||
+      menuHas(r, /짜장|짬뽕|탕수육|마라탕|마라샹궈|양꼬치|꿔바로우|깐풍기|유린기|양장피|딤섬/)],
+    ['일식', (r) => r.cat === '일식' || /스시|초밥|돈까스|돈카츠|라멘|우동|이자카야|규동|텐동|오마카세/.test(r.name) ||
+      menuHas(r, /^사시미$|초밥|스시|오마카세|돈까스|돈카츠|라멘|규동|텐동|사케동|소바|규카츠|타코야끼/)],
+    ['양식', (r) => ['양식', '레스토랑', '세계음식', '패스트푸드'].includes(r.cat) || /파스타|피자|버거|스테이크|브런치/.test(r.name) ||
+      menuHas(r, /파스타|피자|스테이크|버거|리조또|브런치|알리오올리오/)],
+    ['분식', (r) => ['분식', '김밥'].includes(r.cat) || /떡볶이|김밥|분식/.test(r.name) || menuHas(r, /떡볶이|김밥|라볶이|어묵|오뎅/)],
+    ['카페', (r) => r.kind === 'c' || ['카페', '베이커리', '찻집', '떡카페', '아이스크림', '키즈카페'].includes(r.cat) ||
+      /카페|커피|베이커리|제과|디저트|빙수/.test(r.name)],
+    ['고기', (r) => r.cat === '고기구이' || /고기|갈비|삼겹|곱창|막창|대창|한우|족발|보쌈|오리/.test(r.name) ||
+      menuHas(r, /삼겹|갈비|목살|항정|곱창|막창|대창|차돌|등심|족발|보쌈|주물럭|오리/)],
+    ['회·해물', (r) => ['횟집', '복어'].includes(r.cat) || /회센터|횟집|해물|조개|장어|아구|아귀|대게|물회/.test(r.name) ||
+      menuHas(r, /^(회|사시미|모둠회|물회)$|조개|장어|아구|아귀|대게|해물|전복|낙지|쭈꾸미|주꾸미/)], // 육사시미(소고기)는 빼기
     ['치킨·호프', (r) => ['치킨', '호프'].includes(r.cat) || /치킨|통닭|호프|비어/.test(r.name)],
   ];
+  // 고른 종류가 지금 켜진 밥/술/카페에 없으면 같이 켜 준다(예: '카페'를 누르면 카페가 켜짐 — 안 그러면 후보 0곳)
+  const CAT_KIND = { 카페: 'c' };
   const catFn = new Map(CATS);
 
   // ------------------------------------------------------------ 후보 계산
@@ -131,6 +147,8 @@
     return s;
   }
   const tierName = (s) => s >= 100 ? '★내 픽' : s >= cuts.top ? '상' : s >= cuts.good ? '중상' : s >= cuts.mid ? '중' : '하';
+  // 지금 후보 안의 가게는 순위로 정한 등급, 후보 밖(검색으로 연 가게 등)은 점수 기준으로
+  const tierLabel = (r, sc) => (S.tierOf && S.tierOf.get(r.id)) || tierName(sc);
   const BLOG_WORDS = ['거의 없음', '조금', '보통', '많음', '아주 많음', '아주 많음'];
   // 별점 1~2점은 30일 동안 후보에서 뺀다
   const dislikedNow = (id) => { const x = ratings[id]; return !!x && x[0] <= 2 && Date.now() - x[1] < 30 * DAY; };
@@ -274,15 +292,17 @@
       seen.add(key);
       all.push(c);
     }
-    // 주변 후보 안에서 순위로 등급 기준점 계산
-    if (all.length) {
-      const sc = all.map((c) => c.sc).sort((a, b) => b - a);
-      const at = (q) => sc[Math.min(sc.length - 1, Math.max(0, Math.ceil(sc.length * q) - 1))];
-      cuts = { top: at(0.3), good: at(0.6), mid: at(0.85) };
-    }
-    const q = tierQ();
-    const minScore = q >= 1 || !all.length ? -1e9 : cuts[settings.tier] ?? cuts.good;
-    const out = all.filter((c) => c.sc >= minScore);
+    // 주변 후보 안에서 '순위'로 등급을 정한다: 상 = 위 30%, 중상 = 위 60%, 중 = 위 85% (딱 그 비율).
+    // 점수가 같으면 후기 별점 → 후기 양 → 가까운 곳 순으로 줄 세운다(같은 점수가 경계에 몰려도 비율이 틀어지지 않게).
+    const ranked = all.slice().sort((a, b) => b.sc - a.sc || (b.r.ev ? b.r.ev.stars : 0) - (a.r.ev ? a.r.ev.stars : 0) ||
+      b.r.blog - a.r.blog || a.min - b.min || (a.r.id < b.r.id ? -1 : 1));
+    const n = ranked.length, lim = { top: Math.ceil(n * 0.3), good: Math.ceil(n * 0.6), mid: Math.ceil(n * 0.85), all: n };
+    const tierOf = new Map();
+    ranked.forEach((c, i) => tierOf.set(c.r.id, c.sc >= 100 ? '★내 픽' : i < lim.top ? '상' : i < lim.good ? '중상' : i < lim.mid ? '중' : '하'));
+    S.tierOf = tierOf;
+    if (n) cuts = { top: ranked[lim.top - 1].sc, good: ranked[lim.good - 1].sc, mid: ranked[lim.mid - 1].sc }; // 후보 밖 가게(검색 등)용
+    const keep = new Set(ranked.slice(0, lim[settings.tier] ?? lim.good).map((c) => c.r.id));
+    const out = all.filter((c) => keep.has(c.r.id) || c.sc >= 100); // 내가 ★4 이상 준 곳은 항상 포함
     out.sort((a, b) => (b.fm || 2) - (a.fm || 2) || a.min - b.min); // 음식을 넣었으면 그 메뉴가 확실한 곳 먼저
     S.near = near;
     S.check = ct; S.shut = shut;
@@ -613,6 +633,7 @@
   let view = null; // 좌표 변환 정보
   const V = { zoom: 1, px: 0, py: 0 }; // 확대 배율, 화면 이동(px)
   let popAnim = 0; // 점이 톡톡 나타나는 연출 시작 시각
+  let panShift = null, panRaf = 0, pinchRaf = 0; // 끌기 중에는 다시 그리지 않고 그림째 옮긴다(화면 합성기가 처리 → 부드러움)
   let lastPoolKey = '';
   function resetView() { V.zoom = 1; V.px = 0; V.py = 0; hideCard(); }
 
@@ -768,6 +789,7 @@
   }
 
   function drawMap() {
+    if (panShift) { panShift = null; canvas.style.transform = fxc.style.transform = ''; }
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const w = Math.max(1, rect.width), h = Math.max(1, rect.height);
@@ -1051,6 +1073,18 @@
     lock = { t0: performance.now(), step: Math.max(70, Math.min(130, 900 / list.length)), pts, done };
     fxKick();
   }
+  // 지도 끌기: 매 프레임 지도 전체를 다시 그리는 대신 이미 그린 그림을 CSS로 옮긴다. 조금 멀리 가면(가장자리 빈칸) 한 번 다시 그린다.
+  function panPreview() {
+    if (!view) { drawMap(); return; }
+    if (!panShift) panShift = { bx: V.px, by: V.py, km: (kmapOn() && KM.el.style.transform) || '' };
+    const dx = V.px - panShift.bx, dy = V.py - panShift.by;
+    if (Math.abs(dx) > Math.max(48, view.w * 0.12) || Math.abs(dy) > Math.max(48, view.h * 0.12)) { if (kmapOn()) kmapSync(true); else drawMap(); return; }
+    const t = dx || dy ? 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px,0)' : '';
+    canvas.style.transform = fxc.style.transform = t;
+    if (sweepEl) { sweepEl.style.left = (view.cx + dx) + 'px'; sweepEl.style.top = (view.cy + dy) + 'px'; }
+    if (pulseEl) { pulseEl.style.left = (view.cx + dx) + 'px'; pulseEl.style.top = (view.cy + dy) + 'px'; }
+    if (kmapOn()) KM.el.style.transform = ((t ? 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) ' : '') + panShift.km).trim();
+  }
   function startPop() {
     const key = S.pool.length + ':' + (S.pool[0] && S.pool[0].r.id) + ':' + Math.round(S.center.lat * 1e4);
     if (key !== lastPoolKey) { lastPoolKey = key; popAnim = performance.now(); }
@@ -1074,7 +1108,7 @@
   }
   const ptrs = new Map();
   let gesture = null, pressTimer = 0, lastTap = 0;
-  const local = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const local = (e) => { const r = mapwrap.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }; // 캔버스는 끌기 중 옮겨지므로 바깥 틀 기준
   canvas.addEventListener('pointerdown', (e) => {
     canvas.setPointerCapture(e.pointerId);
     ptrs.set(e.pointerId, local(e));
@@ -1095,16 +1129,20 @@
     if (!ptrs.has(e.pointerId) || !gesture) return;
     ptrs.set(e.pointerId, local(e));
     if (gesture.mode === 'pinch' && ptrs.size >= 2) {
-      const [a, b] = [...ptrs.values()];
-      const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
-      const target = Math.max(1, Math.min(8, gesture.z0 * d / Math.max(10, gesture.d0)));
-      zoomAt(target / V.zoom, gesture.mx, gesture.my);
+      if (!pinchRaf) pinchRaf = requestAnimationFrame(() => { // 한 화면에 한 번만 그린다
+        pinchRaf = 0;
+        if (!gesture || gesture.mode !== 'pinch' || ptrs.size < 2) return;
+        const [a, b] = [...ptrs.values()];
+        const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        const target = Math.max(1, Math.min(8, gesture.z0 * d / Math.max(10, gesture.d0)));
+        zoomAt(target / V.zoom, gesture.mx, gesture.my);
+      });
     } else if (gesture.mode === 'tap' || gesture.mode === 'pan') {
       const [x, y] = local(e);
       if (gesture.mode === 'tap' && Math.hypot(x - gesture.x0, y - gesture.y0) > 7) { gesture.mode = 'pan'; clearTimeout(pressTimer); hideCard(); }
       if (gesture.mode === 'pan') {
         V.px = gesture.px + x - gesture.x0; V.py = gesture.py + y - gesture.y0; clampPan();
-        if (kmapOn()) { if (!KM.panRaf) KM.panRaf = requestAnimationFrame(() => { KM.panRaf = 0; kmapSync(true); }); } else drawMap();
+        if (!panRaf) panRaf = requestAnimationFrame(() => { panRaf = 0; panPreview(); });
       }
     }
   });
@@ -1120,7 +1158,11 @@
       else if (now - lastTap < 320) { zoomAt(2, x, y); lastTap = 0; }
       else { lastTap = now; hideCard(); if (V.zoom === 1 && !S.pool.length && S.state === 'ready') toast('지도를 꾹 누르면 그곳을 중심으로 찾아요'); }
     }
-    if (ptrs.size === 0) { gesture = null; kmapSoon(false, 0); }
+    if (ptrs.size === 0) {
+      cancelAnimationFrame(panRaf); panRaf = 0; cancelAnimationFrame(pinchRaf); pinchRaf = 0;
+      gesture = null;
+      if (kmapOn()) kmapSoon(false, 0); else if (panShift) drawMap(); // 손을 떼면 제자리에 다시 그린다
+    }
     else if (ptrs.size === 1 && gesture.mode === 'pinch') { const [p] = [...ptrs.values()]; gesture = { mode: 'pan', x0: p[0], y0: p[1], px: V.px, py: V.py }; }
   };
   canvas.addEventListener('pointerup', endPtr);
@@ -1166,7 +1208,7 @@
     const dot = document.createElement('i'); dot.style.background = css({ b: '--meal', s: '--drink', bs: '--both', c: '--cafe' }[r.kind]);
     head.append(dot, textEl('b', r.name));
     const x = btn('×', 'c-x', hideCard); x.setAttribute('aria-label', '닫기'); head.append(x);
-    const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · 추천 ' + tierName(sc) + (r.ev ? ' · ★' + r.ev.stars.toFixed(1) : ''), 'c-meta');
+    const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · 추천 ' + tierLabel(r, sc) + (r.ev ? ' · ★' + r.ev.stars.toFixed(1) : ''), 'c-meta');
     cardEl.append(head, meta);
     const bd = badges(r); if (st) bd.prepend(textEl('span', '★'.repeat(st) + ' 내 별점', 'bdg star')); if (bd.childElementCount) cardEl.append(bd);
     if (hasMenu(r)) cardEl.append(menuEl(r));
@@ -1297,14 +1339,23 @@
       S.kinds = new Set(defaultKinds(S.round, S.meal === 'dinner')); soon(t, true);
     } else if (t.id === 'tMeal' || t.id === 'tDrink' || t.id === 'tCafe') {
       const k = { tMeal: 'b', tDrink: 's', tCafe: 'c' }[t.id];
+      S.autoKind = '';
       if (S.kinds.has(k)) { if (S.kinds.size > 1) S.kinds.delete(k); } else S.kinds.add(k);
       t.setAttribute('aria-pressed', S.kinds.has(k)); soon();
     } else if (t.dataset.tier) { settings.tier = t.dataset.tier; saveSettings(); hideCard(); soon(t, true); }
     else if (t.dataset.r) { S.round = +t.dataset.r; S.kinds = new Set(defaultKinds(S.round, S.meal === 'dinner')); soon(t, true); }
     else if (t.dataset.m) { S.minutes = +t.dataset.m; settings.minutes = S.minutes; saveSettings(); soon(t, true); }
     else if (t.dataset.cat) {
-      const c = t.dataset.cat;
-      if (c === '전체') S.cats.clear(); else if (S.cats.has(c)) S.cats.delete(c); else S.cats.add(c);
+      const c = t.dataset.cat, need = CAT_KIND[c];
+      if (c === '전체') S.cats.clear();
+      else if (S.cats.has(c)) {
+        S.cats.delete(c);
+        if (need && S.autoKind === need && S.kinds.size > 1) { S.kinds.delete(need); S.autoKind = ''; } // 칩이 켠 종류는 칩을 끄면 다시 끔
+      } else {
+        S.cats.add(c);
+        if (need && !S.kinds.has(need)) { S.kinds.add(need); S.autoKind = need; }
+      }
+      for (const b of $('#cats').children) b.setAttribute('aria-pressed', b.dataset.cat === '전체' ? S.cats.size === 0 : S.cats.has(b.dataset.cat));
       soon();
     } else if (t.dataset.g) startGame(t.dataset.g);
     else if (t.id === 'locBtn') { resetView(); locate(true); }
@@ -2119,7 +2170,7 @@
   function openDetail(r) {
     const m = dist(S.center, r.lat, r.lng), wm = routeMeters(r, m), mins = walkMin(wm);
     openSheet(r.cat || '식당', (b) => {
-      b.append(textEl('h3', r.name, 'detail'), textEl('div', '도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm) · ' + ({ b: '밥', s: '술', bs: '밥+술', c: '카페' }[r.kind]) + ' · 추천 ' + tierName(score(r)), 'meta'), badges(r));
+      b.append(textEl('h3', r.name, 'detail'), textEl('div', '도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm) · ' + ({ b: '밥', s: '술', bs: '밥+술', c: '카페' }[r.kind]) + ' · 추천 ' + tierLabel(r, score(r)), 'meta'), badges(r));
       const myRow = document.createElement('div'); myRow.className = 'myrate';
       const w = textEl('span', myStars(r.id) ? STAR_WORDS[myStars(r.id)] : '내 별점', 'meta');
       myRow.append(starsEl(myStars(r.id), (n) => { rate(r, n); w.textContent = STAR_WORDS[n]; render(); }), w);
