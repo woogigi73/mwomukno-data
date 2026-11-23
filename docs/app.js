@@ -121,10 +121,10 @@
   // 모범음식점 지정, 영업 연수(오래 살아남은 가게), 카카오맵 등록, 전화번호, 단골, 그리고 내가 준 별점.
   let ratings = store.get('ratings', {}); // {id: [별점 1~5, 시각, 이름]}
   const BAD_NAME = /구내식당|직원식당|급식|위탁|휴게소|푸드코트|기숙사|사내식당/;
-  // 등급은 지금 주변 후보 안에서의 순위로 정한다: 상 = 위 30%, 중상 = 위 60%, 중 = 위 85%
-  const TIERS = [['top', '상', 0.3], ['good', '중상', 0.6], ['mid', '중', 0.85], ['all', '전체', 1]];
-  const tierQ = () => (TIERS.find((t) => t[0] === settings.tier) || TIERS[1])[2];
-  let cuts = { top: 50, good: 42, mid: 25 }; // 주변 후보가 없을 때 쓰는 기본값
+  // 등급 = 블로그 후기 분석 별점 기준(전국 34만 곳 분포: 가운데값 ★3.8, 4.1 이상은 위 약 17%, 3.9 이상은 위 약 34%)
+  // 상 ★4.1 이상 · 중상 ★3.9 이상 · 중 ★3.6 이상 · 전체 = 별점 없는 곳까지 모두. 내가 ★4 이상 준 곳은 항상 포함.
+  const TIERS = [['top', '상', 4.1], ['good', '중상', 3.9], ['mid', '중', 3.6], ['all', '전체', 0]];
+  const tierMin = () => (TIERS.find((t) => t[0] === settings.tier) || TIERS[1])[2];
   function myStars(id) { const x = ratings[id]; return x ? x[0] : 0; }
   function score(r) {
     const st = myStars(r.id);
@@ -146,9 +146,14 @@
     if (st === 3) s += 10;
     return s;
   }
-  const tierName = (s) => s >= 100 ? '★내 픽' : s >= cuts.top ? '상' : s >= cuts.good ? '중상' : s >= cuts.mid ? '중' : '하';
-  // 지금 후보 안의 가게는 순위로 정한 등급, 후보 밖(검색으로 연 가게 등)은 점수 기준으로
-  const tierLabel = (r, sc) => (S.tierOf && S.tierOf.get(r.id)) || tierName(sc);
+  // 가게 등급 글자: 별점 기준 그대로(어디서 보든 같은 가게는 같은 등급)
+  function tierLabel(r) {
+    if (myStars(r.id) >= 4) return '★내 픽';
+    if (!r.ev) return '별점 없음';
+    const st = r.ev.stars;
+    return st >= 4.1 ? '상' : st >= 3.9 ? '중상' : st >= 3.6 ? '중' : '하';
+  }
+  const tierText = (r) => { const t = tierLabel(r); return t === '별점 없음' ? '후기 별점 없음' : t === '★내 픽' ? '★내 픽' + (r.ev ? ' · 후기 ★' + r.ev.stars.toFixed(1) : '') : '추천 ' + t + ' · ★' + r.ev.stars.toFixed(1); };
   const BLOG_WORDS = ['거의 없음', '조금', '보통', '많음', '아주 많음', '아주 많음'];
   // 별점 1~2점은 30일 동안 후보에서 뺀다
   const dislikedNow = (id) => { const x = ratings[id]; return !!x && x[0] <= 2 && Date.now() - x[1] < 30 * DAY; };
@@ -292,17 +297,10 @@
       seen.add(key);
       all.push(c);
     }
-    // 주변 후보 안에서 '순위'로 등급을 정한다: 상 = 위 30%, 중상 = 위 60%, 중 = 위 85% (딱 그 비율).
-    // 점수가 같으면 후기 별점 → 후기 양 → 가까운 곳 순으로 줄 세운다(같은 점수가 경계에 몰려도 비율이 틀어지지 않게).
-    const ranked = all.slice().sort((a, b) => b.sc - a.sc || (b.r.ev ? b.r.ev.stars : 0) - (a.r.ev ? a.r.ev.stars : 0) ||
-      b.r.blog - a.r.blog || a.min - b.min || (a.r.id < b.r.id ? -1 : 1));
-    const n = ranked.length, lim = { top: Math.ceil(n * 0.3), good: Math.ceil(n * 0.6), mid: Math.ceil(n * 0.85), all: n };
-    const tierOf = new Map();
-    ranked.forEach((c, i) => tierOf.set(c.r.id, c.sc >= 100 ? '★내 픽' : i < lim.top ? '상' : i < lim.good ? '중상' : i < lim.mid ? '중' : '하'));
-    S.tierOf = tierOf;
-    if (n) cuts = { top: ranked[lim.top - 1].sc, good: ranked[lim.good - 1].sc, mid: ranked[lim.mid - 1].sc }; // 후보 밖 가게(검색 등)용
-    const keep = new Set(ranked.slice(0, lim[settings.tier] ?? lim.good).map((c) => c.r.id));
-    const out = all.filter((c) => keep.has(c.r.id) || c.sc >= 100); // 내가 ★4 이상 준 곳은 항상 포함
+    // 등급: 후기 별점이 기준 이상인 곳만 (전체는 별점 없는 곳까지). 내가 ★4 이상 준 곳은 항상 포함.
+    const smin = tierMin();
+    const out = smin ? all.filter((c) => myStars(c.r.id) >= 4 || (c.r.ev && c.r.ev.stars >= smin - 1e-9)) : all.slice();
+    S.tierAll = all.length;
     out.sort((a, b) => (b.fm || 2) - (a.fm || 2) || a.min - b.min); // 음식을 넣었으면 그 메뉴가 확실한 곳 먼저
     S.near = near;
     S.check = ct; S.shut = shut;
@@ -406,7 +404,7 @@
   }
   // 방향별로 '정한 시간 안에 걸어서 닿는 거리' (지도에 울퉁불퉁한 도달 범위로 그린다)
   function reachBins() {
-    if (W.bins) return W.bins;
+    if (W.bins && W.binsMin === S.minutes) return W.bins; // 시간(5·10·15·20분)이 바뀌면 다시 계산
     const N = 72, out = new Array(N), base = S.minutes * SPEED / SIGNAL;
     const glob = W.samples.length ? W.samples.reduce((a, p) => a + p.ratio, 0) / W.samples.length : DETOUR;
     for (let i = 0; i < N; i++) {
@@ -422,7 +420,7 @@
     }
     // 부드럽게
     const sm = out.map((_, i) => (out[(i + N - 2) % N] + 2 * out[(i + N - 1) % N] + 3 * out[i] + 2 * out[(i + 1) % N] + out[(i + 2) % N]) / 9);
-    W.bins = sm;
+    W.bins = sm; W.binsMin = S.minutes;
     return sm;
   }
   // 정해진 곳까지 실제 걷는 길(선)을 받아 지도에 그린다
@@ -1208,7 +1206,7 @@
     const dot = document.createElement('i'); dot.style.background = css({ b: '--meal', s: '--drink', bs: '--both', c: '--cafe' }[r.kind]);
     head.append(dot, textEl('b', r.name));
     const x = btn('×', 'c-x', hideCard); x.setAttribute('aria-label', '닫기'); head.append(x);
-    const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · 추천 ' + tierLabel(r, sc) + (r.ev ? ' · ★' + r.ev.stars.toFixed(1) : ''), 'c-meta');
+    const meta = textEl('div', r.cat + ' · 도보 ' + (W.exact.has(r.id) ? '' : '약 ') + walkMin(c.w) + '분 · ' + tierText(r), 'c-meta');
     cardEl.append(head, meta);
     const bd = badges(r); if (st) bd.prepend(textEl('span', '★'.repeat(st) + ' 내 별점', 'bdg star')); if (bd.childElementCount) cardEl.append(bd);
     if (hasMenu(r)) cardEl.append(menuEl(r));
@@ -1281,8 +1279,8 @@
     $('#tDrink').setAttribute('aria-pressed', S.kinds.has('s'));
     $('#tCafe').setAttribute('aria-pressed', S.kinds.has('c'));
     const tiers = $('#tiers'); tiers.textContent = '';
-    for (const [id, label] of TIERS) {
-      const b = document.createElement('button'); b.dataset.tier = id; b.textContent = label;
+    for (const [id, label, min] of TIERS) {
+      const b = document.createElement('button'); b.dataset.tier = id; b.textContent = label; b.title = min ? '후기 별점 ★' + min.toFixed(1) + ' 이상' : '별점 없는 곳까지 모두';
       b.setAttribute('aria-pressed', settings.tier === id); tiers.append(b);
     }
     const rounds = $('#rounds'); rounds.textContent = '';
@@ -1300,6 +1298,10 @@
       b.setAttribute('aria-pressed', on);
     }
     rollCount(S.pool.length);
+    // 별점 기준 때문에 0곳이면 알려 준다(같은 조건에서는 한 번만)
+    const zk = S.pool.length || !S.tierAll || settings.tier === 'all' || S.food ? '' : settings.tier + S.minutes + [...S.kinds].join('') + [...S.cats].join('') + S.center.lat.toFixed(3);
+    if (zk && zk !== S.zeroKey && S.state === 'ready') toast('별점 기준에 맞는 곳이 없어요 · 등급 「전체」를 눌러 보세요 (' + S.tierAll + '곳)');
+    S.zeroKey = zk;
     paintFood();
     startPop();
     $('#areaBtn').textContent = (S.mine ? '내 위치 · ' : '') + (S.area || '지역 선택');
@@ -1342,7 +1344,10 @@
       S.autoKind = '';
       if (S.kinds.has(k)) { if (S.kinds.size > 1) S.kinds.delete(k); } else S.kinds.add(k);
       t.setAttribute('aria-pressed', S.kinds.has(k)); soon();
-    } else if (t.dataset.tier) { settings.tier = t.dataset.tier; saveSettings(); hideCard(); soon(t, true); }
+    } else if (t.dataset.tier) {
+      settings.tier = t.dataset.tier; saveSettings(); hideCard(); soon(t, true);
+      const m = tierMin(); toast(m ? '후기 별점 ★' + m.toFixed(1) + ' 이상만 보여요' : '별점 없는 곳까지 모두 보여요');
+    }
     else if (t.dataset.r) { S.round = +t.dataset.r; S.kinds = new Set(defaultKinds(S.round, S.meal === 'dinner')); soon(t, true); }
     else if (t.dataset.m) { S.minutes = +t.dataset.m; settings.minutes = S.minutes; saveSettings(); soon(t, true); }
     else if (t.dataset.cat) {
@@ -2170,7 +2175,7 @@
   function openDetail(r) {
     const m = dist(S.center, r.lat, r.lng), wm = routeMeters(r, m), mins = walkMin(wm);
     openSheet(r.cat || '식당', (b) => {
-      b.append(textEl('h3', r.name, 'detail'), textEl('div', '도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm) · ' + ({ b: '밥', s: '술', bs: '밥+술', c: '카페' }[r.kind]) + ' · 추천 ' + tierLabel(r, score(r)), 'meta'), badges(r));
+      b.append(textEl('h3', r.name, 'detail'), textEl('div', '도보 ' + (W.exact.has(r.id) ? '' : '약 ') + mins + '분 (길 ' + Math.round(wm) + 'm) · ' + ({ b: '밥', s: '술', bs: '밥+술', c: '카페' }[r.kind]) + ' · ' + tierText(r), 'meta'), badges(r));
       const myRow = document.createElement('div'); myRow.className = 'myrate';
       const w = textEl('span', myStars(r.id) ? STAR_WORDS[myStars(r.id)] : '내 별점', 'meta');
       myRow.append(starsEl(myStars(r.id), (n) => { rate(r, n); w.textContent = STAR_WORDS[n]; render(); }), w);
