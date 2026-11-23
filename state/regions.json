@@ -659,15 +659,15 @@
    129016376
   ],
   "busan": true,
-  "count": 2709,
+  "count": 2711,
   "estimate": 2441,
   "geo": 2,
-  "last": "20261118",
+  "last": "20261124",
   "model": 45,
-  "model_ok": "20261118",
+  "model_ok": "20261124",
   "name": "부산광역시 사상구",
-  "sha": "91663e6a5e4b114cd0d776917b927fea11c77ad5760b3199edbbb44c04e71409",
-  "size": 572781
+  "sha": "6aaf2428106a362062b5c2a41c7d1c4f9c3823ffb956bf2cf881b238938b3e32",
+  "size": 573126
  },
  "3400000": {
   "bbox": [
