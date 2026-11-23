@@ -1,10 +1,10 @@
 {
- "blog": 2,
+ "blog": 0,
  "blog_stop": "",
- "date": "20261123",
- "general": 832,
- "kakao": 54,
- "model": 16,
+ "date": "20261124",
+ "general": 61,
+ "kakao": 0,
+ "model": 2,
  "model_fail": "",
- "rest": 99
+ "rest": 16
 }
