@@ -118,14 +118,14 @@
    37652289,
    127068706
   ],
-  "count": 4338,
+  "count": 4339,
   "estimate": 3731,
   "geo": 2,
-  "last": "20261118",
+  "last": "20261124",
   "model": 0,
   "name": "서울특별시 성북구",
-  "sha": "c18450cb31bd457917f64ab05c22de6f3dff2f562935dd168ea3d079383ed8af",
-  "size": 954159
+  "sha": "05efff21dfd250fb41e27bbf1c772fca46a1c8ccb6ea765f8cabed5b88b993a9",
+  "size": 954296
  },
  "3080000": {
   "bbox": [
@@ -134,14 +134,14 @@
    37674408,
    127047041
   ],
-  "count": 3426,
+  "count": 3425,
   "estimate": 3220,
   "geo": 2,
-  "last": "20261118",
+  "last": "20261124",
   "model": 0,
   "name": "서울특별시 강북구",
-  "sha": "d894489f35ef253965bfd404d54a5c225023e452b7ad1ebd9f6c88ad6fc062cb",
-  "size": 727027
+  "sha": "b180fe2654d66e63771743c8dae15f8f8c3fb49fa20ab62073521ede58126e2a",
+  "size": 726705
  },
  "3090000": {
   "bbox": [
