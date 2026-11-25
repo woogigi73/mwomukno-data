@@ -774,14 +774,14 @@
    35877745,
    128724303
   ],
-  "count": 5194,
+  "count": 5192,
   "estimate": 4473,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261125",
   "model": 0,
   "name": "대구광역시 수성구",
-  "sha": "07c301b8ffd9031fccb5151c4d4f156c4a3f5c6602b957cddc1a86e1f6141840",
-  "size": 1115658
+  "sha": "874ffa09bca5f0d3b2a74714e9adfcdd60c0b222a4c10bb608e0256bfdffbde7",
+  "size": 1115329
  },
  "3470000": {
   "bbox": [
@@ -790,14 +790,14 @@
    35865725,
    128574082
   ],
-  "count": 6518,
+  "count": 6514,
   "estimate": 5744,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261125",
   "model": 0,
   "name": "대구광역시 달서구",
-  "sha": "9bacf483aac6dc588ebf3ef2b18382cd6fa8244b31fd05eabaea3fdc04d28ff3",
-  "size": 1436882
+  "sha": "f3ed9f17546de2ae91abcb5158c8b8d5b5355002b1368de45b660f5fb03ccb51",
+  "size": 1435813
  },
  "3480000": {
   "bbox": [
@@ -806,14 +806,14 @@
    35932537,
    128681675
   ],
-  "count": 3344,
+  "count": 3342,
   "estimate": 3016,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261125",
   "model": 0,
   "name": "대구광역시 달성군",
-  "sha": "8a7ad97adea92cf3e1273b4bfcae146b2c5e650180c7aeb879fd90f54662956c",
-  "size": 705086
+  "sha": "20852ec3ef03a35ecbfaf0626ba59a53d9e78722f5f8e23333dc4df98a08e604",
+  "size": 704703
  },
  "3520000": {
   "bbox": [
