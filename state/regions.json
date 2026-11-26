@@ -1161,11 +1161,11 @@
   "count": 8768,
   "estimate": 7892,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 부천시 소사구",
-  "sha": "c404c9624921dbbc09b82643fa2208ca2a5349ec9faa382a2bf6785671bb9d53",
-  "size": 2023073
+  "sha": "d6b148446b05f901b43c14c51a2a0f54f98bcf00273d45fa6f3f551fd2968a7d",
+  "size": 2023014
  },
  "3900000": {
   "bbox": [
@@ -1174,14 +1174,14 @@
    37493757,
    126894877
   ],
-  "count": 2788,
+  "count": 2785,
   "estimate": 2436,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 광명시",
-  "sha": "fc95948f009f508d1afd63fd96ca5b493165db7bf22db4b8430192b85249dab4",
-  "size": 617101
+  "sha": "7c69c7953defc38c06aa70a6a5f81f042a548d4fe59a0f607b086abbca4a8ffc",
+  "size": 616420
  },
  "3910000": {
   "bbox": [
@@ -1190,14 +1190,14 @@
    37135091,
    127153647
   ],
-  "count": 9398,
+  "count": 9389,
   "estimate": 8455,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 평택시",
-  "sha": "bc2a4b65f0e0e92ce9b7ed2c0b2b3538165513b6d2f049ab1ee4c672d6bc05fe",
-  "size": 1959750
+  "sha": "0c6bd1b740ebe873d19da05955d6ae947f18698a55ac519bec36cd937b6a4f57",
+  "size": 1957491
  },
  "3920000": {
   "bbox": [
