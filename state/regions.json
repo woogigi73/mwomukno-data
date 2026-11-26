@@ -1769,11 +1769,11 @@
   "count": 921,
   "estimate": 854,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "충청남도 부여군",
-  "sha": "4fa1f0609b0d30503e36dd41e222e6b8a666280e5b78905e6bf08063a55eaf07",
-  "size": 185549
+  "sha": "301437d588c1c997774d9b2870b6728b9a3cdcf8395f088be46a5a40b3190abd",
+  "size": 185537
  },
  "4580000": {
   "bbox": [
@@ -1862,14 +1862,14 @@
    36315322,
    129582080
   ],
-  "count": 8772,
+  "count": 8771,
   "estimate": 7775,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경상북도 포항시 북구",
-  "sha": "aa1920c3f1d27d980675fda2a205c006de960b70b1aeed0028ea6bd9b5df2c71",
-  "size": 1898347
+  "sha": "24d8d9428cd7218202e2443b43bee7f0eb6e995710a3676787d13caeda178c58",
+  "size": 1898016
  },
  "5050000": {
   "bbox": [
@@ -1878,14 +1878,14 @@
    36067818,
    129519507
   ],
-  "count": 5979,
+  "count": 5972,
   "estimate": 5499,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경상북도 경주시",
-  "sha": "b6b736bbf267beb36df0b6d0950a7f4ba1f920e6d6b5a2d6bf6cf2a4743b45fb",
-  "size": 1189341
+  "sha": "dc2f2d71c3bee85840ea44b25ee20d30310ddb96c4411da4380c1edddc3d9ade",
+  "size": 1188012
  },
  "5060000": {
   "bbox": [
