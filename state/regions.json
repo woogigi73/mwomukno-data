@@ -1209,11 +1209,11 @@
   "count": 1334,
   "estimate": 1213,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 동두천시",
-  "sha": "7d819c0240d597bac94a135e118047b4f106db67e17cbf278c148f98d1ec96ae",
-  "size": 275844
+  "sha": "60ca3f2bc1050a9eb07bfa6d5310d4980133180a0e17e18cfb32aefa3a1a9a45",
+  "size": 275776
  },
  "3930000": {
   "bbox": [
@@ -1222,14 +1222,14 @@
    37371118,
    126931403
   ],
-  "count": 8430,
+  "count": 8413,
   "estimate": 7605,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 안산시 상록구",
-  "sha": "cce27b6bab86d88aee5c1acd72e616b405c4c7091ba688904d32894d29dccc9b",
-  "size": 1919102
+  "sha": "0dc2db8ea868c11b21aced467df384ecb16b9122fc4da85a9e5be3a40f299aa3",
+  "size": 1915493
  },
  "3940000": {
   "bbox": [
@@ -1254,14 +1254,14 @@
    37463654,
    127033529
   ],
-  "count": 713,
+  "count": 714,
   "estimate": 602,
   "geo": 2,
-  "last": "20261119",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 과천시",
-  "sha": "4b7dad3c1a79d20543cab4868b6ad47d8903050bd5b3ea99d058039d42616c3d",
-  "size": 166197
+  "sha": "8189b1d687656f59209ee05bbcfda118c1f9cbe73cdfcd16307271a10783cdc1",
+  "size": 166397
  },
  "3980000": {
   "bbox": [
