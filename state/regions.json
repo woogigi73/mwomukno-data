@@ -2791,14 +2791,14 @@
    35251151,
    127012643
   ],
-  "count": 5138,
+  "count": 5140,
   "estimate": 4667,
   "geo": 2,
-  "last": "20261121",
+  "last": "20261127",
   "model": 0,
   "name": "전남광주통합특별시 북구",
-  "sha": "f24b70f2dcdad72580f3c7de699a4640e9d3ac140badc8c8e82106846dce1653",
-  "size": 1136954
+  "sha": "e2f64685ca90eef32c4860972a4a4c1774a9845dc89e6abad50c8abe8dae9b8f",
+  "size": 1137095
  },
  "5825000": {
   "bbox": [
@@ -2826,11 +2826,11 @@
   "count": 861,
   "estimate": 723,
   "geo": 2,
-  "last": "20261121",
+  "last": "20261127",
   "model": 0,
   "name": "전남광주통합특별시 담양군",
-  "sha": "57e118ae6e6ce54ee397804bef548e9d30718b7fc6c979a52be23a8fc5d8bbc5",
-  "size": 187868
+  "sha": "10d790faeebf122960ce6d9d89e4897b14bba95e89613b310757c105d60c2d1a",
+  "size": 187875
  },
  "5835000": {
   "bbox": [
@@ -2842,10 +2842,10 @@
   "count": 435,
   "estimate": 398,
   "geo": 2,
-  "last": "20261121",
+  "last": "20261127",
   "model": 0,
   "name": "전남광주통합특별시 곡성군",
-  "sha": "1af85d5513292807a174b8973fe7d165c6cdf796462ffcd1e00e84099e927b8e",
+  "sha": "6c33af7be8ed97c9817d97dc64196eea4fad71f8d4d5a8ae19e16fd9d1a9738f",
   "size": 91555
  },
  "5840000": {
@@ -2858,11 +2858,11 @@
   "count": 545,
   "estimate": 520,
   "geo": 2,
-  "last": "20261121",
+  "last": "20261127",
   "model": 0,
   "name": "전남광주통합특별시 구례군",
-  "sha": "97de5a45233a22340152a0c1cc491b24db61c971476df9a95431b6f11650e03e",
-  "size": 117248
+  "sha": "f14f3b27866cd9e99432f0ffc99da6d74866b43ba3171eaa1d507dfdfdde0581",
+  "size": 117261
  },
  "5845000": {
   "bbox": [
@@ -2874,11 +2874,11 @@
   "count": 929,
   "estimate": 909,
   "geo": 2,
-  "last": "20261121",
+  "last": "20261127",
   "model": 0,
   "name": "전남광주통합특별시 고흥군",
-  "sha": "305084f90c3cf44de2fe7132c32183c3758da733a1f4970e7d01c45bb49b115c",
-  "size": 198118
+  "sha": "0342730b4dca5affe6070d52f0aa7844a0fe32d7cc1c3aace30bbd0e9e161c26",
+  "size": 198159
  },
  "5850000": {
   "bbox": [
@@ -2887,14 +2887,14 @@
    34971168,
    127463649
   ],
-  "count": 662,
+  "count": 655,
   "estimate": 598,
   "geo": 2,
-  "last": "20261121",
+  "last": "20261127",
   "model": 0,
   "name": "전남광주통합특별시 보성군",
-  "sha": "20fef3cb95cd712c97245add532acc37af31190afa5665d044e0ed68cd473a54",
-  "size": 140989
+  "sha": "5bbdfa31bf3ac362be9b0c6ddda78b0bec9f41fe512143b6565720ec99a55a71",
+  "size": 139567
  },
  "5855000": {
   "bbox": [
