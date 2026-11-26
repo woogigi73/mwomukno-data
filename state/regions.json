@@ -2262,14 +2262,14 @@
    35380531,
    129000584
   ],
-  "count": 8641,
+  "count": 8632,
   "estimate": 7685,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경상남도 김해시",
-  "sha": "bf2385859c25c4997da4f45b7430e6c0c899c52cb04388ade7bbed84e5fcda55",
-  "size": 1822078
+  "sha": "3716e313f17de3f407b37b6a9aa8e1eeeebf32ba58e3a627b31b46b28eb9caa4",
+  "size": 1820510
  },
  "5360000": {
   "bbox": [
@@ -2278,14 +2278,14 @@
    35611077,
    128996105
   ],
-  "count": 1908,
+  "count": 1909,
   "estimate": 1707,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경상남도 밀양시",
-  "sha": "38c6d14c772ff98c5633849c7c79bc7ef5055e3bcbe13592ce294791f7f5d5c8",
-  "size": 386186
+  "sha": "50bd83c38d0bbe79c3552207c06cdaa419a93787a511fb80b9b2e8be680a00db",
+  "size": 386391
  },
  "5370000": {
   "bbox": [
@@ -2297,11 +2297,11 @@
   "count": 4405,
   "estimate": 3980,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경상남도 거제시",
-  "sha": "b180ea4caf94cc075df1809bdfc6b90a349fac24c7adfdf0dee18b006a2e0b5b",
-  "size": 943437
+  "sha": "e3ab2451368f87f8ca524f467406d31038d23e3cd8710a974d4a7a8fb7d93c86",
+  "size": 943286
  },
  "5380000": {
   "bbox": [
