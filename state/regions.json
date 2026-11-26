@@ -22,14 +22,14 @@
    37570978,
    127025888
   ],
-  "count": 7113,
+  "count": 7117,
   "estimate": 6269,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "서울특별시 중구",
-  "sha": "0abe713911ffd6133c15c057de7a72994066d87682ca904ea9a6350f03993f62",
-  "size": 1539546
+  "sha": "67e91d06c511069de9f29f8200a26e157e3fcb15cc020ca72f8e94fa935d3af4",
+  "size": 1540154
  },
  "3020000": {
   "bbox": [
@@ -38,14 +38,14 @@
    37554936,
    127013007
   ],
-  "count": 5435,
+  "count": 5433,
   "estimate": 5115,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "서울특별시 용산구",
-  "sha": "b8f5781eae9342cd1a3cc2e307822fcb30008feea3d8fba9d64149ddf2fc8f1b",
-  "size": 1200906
+  "sha": "e24eee22071aa81310d8a1cc86ace96817c88f00b46e1f15cadeb84935a0630b",
+  "size": 1200271
  },
  "3030000": {
   "bbox": [
@@ -54,14 +54,14 @@
    37571527,
    127072216
   ],
-  "count": 4388,
+  "count": 4389,
   "estimate": 3935,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "서울특별시 성동구",
-  "sha": "43dd94aa20b4cf29785524fb55bc93fe243e2762526dc556b7dcdc12ba4b3708",
-  "size": 992897
+  "sha": "20c50cc4fcbbecc7b0221f65f15d3850398e3be50e7a5bea330102aad14aee27",
+  "size": 992898
  },
  "3040000": {
   "bbox": [
