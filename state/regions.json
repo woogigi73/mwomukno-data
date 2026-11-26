@@ -6,14 +6,14 @@
    37620091,
    127023046
   ],
-  "count": 7284,
+  "count": 7257,
   "estimate": 6637,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "서울특별시 종로구",
-  "sha": "ed90fba73817eeae887604521006d50125de6a6b9eafb0c2954f028cbc0e8e97",
-  "size": 1571287
+  "sha": "f760854896db7de6c890439535d9ab44fd8cd9e9f325fc0271afa9f12bb2467f",
+  "size": 1565819
  },
  "3010000": {
   "bbox": [
@@ -1289,11 +1289,11 @@
   "count": 8180,
   "estimate": 7141,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 남양주시",
-  "sha": "6c5860f08bd4f3059e789caabdcbc55e58314be07fa0b8808cad900cbd2e4083",
-  "size": 1801128
+  "sha": "9acb031d3eec6ac90902294f23788cfa5b1942f39322ce842b961c59cb8afce8",
+  "size": 1801351
  },
  "4000000": {
   "bbox": [
@@ -1302,14 +1302,14 @@
    37199235,
    127096177
   ],
-  "count": 2730,
+  "count": 2735,
   "estimate": 2491,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 오산시",
-  "sha": "6f20018b216e66b62eb02ada376fd77d9246864df903a3b9e7da780cc2ec981e",
-  "size": 595431
+  "sha": "ab72b109bcae502f6405c853c33cd15c0c9f9d8b28dd10b778b6946d948bcb41",
+  "size": 596431
  },
  "4010000": {
   "bbox": [
@@ -1318,14 +1318,14 @@
    37471352,
    126875239
   ],
-  "count": 6318,
+  "count": 6320,
   "estimate": 5841,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261126",
   "model": 0,
   "name": "경기도 시흥시",
-  "sha": "a1c721bebaf0f05289c9a51f5451fb9aed9c875e8aaca860426eb7888c715adb",
-  "size": 1415342
+  "sha": "36133184b7fccb87f545c60067aa8de87c880a0eb38704c021c9463651ba7a64",
+  "size": 1415543
  },
  "4020000": {
   "bbox": [
