@@ -2310,14 +2310,14 @@
    35523927,
    129200887
   ],
-  "count": 5730,
+  "count": 5732,
   "estimate": 5210,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 양산시",
-  "sha": "af7a6f10b3aa3011524bca4c0cf9949671dc88780918a072cc1c5feb5bd6ebcf",
-  "size": 1191491
+  "sha": "cf4aa20c1c10c4b14cfe88547f9f9d768aebe6f936f1312d854ab9e8a5a230e1",
+  "size": 1191595
  },
  "5390000": {
   "bbox": [
@@ -2326,14 +2326,14 @@
    35483386,
    128413499
   ],
-  "count": 418,
+  "count": 419,
   "estimate": 395,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 의령군",
-  "sha": "87f4e05abe54529b44b82ce70b789b64ecce2e439c294d39bc2c8daa7d562f1d",
-  "size": 83038
+  "sha": "f7bddda5d07481e546cb8f49fb9bc049ab62359fa6157164ddee40c649451234",
+  "size": 83201
  },
  "5400000": {
   "bbox": [
@@ -2342,14 +2342,14 @@
    35387346,
    128573471
   ],
-  "count": 1024,
+  "count": 1025,
   "estimate": 931,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 함안군",
-  "sha": "a6e0753b5138bd74ed4a1d2b9305af0f774fcd54a2e1fce4ebb4415560251db7",
-  "size": 204950
+  "sha": "e7fefc9f016074730a544422dfdf17b01518d6bb7754538d1e4ab87d503fb06f",
+  "size": 205139
  },
  "5410000": {
   "bbox": [
@@ -2358,14 +2358,14 @@
    35639614,
    128649251
   ],
-  "count": 1141,
+  "count": 1140,
   "estimate": 1050,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 창녕군",
-  "sha": "504bc3b74a8ec7c4aa75c703b8c3698204a2b56becf3858c2cee879a97b7bdae",
-  "size": 224427
+  "sha": "1027c780c227db2c62b7eecd7e0b6d23e55c5248615a00ac7a30f793ff6ca3b0",
+  "size": 224287
  },
  "5420000": {
   "bbox": [
@@ -2374,14 +2374,14 @@
    35109284,
    128496803
   ],
-  "count": 914,
+  "count": 912,
   "estimate": 840,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 고성군",
-  "sha": "319a8168767a72a6aae212f59e452b526bbb9a0f78cde3434298417aeea97382",
-  "size": 184862
+  "sha": "38015ebdd4dfdfa54f2c3f158f0546e55bee2af10ce7389ca856d0e88f3b1aa8",
+  "size": 184479
  },
  "5430000": {
   "bbox": [
@@ -2390,14 +2390,14 @@
    34946289,
    128075220
   ],
-  "count": 1018,
+  "count": 1019,
   "estimate": 924,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 남해군",
-  "sha": "59f44e5a5b5a7cf7851bfb4aab15769f1744a651f0c7809136b687440d8d82b1",
-  "size": 207566
+  "sha": "e78354121bf98e3d0157f3c8395a0a05fc2d155dda502a3986526c4f30e67604",
+  "size": 207727
  },
  "5440000": {
   "bbox": [
@@ -2409,11 +2409,11 @@
   "count": 888,
   "estimate": 826,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 하동군",
-  "sha": "841b92598f0e483784df05f8705bf1f94bf0e96fbaff64bdea37c3838f56c5ca",
-  "size": 175402
+  "sha": "ba9dac61f015984120045a31d894e1848cad086271514bc5a7e4be6169d42718",
+  "size": 175330
  },
  "5450000": {
   "bbox": [
@@ -2422,14 +2422,14 @@
    35551214,
    128083767
   ],
-  "count": 690,
+  "count": 688,
   "estimate": 612,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 산청군",
-  "sha": "abc0b901686ed549e239144cfaa8a81fbb1bd4a39350595559e99cec3da636a7",
-  "size": 138419
+  "sha": "da44507a8744e34be86f642a7c338c7c8b7af76f486abbd4cfc16e9f0defc50b",
+  "size": 138080
  },
  "5460000": {
   "bbox": [
@@ -2438,14 +2438,14 @@
    35739706,
    127840734
   ],
-  "count": 704,
+  "count": 702,
   "estimate": 654,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 함양군",
-  "sha": "d158083af5a49a44c9ce21007da209db5d0dbc0e7c904752b80b74603aa9168a",
-  "size": 138202
+  "sha": "75bb535412cbaa6e329e00c3d737d6823242061fa78b39721cfa3525aca51242",
+  "size": 137752
  },
  "5470000": {
   "bbox": [
@@ -2454,14 +2454,14 @@
    35902040,
    128058835
   ],
-  "count": 1086,
+  "count": 1088,
   "estimate": 1023,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 거창군",
-  "sha": "fd16de4c42342d0f86d56b3fa076e3f9b8728a67b883e77544ce7cb4fc7b73df",
-  "size": 219740
+  "sha": "ae885b918467d5c59004c72658cf35df92197b3dfd45826daa6243ba166060c4",
+  "size": 220185
  },
  "5480000": {
   "bbox": [
@@ -2470,14 +2470,14 @@
    35800122,
    128359558
   ],
-  "count": 680,
+  "count": 661,
   "estimate": 634,
   "geo": 2,
-  "last": "20261120",
+  "last": "20261127",
   "model": 0,
   "name": "경상남도 합천군",
-  "sha": "7ab0d655f72db4e8b1944225a8c035ffe3698c1b0df9eeebc46e20247ed6adcc",
-  "size": 132428
+  "sha": "bc72b93c2e1b99a3c9dcd9983add225ec5ec01d95ad6b406ac40229d564a9c39",
+  "size": 129099
  },
  "5530000": {
   "bbox": [
