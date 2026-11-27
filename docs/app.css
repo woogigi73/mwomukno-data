@@ -368,6 +368,9 @@ html.lowfx .fxcanvas,html.lowfx .fxstamp,html.lowfx .fxcount,html.lowfx .fxflash
   border-radius:0 0 3px 0}
 .mcard.below{transform:translate(-50%,0)}
 .mcard.below::after{bottom:auto;top:-7px;border-radius:3px 0 0 0}
+.mcard.dock{transform:translate(-50%,0);overflow-y:auto;overscroll-behavior:contain}
+.mcard.dock::after{display:none}
+.mcard.dock .c-acts{position:sticky;bottom:-12px;background:var(--surface);padding:6px 0 12px;margin-bottom:-12px}
 .c-head{display:flex;align-items:center;gap:8px}
 .c-head i{flex:none;width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 3px var(--chip)}
 .c-head b{flex:1;min-width:0;font-size:16.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -542,3 +545,14 @@ body.kmap .sweep{opacity:.85}
 /* 게임 화면이 열려 있으면 뒤쪽 장식(버튼 반짝임·물결·레이더·지도 층)을 멈추고 숨긴다 */
 body.gameon .app{visibility:hidden}
 body.gameon .game::after,body.gameon .brand b,body.gameon .pulse::before,body.gameon .pulse::after{animation-play-state:paused}
+/* ===================== v18: 작은 폰(320px) 정리 ===================== */
+.panel{grid-auto-rows:max-content} /* 종류 칩 줄이 눌려서 납작해지던 문제 */
+.ov-head .btn{white-space:nowrap;flex:none}
+.ov-head > div:first-child,.ov-head .sub{min-width:0}
+@media (max-width:360px){
+  .game b{font-size:12px;letter-spacing:-.3px;white-space:nowrap}
+  .ov-head h2{font-size:22px}
+}
+/* PC(마우스)에서는 옆으로 밀 수 없으니 종류 칩을 줄바꿈해서 다 보이게. 폰은 옆으로 밀기 + 오른쪽 흐림으로 '더 있음' 표시 */
+@media (hover:hover) and (pointer:fine){.cats{flex-wrap:wrap;overflow:visible;row-gap:6px}}
+@media not all and (pointer:fine){.cats{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);padding-right:22px}}

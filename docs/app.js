@@ -1071,6 +1071,8 @@
     lock = { t0: performance.now(), step: Math.max(70, Math.min(130, 900 / list.length)), pts, done };
     fxKick();
   }
+  // 후보를 하나씩 조준하는 연출 중에 화면을 누르면 바로 게임으로(기다리기 싫은 사람용)
+  document.addEventListener('click', (e) => { if (lock && performance.now() - lock.t0 > 150) { e.stopPropagation(); e.preventDefault(); const done = lock.done; lock = null; fxKick(); done(); } }, true);
   // 지도 끌기: 매 프레임 지도 전체를 다시 그리는 대신 이미 그린 그림을 CSS로 옮긴다. 조금 멀리 가면(가장자리 빈칸) 한 번 다시 그린다.
   function panPreview() {
     if (!view) { drawMap(); return; }
@@ -1215,17 +1217,35 @@
     acts.append(btn('자세히', '', () => { const cc = card; hideCard(); openDetail(cc.r); }), btn('🚶 길찾기', '', () => { const cc = card; hideCard(); openWalk(cc.r); }), btn('여기로!', 'primary', () => { hideCard(); decide(r); }));
     cardEl.append(acts);
     cardEl.hidden = false;
-    if (!reduce && cardEl.animate) cardEl.animate([{ transform: 'translate(-50%,-100%) translateY(10px) scale(.9)', opacity: 0 }, { transform: 'translate(-50%,-100%)', opacity: 1 }], { duration: 180, easing: 'ease-out' });
-    placeCard(); drawMap();
+    placeCard(true); drawMap();
+    if (!reduce && cardEl.animate) cardEl.animate([{ opacity: 0, scale: '.92' }, { opacity: 1, scale: '1' }], { duration: 180, easing: 'ease-out' });
   }
-  function placeCard() {
+  // 카드는 점 위(또는 아래)에. 위·아래 어디에도 다 안 들어가면(작은 폰) 지도를 살짝 옮겨 자리를 만들고,
+  // 그래도 안 되면 지도 위쪽에 붙여 보여 준다(버튼은 항상 보이게). 아래 패널에 가려지지 않게 지도 보이는 높이 기준.
+  function placeCard(pan) {
     if (!card || !view) return;
-    const [x, y] = view.toPx(card.r.lat, card.r.lng);
-    const w = cardEl.offsetWidth || 240, mw = mapwrap.clientWidth;
+    cardEl.classList.remove('dock'); cardEl.style.maxHeight = '';
+    let [x, y] = view.toPx(card.r.lat, card.r.lng);
+    const w = cardEl.offsetWidth || 240, mw = mapwrap.clientWidth, h = cardEl.offsetHeight || 200;
+    const mh = mapwrap.clientHeight - (document.body.classList.contains('kmap') ? 4 : 18); // 패널이 지도 아래를 살짝 덮는 만큼 뺀다
+    const fit = () => [y - 14 - h >= 6, y + 18 + h <= mh];
+    let [up, down] = fit();
+    if (pan && !up && !down && h + 50 <= mh) {
+      const yt = Math.min(mh - 30, h + 34);
+      V.py += yt - y; clampPan();
+      if (kmapOn()) kmapSync(true); else drawMap();
+      [x, y] = view.toPx(card.r.lat, card.r.lng); [up, down] = fit();
+    }
     const left = Math.max(w / 2 + 8, Math.min(mw - w / 2 - 8, x));
-    const below = y < (cardEl.offsetHeight || 140) + 20;
-    cardEl.classList.toggle('below', below);
-    cardEl.style.left = left + 'px'; cardEl.style.top = (below ? y + 18 : y - 14) + 'px';
+    cardEl.style.left = left + 'px';
+    if (up || down) {
+      const below = !up;
+      cardEl.classList.toggle('below', below);
+      cardEl.style.top = (below ? y + 18 : y - 14) + 'px';
+    } else {
+      cardEl.classList.remove('below'); cardEl.classList.add('dock');
+      cardEl.style.top = '6px'; cardEl.style.maxHeight = Math.max(120, mh - 12) + 'px';
+    }
   }
   function hideCard() { if (!card) return; card = null; cardEl.hidden = true; drawMap(); }
 
@@ -1592,6 +1612,7 @@
     curGame = type;
     cands = weightedPick(p, n);
     lockOn(cands, () => openGame(type));
+    if (lock) syncHist();
   }
   function openGame(type) {
     stopAll(); gameKey++;
@@ -1602,8 +1623,9 @@
     $('#gTitle').textContent = TITLES[type];
     $('#gHead').textContent = S.round + '차 · ' + (S.food ? '「' + S.food.slice(0, 8) + '」 · ' : (S.meal === 'lunch' ? '점심' : '저녁') + ' · ') + '후보 ' + cands.length + '곳 (전체 ' + S.pool.length.toLocaleString('ko-KR') + '곳)';
     requestAnimationFrame(() => ({ roulette, ladder, pirate, race, cup, bomb, slot, shake: shakeGame })[type](cands));
+    syncHist();
   }
-  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; document.body.classList.remove('gameon'); if (sweepAnim) sweepAnim.play(); fxKick(); }
+  function closeGame() { stopAll(); gameKey++; $('#game').hidden = true; curGame = null; document.body.classList.remove('gameon'); if (sweepAnim) sweepAnim.play(); fxKick(); syncHist(); }
   $('#gClose').onclick = closeGame;
 
   const FX = window.MMFX || { sfx: new Proxy({}, { get: () => () => {} }), cannons() {}, burst() {}, sparkle() {}, smoke() {}, dust() {}, shake() {}, flash() {}, stamp() {}, countdown() {}, popText() {} };
@@ -2160,7 +2182,21 @@
 
   // ------------------------------------------------------------ 시트(목록·상세·지역·설정)
   const sheetRoot = $('#sheetRoot');
-  function closeSheet() { sheetRoot.textContent = ''; if (document.activeElement) document.activeElement.blur(); }
+  function closeSheet() { sheetRoot.textContent = ''; if (document.activeElement) document.activeElement.blur(); syncHist(); }
+  // 폰의 '뒤로' 버튼: 열린 창(시트·게임)을 닫는다. 예전에는 앱이 통째로 닫히거나 이전 페이지로 나갔다.
+  let histOn = false, histSkip = false;
+  const anyLayer = () => sheetRoot.childElementCount > 0 || !$('#game').hidden || !!lock;
+  function syncHist() {
+    if (anyLayer()) { if (!histOn) { try { history.pushState({ mmLayer: 1 }, ''); histOn = true; } catch (e) { /* 무시 */ } } return; }
+    setTimeout(() => { if (histOn && !anyLayer()) { histOn = false; histSkip = true; history.back(); } }, 0); // 닫고 바로 다른 창을 여는 경우는 그대로 둔다
+  }
+  window.addEventListener('popstate', () => {
+    if (histSkip) { histSkip = false; if (anyLayer()) syncHist(); return; }
+    if (!histOn) return;
+    histOn = false;
+    if (sheetRoot.childElementCount) closeSheet(); else if (!$('#game').hidden) closeGame(); else if (lock) { lock = null; fxKick(); } // 조준 연출 중 뒤로 = 취소
+    if (anyLayer()) syncHist();
+  });
   function openSheet(title, fill) {
     sheetRoot.textContent = '';
     const bg = document.createElement('div'); bg.className = 'sheetbg'; bg.onclick = closeSheet;
@@ -2169,6 +2205,7 @@
     head.append(textEl('h2', title), btn('닫기', 'sm', closeSheet));
     const body = document.createElement('div'); body.className = 'sh-body';
     sh.append(head, body); sheetRoot.append(bg, sh);
+    syncHist();
     fill(body);
   }
 
